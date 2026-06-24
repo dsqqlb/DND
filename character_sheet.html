@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DND 角色卡 — 状态追踪</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<!--
+  样式 → character_sheet.css
+  逻辑 → character_sheet.js
+-->
+<link rel="stylesheet" href="character_sheet.css">
+</head>
+<body>
+
+<!-- ============================================================
+     专注状态横条
+============================================================ -->
+<div id="concentration-banner">
+  <span id="conc-label" class="cinzel">正在专注 ▸ <span id="conc-spell-name"></span></span>
+  <button id="conc-break">✕ 断专注</button>
+</div>
+
+<!-- ============================================================
+     顶部标题栏
+============================================================ -->
+<div id="header">
+  <div>
+    <div id="char-name">金雳</div>
+    <div id="char-subtitle">生命领域 · 牧师 · 5级 · 丘陵矮人</div>
+  </div>
+  <button id="btn-long-rest">⌛ 长休</button>
+</div>
+<div id="header">
+    <div class="cast-stat-box">
+        <div class="cast-stat-lbl">力量</div>
+        <div class="cast-stat-num cinzel">6</div>
+        <div class="cast-stat-num cinzel" style="font-size: 0.6em; margin-left: 4px;">-2</div>
+        
+    </div>
+    <div class="cast-stat-box">
+        <div class="cast-stat-lbl">敏捷</div>
+        <div class="cast-stat-num cinzel">10</div>
+        <div class="cast-stat-num cinzel" style="font-size: 0.6em; margin-left: 4px;">+0</div>
+    </div>
+    <div class="cast-stat-box">
+        <div class="cast-stat-lbl">体质</div>
+        <div class="cast-stat-num cinzel">12</div>
+        <div class="cast-stat-num cinzel" style="font-size: 0.6em; margin-left: 4px;">+1</div>
+    </div>
+    <div class="cast-stat-box">
+        <div class="cast-stat-lbl">智力</div>
+        <div class="cast-stat-num cinzel">11</div>
+        <div class="cast-stat-num cinzel" style="font-size: 0.6em; margin-left: 4px;">+0</div>
+    </div>
+    <div class="cast-stat-box">
+        <div class="cast-stat-lbl">感知</div>
+        <div class="cast-stat-num cinzel">17</div>
+        <div class="cast-stat-num cinzel" style="font-size: 0.6em; margin-left: 4px;">+3</div>
+    </div>
+    <div class="cast-stat-box">
+        <div class="cast-stat-lbl">魅力</div>
+        <div class="cast-stat-num cinzel">11</div>
+        <div class="cast-stat-num cinzel" style="font-size: 0.6em; margin-left: 4px;">+0</div>
+    </div>
+</div>
+
+<!-- 局势 · 增益状态 -->
+<div id="panel-buff" class="panel">
+  <div class="panel-title">局势 · 增益状态</div>
+  <div class="buff-chips" id="buff-chips"></div>
+</div>
+
+<!-- ============================================================
+     主网格
+============================================================ -->
+<div id="main-grid">
+
+  <!-- 板块一：生存与核心状态 -->
+  <div id="panel-survival" class="panel">
+    <div class="panel-title">生存 · 核心状态</div>
+
+    <!-- HP 进度条 -->
+    <div id="hp-bar-track"><div id="hp-bar-fill"></div></div>
+
+    <!-- HP 主显（点击数字直接编辑） -->
+    <div class="hp-display">
+      <span id="hp-current" title="点击编辑">37</span>
+      <input id="hp-input" type="number" style="display:none;" min="0">
+      <span class="hp-sep">/</span>
+      <span id="hp-max">37</span>
+    </div>
+
+    <!-- HP 快捷按钮 -->
+    <div class="hp-controls">
+      <button class="hp-btn" id="hp-minus">－ 1</button>
+      <button class="hp-btn" id="hp-plus">＋ 1</button>
+    </div>
+
+    <!-- 临时 HP（点击编辑） -->
+    <div id="temp-hp-box">
+      <span id="temp-hp-label">临时HP</span>
+      <span id="temp-hp-val" title="点击编辑">0</span>
+      <input id="temp-hp-input" type="number" style="display:none;" min="0">
+    </div>
+
+    <!-- AC & 速度 -->
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-num cinzel">18</div>
+        <div class="stat-lbl">防御等级 AC</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num cinzel">25</div>
+        <div class="stat-lbl">移动速度 ft</div>
+      </div>
+    </div>
+
+    <!-- 死亡豁免 -->
+    <div class="death-saves">
+      <span class="death-saves-lbl">死亡豁免</span>
+      <div class="save-circles" id="death-success">
+        <div class="save-circle" data-type="success" data-idx="0"></div>
+        <div class="save-circle" data-type="success" data-idx="1"></div>
+        <div class="save-circle" data-type="success" data-idx="2"></div>
+      </div>
+      <div class="save-circles" id="death-fail" style="margin-left:8px;">
+        <div class="save-circle" data-type="fail" data-idx="0"></div>
+        <div class="save-circle" data-type="fail" data-idx="1"></div>
+        <div class="save-circle" data-type="fail" data-idx="2"></div>
+      </div>
+    </div>
+    
+    <!--上下中间要有距离-->
+    <div style="height: 26px;"></div>
+
+    <!-- 施法核心属性 -->
+    <span class="death-saves-lbl">施法核心属性</span>
+    <div class="cast-stats">
+      <div class="cast-stat-box">
+        <div class="cast-stat-num cinzel">13</div>
+        <div class="cast-stat-lbl">法术豁免 DC</div>
+      </div>
+      <div class="cast-stat-box">
+        <div class="cast-stat-num cinzel">+6</div>
+        <div class="cast-stat-lbl">法术攻击加成</div>
+      </div>
+      <div class="cast-stat-box">
+        <div class="cast-stat-num cinzel">+3</div>
+        <div class="cast-stat-lbl">感知调整值</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 专长·盾牌大师 -->
+  <div id="panel-feat-shieldmaster" class="panel">
+    <div class="panel-title">专长 · 盾牌大师</div>
+    <ul class="feat-list">
+      <li>
+        <span class="feat-trigger cinzel">附赠动作</span>
+        使用攻击动作后，可用附赠动作对攻击目标进行<b>推撞</b>（击退或击倒）。
+      </li>
+      <li>
+        <span class="feat-trigger cinzel">敏捷豁免</span>
+        未处于失能时，盾牌的 AC 加值（<b>+2</b>）也加入需要敏捷豁免以规避全额伤害的豁免检定。
+      </li>
+      <li>
+        <span class="feat-trigger cinzel">反应</span>
+        若敏捷豁免<b>成功</b>且位于盾后，可用反应将伤害降为 <b>0</b>。
+      </li>
+    </ul>
+  </div>
+
+  <!-- 板块二：施法资源与法术库 -->
+  <div id="panel-spell" class="panel">
+    <div class="panel-title">施法 · 法术库</div>
+
+
+    <!-- 法术位追踪（由JS生成） -->
+    <div class="panel-title" style="margin-top:0;">法术位</div>
+    <div id="slot-container"></div>
+
+    <!-- 戏法 -->
+    <div class="spell-sec-header">
+      <span class="cinzel spell-sec-lbl">戏法</span>
+      <span id="cantrip-count" class="spell-counter">0 / 5</span>
+      <button class="btn-spell-add" data-mode="cantrip">＋ 选择</button>
+    </div>
+    <div id="cantrips-list"></div>
+
+    <!-- 已备法术（1-3环，自选+领域常驻） -->
+    <div class="spell-sec-header">
+      <span class="cinzel spell-sec-lbl">已备法术</span>
+      <span id="prepared-count" class="spell-counter">0 / 8</span>
+      <button class="btn-spell-add" data-mode="prepared">＋ 选择</button>
+    </div>
+    <div id="prepared-list"></div>
+  </div>
+
+  <!-- 板块三：职业专属资源 -->
+  <div id="panel-class" class="panel">
+    <div class="panel-title">职业 · 专属资源</div>
+
+    <!-- 引导神力资源点（由JS生成） -->
+    <div class="resource-row">
+      <span class="resource-lbl">引导神力</span>
+      <span class="resource-restore">短休恢复</span>
+      <div class="resource-pips" id="channel-pips"></div>
+    </div>
+
+    <!-- 技能一：驱散亡灵 -->
+    <div class="channel-ability">
+      <div class="channel-ability-name cinzel">驱散亡灵</div>
+      <div class="channel-ability-desc">
+        消耗引导神力，展示圣徽。30尺内所有亡灵须通过
+        <b>感知豁免（DC 13）</b>，失败则被<b>驱散</b> 1分钟；
+        每轮结束时可重新豁免，成功则驱散终止。
+        被驱散的亡灵必须在其回合内远离你，且不能主动靠近。
+      </div>
+    </div>
+
+    <!-- 技能二：护卫生机（生命领域） -->
+    <div class="channel-ability">
+      <div class="channel-ability-name cinzel">
+        护卫生机
+        <span class="channel-domain-tag">生命领域</span>
+      </div>
+      <div class="channel-ability-desc">
+        消耗引导神力，对30尺内任意数量当前生命值低于其上限一半的生物
+        分配最多 <b>25点</b>（5 × 牧师等级）治愈量，每个目标最少分配1点。
+        对亡灵生物和构装体无效。
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#main-grid -->
+
+<!-- ============================================================
+     法术选择器 Modal
+============================================================ -->
+<div id="spell-modal" class="hidden">
+  <div id="spell-modal-panel">
+    <div id="spell-modal-head">
+      <span class="cinzel" id="spell-modal-title">选择法术</span>
+      <button id="spell-modal-close">✕</button>
+    </div>
+    <div id="spell-modal-tabs">
+      <button class="sp-tab" data-lv="0">戏法</button>
+      <button class="sp-tab active" data-lv="1">1环</button>
+      <button class="sp-tab" data-lv="2">2环</button>
+      <button class="sp-tab" data-lv="3">3环</button>
+    </div>
+    <div id="spell-modal-list"></div>
+  </div>
+</div>
+
+<script src="character_sheet.js"></script>
+</body>
+</html>
