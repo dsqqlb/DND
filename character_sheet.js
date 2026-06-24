@@ -9,68 +9,33 @@ const SPELL_DB = [
 
   /* ──────────────────── 戏法 (Level 0) ──────────────────── */
   {
-    id: 'sacred_flame', name: '神圣焰', nameEn: 'Sacred Flame',
-    level: 0, school: '召唤系',
-    classes: ['牧师'],
-    castTime: '1个动作', range: '60尺', components: 'V, S',
-    duration: '立即', conc: false,
-    description: '范围内一个你能看见的生物须通过敏捷豁免（DC等于你的法术豁免DC），否则受1d8点辐射伤害。目标进行此豁免时无法受益于掩护加值。\n5/11/17级时分别提升至2d8/3d8/4d8。'
-  },
-  {
-    id: 'guidance', name: '引导术', nameEn: 'Guidance',
-    level: 0, school: '预言系',
+    id: 'guidance',
+    name: '神导术',
+    nameEn: 'Guidance',
+    level: 0,
+    school: '预言',
     classes: ['牧师', '德鲁伊'],
-    castTime: '1个动作', range: '触碰', components: 'V, S',
-    duration: '专注，至多1分钟', conc: true,
-    description: '你触碰一个愿意的生物。直至法术结束，目标可以在一次能力检定中掷一个d4并加到结果上。法术结束后或目标投骰后立即终止。'
+    castTime: '动作',
+    range: '触碰',
+    components: 'V、S',
+    duration: '专注，至多 1 分钟',
+    conc: true,
+    description: '你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有 1d4 加值.'
   },
+
   {
-    id: 'resistance', name: '抗性', nameEn: 'Resistance',
-    level: 0, school: '防护系',
-    classes: ['牧师', '德鲁伊'],
-    castTime: '1个动作', range: '触碰', components: 'V, S, M（一件斗篷）',
-    duration: '专注，至多1分钟', conc: true,
-    description: '你触碰一个愿意的生物。直至法术结束，目标可以在一次豁免检定中掷一个d4并加到结果上。法术结束后或目标投骰后立即终止。'
-  },
-  {
-    id: 'word_of_radiance', name: '辐射之言', nameEn: 'Word of Radiance',
-    level: 0, school: '召唤系',
-    classes: ['牧师'],
-    castTime: '1个动作', range: '5尺', components: 'V, M（一件圣徽）',
-    duration: '立即', conc: false,
-    description: '你周围5尺内所有你能看见的敌对生物须通过体质豁免，失败受1d6点辐射伤害。\n5/11/17级时分别提升至2d6/3d6/4d6。'
-  },
-  {
-    id: 'spare_the_dying', name: '起死回生', nameEn: 'Spare the Dying',
-    level: 0, school: '死灵系',
-    classes: ['牧师'],
-    castTime: '1个动作', range: '触碰', components: 'V, S',
-    duration: '立即', conc: false,
-    description: '你触碰一个生命值降至0的活体生物，使其进入稳定状态。对亡灵和构装体无效。'
-  },
-  {
-    id: 'thaumaturgy', name: '幻术奇迹', nameEn: 'Thaumaturgy',
-    level: 0, school: '变化系',
-    classes: ['牧师'],
-    castTime: '1个动作', range: '30尺', components: 'V',
-    duration: '至多1分钟', conc: false,
-    description: '在范围内展现一个微小的神迹。可选：声音放大三倍、眼睛短暂闪光、制造轻微颤动、令火焰闪烁变色、使无人的门窗开关，或改变外观等。可同时维持最多三种效果，每个效果单独计时。'
-  },
-  {
-    id: 'toll_the_dead', name: '丧钟', nameEn: 'Toll the Dead',
-    level: 0, school: '死灵系',
-    classes: ['牧师', '巫师'],
-    castTime: '1个动作', range: '60尺', components: 'V, S',
-    duration: '立即', conc: false,
-    description: '你指向你能看见的一个生物，一声悲鸣响起于其周围。目标须通过感知豁免，否则受1d8点死灵伤害。若目标缺失任何生命值，改为受1d12点死灵伤害。\n5/11/17级时伤害分别提升。'
-  },
-  {
-    id: 'mending', name: '修缮术', nameEn: 'Mending',
-    level: 0, school: '变化系',
-    classes: ['牧师', '德鲁伊', '吟游诗人', '术士', '巫师'],
-    castTime: '1分钟', range: '触碰', components: 'V, S, M（两块磁铁）',
-    duration: '立即', conc: false,
-    description: '此法术修复一件物体上的单处破损或断裂，如破裂的链环、断裂的键盘或撕裂的斗篷。只要破损部分不大于1英尺，你就可以从物理上将其修复，留下几乎看不出的痕迹。'
+    id: 'light',
+    name: '光亮术',
+    nameEn: ' Light',
+    level: 0,
+    school: '塑能',
+    classes: ['吟游诗人', '牧师', '术士', '法师'],
+    castTime: '动作',
+    range: '触碰',
+    components: 'V、M（一只萤火虫或一片磷光苔藓）',
+    duration: '1 小时',
+    conc: false,
+    description: '你触碰一个体型不超过大型，且未被他人携带/着装的物件。在法术终止前，物件将发出 20 尺半径的明亮光照以及额外 20 尺的微光光照。光的颜色由你决定。该物件被不透明的东西完全遮盖时，其光照也将被遮挡。此法术将在你再次施展它时提前终止。'
   },
 
   /* ──────────────────── 1环法术 (Level 1) ──────────────────── */
@@ -296,7 +261,6 @@ const CHAR = {
 const BUFFS = [
   '祝福术 +1d4',
   '神导术 +1d4',
-  '灵性卫士 激活',
   '倒地',
   '中毒',
   '目盲',
@@ -317,11 +281,13 @@ function load(key, def) {
 ============================================================ */
 let state = {
   hp:            load('hp', CHAR.maxHp),
+  maxHp:         load('maxHp', CHAR.maxHp),
   tempHp:        load('tempHp', 0),
   slots:         load('slots', [[], [false,false,false,false], [false,false,false], [false,false]]),
   cantripIds:    load('cantripIds',  []),   // 已知戏法 ID 列表
   preparedIds:   load('preparedIds', []),   // 自选备法 ID 列表（含环1-3，不超过 maxPrepared）
   deathSave:     load('deathSave', { success:[false,false,false], fail:[false,false,false] }),
+  exhaustion:    load('exhaustion', [false, false, false, false]),
   channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
   buffs:         load('buffs', {}),
   concentration: load('concentration', null),  // 专注中的法术 ID，或 null
@@ -345,48 +311,30 @@ function isPrepared(id) {
 /* ============================================================
    渲染：血量
 ============================================================ */
+function hpColor(pct) {
+  /* hue: 0=红 120=维 线性差内 */
+  const hue = Math.round(pct * 120);
+  return `hsl(${hue}, 65%, 38%)`;
+}
+
 function renderHp() {
   $('hp-current').textContent = state.hp;
-  $('hp-max').textContent = CHAR.maxHp;
-  const pct = Math.max(0, Math.min(100, (state.hp / CHAR.maxHp) * 100));
-  $('hp-bar-fill').style.width = pct + '%';
+  $('hp-max').textContent = state.maxHp;
+  const total = state.maxHp + state.tempHp;
+  const hpPct   = (state.hp       / total) * 100;
+  const tempPct = (state.tempHp   / total) * 100;
+  const colorPct = Math.max(0, Math.min(1, state.hp / state.maxHp));
+  $('hp-bar-fill').style.width = hpPct + '%';
+  $('hp-bar-fill').style.background = hpColor(colorPct);
+  $('hp-bar-temp').style.width = tempPct + '%';
   $('temp-hp-val').textContent = state.tempHp;
-  $('temp-hp-box').classList.toggle('has-temp', state.tempHp > 0);
+  $('temp-hp-badge').classList.toggle('has-temp', state.tempHp > 0);
 }
 
 /* ============================================================
    渲染：法术位
 ============================================================ */
-function renderSlots() {
-  const container = $('slot-container');
-  container.innerHTML = '';
-  for (let tier = 1; tier <= 3; tier++) {
-    const count = CHAR.spellSlots[tier];
-    const row = document.createElement('div');
-    row.className = 'slot-row';
-
-    const lbl = document.createElement('span');
-    lbl.className = 'slot-tier-lbl cinzel';
-    lbl.textContent = tier + '环';
-    row.appendChild(lbl);
-
-    const gems = document.createElement('div');
-    gems.className = 'slot-gems';
-    for (let i = 0; i < count; i++) {
-      const gem = document.createElement('div');
-      gem.className = 'slot-gem' + (state.slots[tier][i] ? ' used' : '');
-      gem.title = tier + '环法术位 ' + (i + 1);
-      gem.addEventListener('click', () => {
-        state.slots[tier][i] = !state.slots[tier][i];
-        save('slots', state.slots);
-        renderSlots();
-      });
-      gems.appendChild(gem);
-    }
-    row.appendChild(gems);
-    container.appendChild(row);
-  }
-}
+function renderSlots() { renderSpellPanel(); }
 
 /* ============================================================
    渲染：法术面板（统一入口）
@@ -458,25 +406,39 @@ function showInlineDetail(sp, row) {
     existing.remove();
     return;
   }
-  /* 关闭其他已展开的行 */
-  document.querySelectorAll('.srow-inline-detail').forEach(el => el.remove());
-
   const detail = document.createElement('div');
   detail.className = 'srow-inline-detail';
   detail.innerHTML = buildDetailHTML(sp);
   row.after(detail);
 }
 
+function formatCastTime(t) {
+  if (t.includes('附赠动作')) return `<span class="cast-icon cast-icon-bonus"></span>${t}`;
+  if (t.includes('动作'))   return `<span class="cast-icon cast-icon-action"></span>${t}`;
+  return t;
+}
+
 function buildDetailHTML(sp) {
   return `
-    <div class="detail-tags">
-      <span class="detail-tag">${sp.level === 0 ? '戏法' : sp.level + '环'} · ${sp.school}</span>
-      <span class="detail-tag">${sp.castTime}</span>
-      <span class="detail-tag">${sp.range}</span>
-      <span class="detail-tag">${sp.duration}</span>
+    <div class="detail-meta-grid">
+      <div class="detail-meta-box">
+        <div class="detail-meta-lbl">施法时间</div>
+        <div class="detail-meta-val">${formatCastTime(sp.castTime)}</div>
+      </div>
+      <div class="detail-meta-box">
+        <div class="detail-meta-lbl">施法距离</div>
+        <div class="detail-meta-val">${sp.range}</div>
+      </div>
+      <div class="detail-meta-box">
+        <div class="detail-meta-lbl">法术成分</div>
+        <div class="detail-meta-val">${sp.components}</div>
+      </div>
+      <div class="detail-meta-box">
+        <div class="detail-meta-lbl">持续时间</div>
+        <div class="detail-meta-val">${sp.duration}</div>
+      </div>
     </div>
-    <div class="detail-components">成分：${sp.components}</div>
-    <div class="detail-classes">职业：${sp.classes.join('、')}</div>
+    <div class="detail-minor">${sp.level === 0 ? '戏法' : sp.level + '环'} · ${sp.school}&emsp;${sp.classes.join('、')}</div>
     <div class="detail-desc">${sp.description.replace(/\n/g, '<br>')}</div>
   `;
 }
@@ -485,6 +447,12 @@ function buildDetailHTML(sp) {
 function renderCantripList() {
   const container = $('cantrips-list');
   container.innerHTML = '';
+  /* 清理已不在 DB 中的遗留 ID */
+  const cleaned = state.cantripIds.filter(id => getSpell(id));
+  if (cleaned.length !== state.cantripIds.length) {
+    state.cantripIds = cleaned;
+    save('cantripIds', state.cantripIds);
+  }
   state.cantripIds.forEach(id => {
     const sp = getSpell(id);
     if (sp) container.appendChild(buildSpellRow(sp, false, true));
@@ -496,6 +464,12 @@ function renderCantripList() {
 function renderPreparedList() {
   const container = $('prepared-list');
   container.innerHTML = '';
+  /* 清理已不在 DB 中的遗留 ID */
+  const cleaned = state.preparedIds.filter(id => getSpell(id));
+  if (cleaned.length !== state.preparedIds.length) {
+    state.preparedIds = cleaned;
+    save('preparedIds', state.preparedIds);
+  }
   [1, 2, 3].forEach(lv => {
     const domainAtLevel = (CHAR.domainSpells[lv] || []).map(getSpell).filter(Boolean);
     const chosenAtLevel = state.preparedIds.map(getSpell).filter(sp => sp && sp.level === lv);
@@ -503,7 +477,30 @@ function renderPreparedList() {
 
     const hdr = document.createElement('div');
     hdr.className = 'srow-lv-group-hdr';
-    hdr.textContent = lv + '环';
+
+    const lvLabel = document.createElement('span');
+    lvLabel.textContent = lv + '环';
+    hdr.appendChild(lvLabel);
+
+    /* 法术位计数块 */
+    const slotCount = CHAR.spellSlots[lv] || 0;
+    if (slotCount > 0) {
+      const gems = document.createElement('div');
+      gems.className = 'slot-gems';
+      for (let i = 0; i < slotCount; i++) {
+        const gem = document.createElement('div');
+        gem.className = 'slot-gem' + (state.slots[lv][i] ? ' used' : '');
+        gem.title = lv + '环法术位 ' + (i + 1);
+        gem.addEventListener('click', () => {
+          state.slots[lv][i] = !state.slots[lv][i];
+          save('slots', state.slots);
+          renderPreparedList();
+        });
+        gems.appendChild(gem);
+      }
+      hdr.appendChild(gems);
+    }
+
     container.appendChild(hdr);
 
     /* 领域法术（锁定）先展示 */
@@ -541,6 +538,12 @@ function toggleConc(spellId) {
 /* ============================================================
    渲染：死亡豁免
 ============================================================ */
+function renderExhaustion() {
+  document.querySelectorAll('.exhaust-pip').forEach((pip, i) => {
+    pip.classList.toggle('active', state.exhaustion[i]);
+  });
+}
+
 function renderDeathSaves() {
   ['success', 'fail'].forEach(type => {
     document.querySelectorAll(`#death-${type} .save-circle`).forEach((c, i) => {
@@ -670,9 +673,7 @@ function renderPickerList() {
     row.appendChild(detail);
 
     main.addEventListener('click', () => {
-      const isExpanded = row.classList.contains('expanded');
-      document.querySelectorAll('.picker-row.expanded').forEach(r => r.classList.remove('expanded'));
-      if (!isExpanded) row.classList.add('expanded');
+      row.classList.toggle('expanded');
     });
 
     container.appendChild(row);
@@ -764,10 +765,30 @@ function startHpEdit() {
 function commitHpEdit() {
   let v = parseInt($('hp-input').value, 10);
   if (isNaN(v)) v = state.hp;
-  state.hp = Math.max(0, Math.min(CHAR.maxHp, v));
+  state.hp = Math.max(0, Math.min(state.maxHp, v));
   save('hp', state.hp);
   $('hp-current').style.display = '';
   $('hp-input').style.display = 'none';
+  renderHp();
+}
+
+function startMaxHpEdit() {
+  $('hp-max').style.display = 'none';
+  $('hp-max-input').style.display = '';
+  $('hp-max-input').value = state.maxHp;
+  $('hp-max-input').focus();
+  $('hp-max-input').select();
+}
+
+function commitMaxHpEdit() {
+  let v = parseInt($('hp-max-input').value, 10);
+  if (isNaN(v) || v < 1) v = state.maxHp;
+  state.maxHp = v;
+  state.hp = Math.min(state.hp, state.maxHp);
+  save('maxHp', state.maxHp);
+  save('hp', state.hp);
+  $('hp-max').style.display = '';
+  $('hp-max-input').style.display = 'none';
   renderHp();
 }
 
@@ -775,42 +796,82 @@ $('hp-current').addEventListener('click', startHpEdit);
 $('hp-input').addEventListener('blur', commitHpEdit);
 $('hp-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitHpEdit(); });
 
-$('hp-minus').addEventListener('click', () => {
-  state.hp = Math.max(0, state.hp - 1);
+$('hp-max').addEventListener('click', startMaxHpEdit);
+$('hp-max-input').addEventListener('blur', commitMaxHpEdit);
+$('hp-max-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitMaxHpEdit(); });
+
+function applyDamage(dmg) {
+  const absorbed = Math.min(state.tempHp, dmg);
+  state.tempHp -= absorbed;
+  state.hp = Math.max(0, state.hp - (dmg - absorbed));
   save('hp', state.hp);
-  renderHp();
-});
-
-$('hp-plus').addEventListener('click', () => {
-  state.hp = Math.min(CHAR.maxHp, state.hp + 1);
-  save('hp', state.hp);
-  renderHp();
-});
-
-/* ============================================================
-   交互：临时HP编辑
-============================================================ */
-function startTempEdit() {
-  $('temp-hp-val').style.display = 'none';
-  $('temp-hp-input').style.display = '';
-  $('temp-hp-input').value = state.tempHp;
-  $('temp-hp-input').focus();
-  $('temp-hp-input').select();
-}
-
-function commitTempEdit() {
-  let v = parseInt($('temp-hp-input').value, 10);
-  if (isNaN(v)) v = 0;
-  state.tempHp = Math.max(0, v);
   save('tempHp', state.tempHp);
-  $('temp-hp-val').style.display = '';
-  $('temp-hp-input').style.display = 'none';
+  $('temp-hp-slider').value = state.tempHp;
+  $('temp-hp-slider-val').textContent = state.tempHp;
   renderHp();
 }
 
-$('temp-hp-val').addEventListener('click', startTempEdit);
-$('temp-hp-input').addEventListener('blur', commitTempEdit);
-$('temp-hp-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitTempEdit(); });
+$('hp-minus').addEventListener('click',  () => applyDamage(1));
+$('hp-plus').addEventListener('click',   () => { state.hp = Math.min(state.maxHp, state.hp + 1); save('hp', state.hp); renderHp(); });
+$('hp-minus5').addEventListener('click', () => applyDamage(5));
+$('hp-plus5').addEventListener('click',  () => { state.hp = Math.min(state.maxHp, state.hp + 5); save('hp', state.hp); renderHp(); });
+
+/* 血条拖拽 / 点击 */
+function setHpFromBarX(clientX) {
+  const track = $('hp-bar-track');
+  const rect = track.getBoundingClientRect();
+  const total = state.maxHp + state.tempHp;
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  state.hp = Math.min(state.maxHp, Math.round(ratio * total));
+  save('hp', state.hp);
+  renderHp();
+}
+
+let _draggingHpBar = false;
+$('hp-bar-track').addEventListener('mousedown', e => {
+  _draggingHpBar = true;
+  setHpFromBarX(e.clientX);
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => { if (_draggingHpBar) setHpFromBarX(e.clientX); });
+document.addEventListener('mouseup',   () => { _draggingHpBar = false; });
+
+$('hp-bar-track').addEventListener('touchstart', e => {
+  _draggingHpBar = true;
+  setHpFromBarX(e.touches[0].clientX);
+  e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchmove', e => { if (_draggingHpBar) setHpFromBarX(e.touches[0].clientX); }, { passive: false });
+document.addEventListener('touchend',  () => { _draggingHpBar = false; });
+
+/* 临时HP滑块 */
+let _tempSliderOpen = false;
+
+$('temp-hp-badge').addEventListener('click', e => {
+  e.stopPropagation();
+  _tempSliderOpen = !_tempSliderOpen;
+  $('temp-hp-slider-wrap').classList.toggle('hidden', !_tempSliderOpen);
+  if (_tempSliderOpen) {
+    $('temp-hp-slider').value = state.tempHp;
+    $('temp-hp-slider-val').textContent = state.tempHp;
+  }
+});
+
+$('temp-hp-slider-wrap').addEventListener('click', e => e.stopPropagation());
+
+document.addEventListener('click', () => {
+  if (_tempSliderOpen) {
+    _tempSliderOpen = false;
+    $('temp-hp-slider-wrap').classList.add('hidden');
+  }
+});
+
+$('temp-hp-slider').addEventListener('input', e => {
+  state.tempHp = parseInt(e.target.value, 10);
+  $('temp-hp-slider-val').textContent = state.tempHp;
+  save('tempHp', state.tempHp);
+  renderHp();
+});
 
 /* ============================================================
    交互：死亡豁免
@@ -822,6 +883,18 @@ document.querySelectorAll('.save-circle').forEach(c => {
     state.deathSave[type][idx] = !state.deathSave[type][idx];
     save('deathSave', state.deathSave);
     renderDeathSaves();
+  });
+});
+
+/* ============================================================
+   交互：力竭计数
+============================================================ */
+document.querySelectorAll('.exhaust-pip').forEach(pip => {
+  pip.addEventListener('click', () => {
+    const idx = parseInt(pip.dataset.idx, 10);
+    state.exhaustion[idx] = !state.exhaustion[idx];
+    save('exhaustion', state.exhaustion);
+    renderExhaustion();
   });
 });
 
@@ -839,31 +912,59 @@ $('conc-break').addEventListener('click', () => {
    交互：一键长休
 ============================================================ */
 $('btn-long-rest').addEventListener('click', () => {
-  state.hp        = CHAR.maxHp;
-  state.tempHp    = 0;
-  state.slots     = [[], new Array(CHAR.spellSlots[1]).fill(false),
-                         new Array(CHAR.spellSlots[2]).fill(false),
-                         new Array(CHAR.spellSlots[3]).fill(false)];
-  state.channel   = new Array(CHAR.channelDivinity).fill(false);
-  state.deathSave = { success:[false,false,false], fail:[false,false,false] };
-  save('hp',        state.hp);
-  save('tempHp',    state.tempHp);
-  save('slots',     state.slots);
-  save('channel',   state.channel);
-  save('deathSave', state.deathSave);
+  state.maxHp         = CHAR.maxHp;
+  state.hp            = state.maxHp;
+  state.tempHp        = 0;
+  state.slots         = [[], new Array(CHAR.spellSlots[1]).fill(false),
+                             new Array(CHAR.spellSlots[2]).fill(false),
+                             new Array(CHAR.spellSlots[3]).fill(false)];
+  state.channel       = new Array(CHAR.channelDivinity).fill(false);
+  state.deathSave     = { success:[false,false,false], fail:[false,false,false] };
+  state.concentration = null;
+  state.buffs         = {};
+  save('maxHp',        state.maxHp);
+  save('hp',           state.hp);
+  save('tempHp',       state.tempHp);
+  save('slots',        state.slots);
+  save('channel',      state.channel);
+  save('deathSave',    state.deathSave);
+  save('concentration', state.concentration);
+  save('buffs',        state.buffs);
+  $('temp-hp-slider').value = 0;
+  $('temp-hp-slider-val').textContent = 0;
+  $('temp-hp-slider-wrap').classList.add('hidden');
   renderHp();
   renderSlots();
   renderDeathSaves();
   renderChannel();
+  renderConcentration();
+  renderSpellPanel();
+  renderBuffs();
 });
 
 /* ============================================================
    首次渲染
 ============================================================ */
 renderHp();
-renderSlots();
 renderSpellPanel();
 renderConcentration();
 renderDeathSaves();
+renderExhaustion();
 renderChannel();
 renderBuffs();
+
+/* 面板折叠按鈕 */
+document.querySelectorAll('.panel').forEach(panel => {
+  const title = panel.querySelector(':scope > .panel-title');
+  if (!title) return;
+  const btn = document.createElement('button');
+  btn.className = 'panel-collapse-btn';
+  btn.setAttribute('aria-label', '折叠面板');
+  btn.textContent = '▾';
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const collapsed = panel.classList.toggle('collapsed');
+    btn.textContent = collapsed ? '▸' : '▾';
+  });
+  title.appendChild(btn);
+});

@@ -65,9 +65,9 @@
     </div>
 </div>
 
-<!-- 局势 · 增益状态 -->
+<!-- 局势 · 状态 -->
 <div id="panel-buff" class="panel">
-  <div class="panel-title">局势 · 增益状态</div>
+  <div class="panel-title">局势 · 状态</div>
   <div class="buff-chips" id="buff-chips"></div>
 </div>
 
@@ -80,31 +80,35 @@
   <div id="panel-survival" class="panel">
     <div class="panel-title">生存 · 核心状态</div>
 
+    <!-- 临时HP滑块（点击+X时展开） -->
+    <div id="temp-hp-slider-wrap" class="hidden">
+      <span id="temp-hp-slider-lbl">临时 HP</span>
+      <input type="range" id="temp-hp-slider" min="0" max="15" value="0">
+      <span id="temp-hp-slider-val">0</span>
+    </div>
+
     <!-- HP 进度条 -->
-    <div id="hp-bar-track"><div id="hp-bar-fill"></div></div>
+    <div id="hp-bar-track"><div id="hp-bar-fill"></div><div id="hp-bar-temp"></div></div>
 
     <!-- HP 主显（点击数字直接编辑） -->
     <div class="hp-display">
       <span id="hp-current" title="点击编辑">37</span>
       <input id="hp-input" type="number" style="display:none;" min="0">
+      <span id="temp-hp-badge" title="点击调整临时HP">+<span id="temp-hp-val">0</span></span>
       <span class="hp-sep">/</span>
-      <span id="hp-max">37</span>
+      <span id="hp-max" title="点击编辑最大HP">37</span>
+      <input id="hp-max-input" type="number" style="display:none;" min="1">
     </div>
 
     <!-- HP 快捷按钮 -->
     <div class="hp-controls">
+      <button class="hp-btn" id="hp-minus5">－ 5</button>
       <button class="hp-btn" id="hp-minus">－ 1</button>
       <button class="hp-btn" id="hp-plus">＋ 1</button>
+      <button class="hp-btn" id="hp-plus5">＋ 5</button>
     </div>
 
-    <!-- 临时 HP（点击编辑） -->
-    <div id="temp-hp-box">
-      <span id="temp-hp-label">临时HP</span>
-      <span id="temp-hp-val" title="点击编辑">0</span>
-      <input id="temp-hp-input" type="number" style="display:none;" min="0">
-    </div>
-
-    <!-- AC & 速度 -->
+    <!-- AC & 速度 & 先攻 & 熟练加值 -->
     <div class="stat-row">
       <div class="stat-box">
         <div class="stat-num cinzel">18</div>
@@ -113,6 +117,14 @@
       <div class="stat-box">
         <div class="stat-num cinzel">25</div>
         <div class="stat-lbl">移动速度 ft</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num cinzel">+0</div>
+        <div class="stat-lbl">先攻</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num cinzel">+3</div>
+        <div class="stat-lbl">熟练加值</div>
       </div>
     </div>
 
@@ -131,6 +143,17 @@
       </div>
     </div>
     
+    <!-- 力竭计数 -->
+    <div class="death-saves" style="margin-top:8px;">
+      <span class="death-saves-lbl">力竭计数</span>
+      <div class="save-circles" id="exhaustion-pips">
+        <div class="exhaust-pip" data-idx="0"></div>
+        <div class="exhaust-pip" data-idx="1"></div>
+        <div class="exhaust-pip" data-idx="2"></div>
+        <div class="exhaust-pip" data-idx="3"></div>
+      </div>
+    </div>
+
     <!--上下中间要有距离-->
     <div style="height: 26px;"></div>
 
@@ -175,11 +198,6 @@
   <div id="panel-spell" class="panel">
     <div class="panel-title">施法 · 法术库</div>
 
-
-    <!-- 法术位追踪（由JS生成） -->
-    <div class="panel-title" style="margin-top:0;">法术位</div>
-    <div id="slot-container"></div>
-
     <!-- 戏法 -->
     <div class="spell-sec-header">
       <span class="cinzel spell-sec-lbl">戏法</span>
@@ -208,21 +226,21 @@
       <div class="resource-pips" id="channel-pips"></div>
     </div>
 
-    <!-- 技能一：驱散亡灵 -->
+    <!-- 技能一：摧毁不死生物 -->
     <div class="channel-ability">
-      <div class="channel-ability-name cinzel">驱散亡灵</div>
+      <div class="channel-ability-name cinzel">摧毁不死生物</div>
       <div class="channel-ability-desc">
-        消耗引导神力，展示圣徽。30尺内所有亡灵须通过
-        <b>感知豁免（DC 13）</b>，失败则被<b>驱散</b> 1分钟；
-        每轮结束时可重新豁免，成功则驱散终止。
-        被驱散的亡灵必须在其回合内远离你，且不能主动靠近。
+        消耗引导神力，展示圣徽。30尺内所有不死生物须通过
+        <b>感知豁免（DC 13）</b>，失败则被<b>摧毁</b> 1分钟；
+        每轮结束时可重新豁免，成功则摧毁终止。
+        被摧毁的不死生物必须在其回合内远离你，且不能主动靠近。
       </div>
     </div>
 
-    <!-- 技能二：护卫生机（生命领域） -->
+    <!-- 技能二：生命维持（生命领域） -->
     <div class="channel-ability">
       <div class="channel-ability-name cinzel">
-        护卫生机
+        生命维持
         <span class="channel-domain-tag">生命领域</span>
       </div>
       <div class="channel-ability-desc">
@@ -231,13 +249,60 @@
         对亡灵生物和构装体无效。
       </div>
     </div>
+
+    <!-- 技能三：被动·生命门徒（生命领域） -->
+    <div class="channel-ability">
+      <div class="channel-ability-name cinzel">
+        生命门徒
+        <span class="channel-domain-tag">生命领域</span>
+      </div>
+      <div class="channel-ability-desc">
+        你消耗法术位施展法术的回合中，当该法术恢复生物的生
+        命值时，额外恢复 <b>2 + 消耗法术位环阶</b> 生命值。
+      </div>
+    </div>
   </div>
 
 </div><!-- /#main-grid -->
 
-<!-- ============================================================
-     法术选择器 Modal
-============================================================ -->
+<!--角色信息面板（阵营 · 语言 · 技能熟练） -->
+<div id="panel-charinfo" class="panel">
+  <div class="panel-title">角色信息</div>
+
+  <div class="charinfo-row">
+    <span class="charinfo-lbl">阵营</span>
+    <span class="charinfo-val">守序中立</span>
+  </div>
+  <div class="charinfo-row">
+    <span class="charinfo-lbl">语言</span>
+    <span class="charinfo-val">龙语、矮人语</span>
+  </div>
+
+  <div class="charinfo-section-title">技能熟练</div>
+  <div class="skill-prof-list">
+    <div class="skill-prof-item">
+      <span class="skill-prof-mark">◆</span>
+      <span class="skill-prof-name">历史</span>
+      <span class="skill-prof-attr">智力</span>
+    </div>
+    <div class="skill-prof-item">
+      <span class="skill-prof-mark">◆</span>
+      <span class="skill-prof-name">洞悉</span>
+      <span class="skill-prof-attr">感知</span>
+    </div>
+    <div class="skill-prof-item">
+      <span class="skill-prof-mark">◆</span>
+      <span class="skill-prof-name">医药</span>
+      <span class="skill-prof-attr">感知</span>
+    </div>
+    <div class="skill-prof-item">
+      <span class="skill-prof-mark">◆</span>
+      <span class="skill-prof-name">游说</span>
+      <span class="skill-prof-attr">魅力</span>
+    </div>
+  </div>
+</div>
+
 <div id="spell-modal" class="hidden">
   <div id="spell-modal-panel">
     <div id="spell-modal-head">

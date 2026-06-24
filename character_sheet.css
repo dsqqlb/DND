@@ -51,6 +51,31 @@ body {
   margin-bottom: 14px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border-dim);
+  display: flex;
+  align-items: center;
+}
+
+.panel-collapse-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--silver-dim);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.panel-collapse-btn:hover { color: var(--silver); }
+
+.panel.collapsed > .panel-title {
+  margin-bottom: 0;
+  border-bottom-color: transparent;
+}
+
+.panel.collapsed > .panel-title ~ * {
+  display: none !important;
 }
 
 /* ============================================================
@@ -198,20 +223,81 @@ body {
   font-family: var(--font-title);
   font-size: 32px;
   color: var(--silver-dim);
+  cursor: pointer;
+}
+
+#hp-max:hover { color: var(--accent-glow); }
+
+#hp-max-input {
+  font-family: var(--font-title);
+  font-size: 32px;
+  line-height: 1;
+  width: 70px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-bright);
+  color: var(--silver-dim);
+  outline: none;
 }
 
 /* HP 进度条 */
 #hp-bar-track {
   width: 100%;
-  height: 3px;
+  height: 10px;
   background: var(--border-dim);
   margin-bottom: 14px;
+  cursor: ew-resize;
+  user-select: none;
+  display: flex;
 }
 
 #hp-bar-fill {
-  height: 3px;
-  background: var(--silver);
-  transition: none;
+  height: 10px;
+  flex-shrink: 0;
+  transition: width 0.12s ease, background-color 0.25s ease;
+}
+
+#hp-bar-temp {
+  height: 10px;
+  flex-shrink: 0;
+  background: #7ec8ff;
+  box-shadow: 0 0 6px rgba(126,200,255,0.45);
+  transition: width 0.12s ease;
+}
+
+/* 临时HP滑块 */
+#temp-hp-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+#temp-hp-slider-wrap.hidden { display: none; }
+
+#temp-hp-slider-lbl {
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #7ec8ff;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#temp-hp-slider {
+  flex: 1;
+  accent-color: #7ec8ff;
+  cursor: pointer;
+}
+
+#temp-hp-slider-val {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: #7ec8ff;
+  min-width: 22px;
+  text-align: right;
 }
 
 /* HP 快捷按钮 */
@@ -234,47 +320,22 @@ body {
 
 .hp-btn:hover { border-color: var(--border-bright); color: var(--silver); }
 
-/* 临时 HP */
-#temp-hp-box {
-  border: 1px solid var(--border-dim);
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-#temp-hp-box.has-temp { border-color: var(--border-bright); }
-
-#temp-hp-label {
+/* 临时 HP （内联在 hp-display 中） */
+#temp-hp-badge {
   font-family: var(--font-title);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--silver-dim);
-  text-transform: uppercase;
-  flex: 1;
-}
-
-#temp-hp-val {
-  font-family: var(--font-title);
-  font-size: 22px;
-  color: var(--silver);
+  font-size: 32px;
+  color: rgba(229,229,229,0.2);
   cursor: pointer;
-  min-width: 36px;
-  text-align: right;
+  transition: color 0.2s;
+  white-space: nowrap;
 }
 
-#temp-hp-input {
-  font-family: var(--font-title);
-  font-size: 22px;
-  width: 60px;
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border-bright);
-  color: var(--silver);
-  outline: none;
-  text-align: right;
+#temp-hp-badge.has-temp {
+  color: #7ec8ff;
+  text-shadow: 0 0 8px rgba(126,200,255,0.5);
 }
+
+#temp-hp-badge:hover { color: var(--accent-glow); }
 
 /* AC & Speed */
 .stat-row {
@@ -390,19 +451,33 @@ body {
 
 .slot-gems {
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  align-items: center;
 }
 
 .slot-gem {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   transform: rotate(45deg);
-  border: 1px solid #2a5a8a;
-  background: #1e4a7a;
+  border: 1px solid #4a9adc;
+  background: linear-gradient(135deg, #2a70c0 0%, #1a4888 100%);
+  box-shadow: 0 0 6px rgba(74, 154, 220, 0.55), inset 0 1px 0 rgba(255,255,255,0.12);
   cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+  flex-shrink: 0;
 }
 
-.slot-gem.used { background: #1e1e1e; border-color: var(--border-dim); }
+.slot-gem:hover {
+  background: linear-gradient(135deg, #3a90e0 0%, #2a60b8 100%);
+  box-shadow: 0 0 12px rgba(74, 170, 255, 0.85), inset 0 1px 0 rgba(255,255,255,0.18);
+  border-color: #7ec8ff;
+}
+
+.slot-gem.used {
+  background: #161616;
+  border-color: #2a2a2a;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+}
 
 /* ============================================================
    法术面板 — 分区标题行
@@ -545,9 +620,12 @@ body {
   letter-spacing: 2px;
   color: var(--silver-dim);
   text-transform: uppercase;
-  padding: 4px 0 2px;
+  padding: 4px 0 4px;
   margin-top: 6px;
   border-top: 1px solid var(--border-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* 行内详情展开块 */
@@ -708,29 +786,66 @@ body {
 .picker-row.expanded .picker-row-detail { display: block; }
 
 /* 详情通用样式（被 srow-inline-detail 和 picker-row-detail 共用） */
-.detail-tags {
-  display: flex;
-  flex-wrap: wrap;
+.detail-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 4px;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 
-.detail-tag {
-  background: rgba(229,229,229,0.08);
+.detail-meta-box {
   border: 1px solid var(--border-dim);
-  font-family: var(--font-title);
-  font-size: 8px;
-  letter-spacing: 1px;
-  color: var(--silver-dim);
-  padding: 2px 6px;
+  background: rgba(229,229,229,0.04);
+  padding: 5px 8px;
 }
 
-.detail-components,
-.detail-classes {
+.detail-meta-lbl {
+  font-family: var(--font-title);
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  color: var(--silver-dim);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.detail-meta-val {
+  font-size: 11px;
+  color: var(--silver);
+  line-height: 1.4;
+}
+
+.detail-minor {
   font-size: 10px;
+  font-style: italic;
   color: var(--silver-dim);
   margin-bottom: 4px;
   line-height: 1.4;
+}
+
+/* 施法时间图标 */
+.cast-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+  position: relative;
+  top: -1px;
+}
+
+.cast-icon-action {
+  width: 8px;
+  height: 8px;
+  background: #4a9eff;
+  box-shadow: 0 0 5px #4a9eff, 0 0 10px rgba(74,158,255,0.5);
+}
+
+.cast-icon-bonus {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 9px solid #ff8c00;
+  filter: drop-shadow(0 0 4px #ff8c00) drop-shadow(0 0 2px rgba(255,140,0,0.6));
+  background: none;
 }
 
 .detail-desc {
@@ -900,4 +1015,89 @@ body {
   #panel-class           { grid-column: 1; grid-row: 2; }
   #panel-feat-shieldmaster { grid-column: 1; grid-row: 3; }
   #panel-spell           { grid-column: 1; grid-row: 4; }
+  #panel-charinfo        { grid-column: 1; grid-row: 5; }
+}
+
+/* ============================================================
+   力竭计数
+============================================================ */
+.exhaust-pip {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid var(--border-dim);
+  background: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.exhaust-pip.active {
+  background: #6b4a1a;
+  border-color: #8c6020;
+}
+
+/* ============================================================
+   角色信息面板
+============================================================ */
+#panel-charinfo {
+  grid-column: 1 / 3;
+  grid-row: 3;
+}
+
+.charinfo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.charinfo-lbl {
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--silver-dim);
+  text-transform: uppercase;
+  min-width: 36px;
+}
+
+.charinfo-val {
+  font-size: 12px;
+  color: var(--silver);
+}
+
+.charinfo-section-title {
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--silver-dim);
+  text-transform: uppercase;
+  margin: 10px 0 8px;
+}
+
+.skill-prof-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.skill-prof-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.skill-prof-mark {
+  color: var(--accent-glow);
+  font-size: 9px;
+}
+
+.skill-prof-name {
+  color: var(--silver);
+}
+
+.skill-prof-attr {
+  font-size: 9px;
+  color: var(--silver-dim);
+  letter-spacing: 1px;
 }
