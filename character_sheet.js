@@ -951,6 +951,7 @@ let state = {
   channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
   buffs:         load('buffs', {}),
   concentration: load('concentration', null),  // 专注中的法术 ID，或 null
+  luckyDice:     load('luckyDice', 0),
 };
 
 /* ============================================================
@@ -1247,6 +1248,17 @@ function renderBuffs() {
     });
     container.appendChild(chip);
   });
+}
+
+function renderLuckyDice() {
+  $('lucky-val').textContent = state.luckyDice;
+  const pips = $('lucky-pips');
+  pips.innerHTML = '';
+  for (let i = 0; i < state.luckyDice && i < 20; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'lucky-pip';
+    pips.appendChild(pip);
+  }
 }
 
 /* ============================================================
@@ -1582,6 +1594,9 @@ $('btn-long-rest').addEventListener('click', () => {
   state.deathSave     = { success:[false,false,false], fail:[false,false,false] };
   state.concentration = null;
   state.buffs         = {};
+  /* 力竭每次长休减一级（从末尾往前找第一个激活的清除） */
+  const lastActive = [...state.exhaustion].lastIndexOf(true);
+  if (lastActive !== -1) state.exhaustion[lastActive] = false;
   save('maxHp',        state.maxHp);
   save('hp',           state.hp);
   save('tempHp',       state.tempHp);
@@ -1590,12 +1605,14 @@ $('btn-long-rest').addEventListener('click', () => {
   save('deathSave',    state.deathSave);
   save('concentration', state.concentration);
   save('buffs',        state.buffs);
+  save('exhaustion',   state.exhaustion);
   $('temp-hp-slider').value = 0;
   $('temp-hp-slider-val').textContent = 0;
   $('temp-hp-slider-wrap').classList.add('hidden');
   renderHp();
   renderSlots();
   renderDeathSaves();
+  renderExhaustion();
   renderChannel();
   renderConcentration();
   renderSpellPanel();
@@ -1612,6 +1629,33 @@ renderDeathSaves();
 renderExhaustion();
 renderChannel();
 renderBuffs();
+renderLuckyDice();
+
+/* 幸运骠子交互 */
+$('lucky-minus').addEventListener('click', () => {
+  if (state.luckyDice > 0) { state.luckyDice--; save('luckyDice', state.luckyDice); renderLuckyDice(); }
+});
+$('lucky-plus').addEventListener('click', () => {
+  state.luckyDice++; save('luckyDice', state.luckyDice); renderLuckyDice();
+});
+$('lucky-val').addEventListener('click', () => {
+  $('lucky-val').style.display = 'none';
+  $('lucky-input').style.display = '';
+  $('lucky-input').value = state.luckyDice;
+  $('lucky-input').focus();
+  $('lucky-input').select();
+});
+function commitLuckyEdit() {
+  let v = parseInt($('lucky-input').value, 10);
+  if (isNaN(v) || v < 0) v = state.luckyDice;
+  state.luckyDice = v;
+  save('luckyDice', state.luckyDice);
+  $('lucky-val').style.display = '';
+  $('lucky-input').style.display = 'none';
+  renderLuckyDice();
+}
+$('lucky-input').addEventListener('blur', commitLuckyEdit);
+$('lucky-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitLuckyEdit(); });
 
 /* 面板折叠按鈕 */
 document.querySelectorAll('.panel').forEach(panel => {
@@ -1627,4 +1671,14 @@ document.querySelectorAll('.panel').forEach(panel => {
     btn.textContent = collapsed ? '▸' : '▾';
   });
   title.appendChild(btn);
+});
+
+/* 底部标签翻页 */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.page).classList.add('active');
+  });
 });
