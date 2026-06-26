@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DND 角色卡 — 状态追踪</title>
+<title>DND 角色卡</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 <!--
   样式 → character_sheet.css
@@ -80,6 +80,27 @@
         <div id="lucky-pips"></div>
       </div>
       <div class="buff-chips" id="buff-chips"></div>
+
+      <!-- 先攻记录 -->
+      <div id="initiative-block">
+        <div id="initiative-toggle-row">
+          <span class="cinzel init-toggle-label">先攻</span>
+          <label class="init-toggle">
+            <input type="checkbox" id="initiative-toggle">
+            <span class="init-toggle-track">
+              <span class="init-toggle-thumb"></span>
+            </span>
+          </label>
+        </div>
+        <div id="initiative-knob-wrap" class="hidden">
+          <svg id="initiative-knob-svg" viewBox="0 0 120 120">
+            <circle class="knob-track" cx="60" cy="60" r="46"/>
+            <circle class="knob-fill" cx="60" cy="60" r="46" id="knob-fill-arc"/>
+            <circle id="knob-thumb" cx="27.47" cy="92.53" r="5"/>
+          </svg>
+          <span id="initiative-value" class="cinzel">1</span>
+        </div>
+      </div>
     </div>
 
     <div id="panel-survival" class="panel">
@@ -223,16 +244,19 @@
       <div class="panel-title">专长 · 盾牌大师</div>
       <ul class="feat-list">
         <li>
-          <span class="feat-trigger cinzel">附赠动作</span>
-          使用攻击动作后，可用附赠动作对攻击目标进行<b>推撞</b>（击退或击倒）。
+          你的盾牌不只可以用于防御，还可以用来攻击。你在持用盾牌时获得下列增益：
         </li>
         <li>
-          <span class="feat-trigger cinzel">敏捷豁免</span>
-          未处于失能时，盾牌的 AC 加值（<b>+2</b>）也加入需要敏捷豁免以规避全额伤害的豁免检定。
+          <span class="feat-trigger cinzel">附赠攻击</span>
+          若你在自己的回合内执行过攻击动作，你就可以以附赠动作，用盾牌去推撞一个处于你周围<b>5</b>尺范围内的生物。
+        </li>
+        <li>
+          <span class="feat-trigger cinzel">AC附加</span>
+          如果你不处于失能状态，则你为抵抗以你为唯一目标的法术或其他伤害性效应而进行敏捷豁免时，可以将你<b>盾牌的AC</b>添加到相应的敏捷豁免中。
         </li>
         <li>
           <span class="feat-trigger cinzel">反应</span>
-          若敏捷豁免<b>成功</b>且位于盾后，可用反应将伤害降为 <b>0</b>。
+          当某个效应使让你进行豁免成功可以伤害减半的敏捷豁免检定时，你可以用你的反应将盾牌挡在你与效应原点之间，此时豁免成功则不受任何伤害。
         </li>
       </ul>
     </div>
@@ -278,7 +302,7 @@
   <div class="page" id="page-spells">
 
     <div id="panel-spell" class="panel">
-      <div class="panel-title">施法 · 法术库</div>
+      <div class="panel-title">施法 · 法术库<button id="btn-collapse-all" title="收起全部详情">✕ 全收起</button></div>
 
       <div class="spell-sec-header">
         <span class="cinzel spell-sec-lbl">戏法</span>
@@ -297,14 +321,74 @@
 
   </div><!-- /#page-spells -->
 
+  <!-- ══ 第四页：背包 ══ -->
+  <div class="page" id="page-bag">
+
+    <div id="panel-equip" class="panel">
+      <div class="panel-title">装备</div>
+      <div class="bag-columns">
+        <div class="bag-col">
+          <div class="bag-col-head">
+            <span class="cinzel bag-col-lbl">预设</span>
+            <button class="btn-item-add" data-section="equip">＋ 选择</button>
+          </div>
+          <div id="equip-preset-list"></div>
+        </div>
+        <div class="bag-col">
+          <div class="bag-col-head">
+            <span class="cinzel bag-col-lbl">笔记</span>
+          </div>
+          <div class="notepad" id="equip-notepad"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-misc" class="panel">
+      <div class="panel-title">杂项 &amp; 货币</div>
+      <div id="misc-currency">
+        <div class="currency-box">
+          <span class="cinzel currency-label">铜</span>
+          <input type="number" id="cur-cp" min="0" value="0">
+        </div>
+        <div class="currency-box">
+          <span class="cinzel currency-label">银</span>
+          <input type="number" id="cur-sp" min="0" value="0">
+        </div>
+        <div class="currency-box">
+          <span class="cinzel currency-label">金</span>
+          <input type="number" id="cur-gp" min="0" value="0">
+        </div>
+        <div class="currency-box">
+          <span class="cinzel currency-label">铂</span>
+          <input type="number" id="cur-pp" min="0" value="0">
+        </div>
+      </div>
+      <div class="bag-columns">
+        <div class="bag-col">
+          <div class="bag-col-head">
+            <span class="cinzel bag-col-lbl">预设</span>
+            <button class="btn-item-add" data-section="misc">＋ 选择</button>
+          </div>
+          <div id="misc-preset-list"></div>
+        </div>
+        <div class="bag-col">
+          <div class="bag-col-head">
+            <span class="cinzel bag-col-lbl">笔记</span>
+          </div>
+          <div class="notepad" id="misc-notepad"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#page-bag -->
+
 </div><!-- /#pages-container -->
 
 <!-- 底部翻页标签栏 -->
 <nav id="tab-bar">
   <button class="tab-btn active" data-page="page-combat">⚔ 战斗</button>
   <button class="tab-btn" data-page="page-class">☩ 职业</button>
-  <button class="tab-btn" data-page="page-spells">✦ 法术</button>
-</nav>
+  <button class="tab-btn" data-page="page-spells">✦ 法术</button>  <button class="tab-btn" data-page="page-bag">⊛ 背包</button></nav>
 
 <div id="spell-modal" class="hidden">
   <div id="spell-modal-panel">
@@ -319,6 +403,17 @@
       <button class="sp-tab" data-lv="3">3环</button>
     </div>
     <div id="spell-modal-list"></div>
+  </div>
+</div>
+
+<div id="item-modal" class="hidden">
+  <div id="item-modal-panel">
+    <div id="item-modal-head">
+      <span class="cinzel" id="item-modal-title">添加物品</span>
+      <button id="item-modal-close">✕</button>
+    </div>
+    <div id="item-modal-tabs"></div>
+    <div id="item-modal-list"></div>
   </div>
 </div>
 

@@ -108,7 +108,7 @@ const SPELL_DB = [
     components: ' V、S、M（价值25金币的银粉，作为本法术的耗材）',
     duration: '立即',
     conc: false,
-    description: '你进行几种宗教典礼之一。当你施放本法术时，选择下述典礼之一，其目标必须在施法过程中处于你周围10尺内。赎罪Atonement：你接触一个阵营发生了改变的自愿生物，而你进行一次DC20的感知（洞悉）检定。成功则你令目标恢复其原始阵营。祝福圣水Bless Water：你接触一瓶水并将它转变为圣水。成人礼Coming of Age：你接触一个年龄足够成年的类人生物。在接下来的24小时内，当目标进行一次属性检定时，它可以投d4并将投出的结果加到属性检定上。一个生物只能从此仪式中获得此好处一次。献身Dedication：你接触一个自愿转变为你的宗教的信仰或想要为你信奉的神明服务的类人生物。在接下来的24小时内，当目标进行一次豁免检定时，它可以投d4并将投出的结果加到检定上。一个生物只能从此仪式中获得此好处一次。葬礼Funeral Rite：你祝福一具处于你周围5尺内的尸体。在接下来的7天内，目标不能被任何弱于祈愿术的方式变为不死生物。婚礼Wedding：你接触自愿接受婚姻的束缚的成年类人生物。在接下来的7天内，每个目标若处于彼此30尺范围内，则在AC上获得+2加值。一个生物只有在丧偶时才能再次从这个仪式中受益。'
+    description: '你进行几种宗教典礼之一。当你施放本法术时，选择下述典礼之一，其目标必须在施法过程中处于你周围10尺内。\n ·赎罪Atonement：你接触一个阵营发生了改变的自愿生物，而你进行一次DC20的感知（洞悉）检定。成功则你令目标恢复其原始阵营。\n ·祝福圣水Bless Water：你接触一瓶水并将它转变为圣水。\n ·成人礼Coming of Age：你接触一个年龄足够成年的类人生物。在接下来的24小时内，当目标进行一次属性检定时，它可以投d4并将投出的结果加到属性检定上。一个生物只能从此仪式中获得此好处一次。\n ·献身Dedication：你接触一个自愿转变为你的宗教的信仰或想要为你信奉的神明服务的类人生物。在接下来的24小时内，当目标进行一次豁免检定时，它可以投d4并将投出的结果加到检定上。一个生物只能从此仪式中获得此好处一次。\n ·葬礼Funeral Rite：你祝福一具处于你周围5尺内的尸体。在接下来的7天内，目标不能被任何弱于祈愿术的方式变为不死生物。\n ·婚礼Wedding：你接触自愿接受婚姻的束缚的成年类人生物。在接下来的7天内，每个目标若处于彼此30尺范围内，则在AC上获得+2加值。一个生物只有在丧偶时才能再次从这个仪式中受益。'
   },
   {
     id: 'command',
@@ -900,6 +900,108 @@ const SPELL_DB = [
 ];
 
 /* ============================================================
+   物品数据库 (Item Database)
+   字段: id, name, nameEn, category, props, weight, description
+   category: 'weapon' | 'armor' | 'gear' | 'consumable'
+   可自行在对应区域追加对象扩充数据库。
+============================================================ */
+const ITEM_DB = [
+
+  /* ──────────────────── 武器 (Weapon) ──────────────────── */
+  { id: 'mace', name: '锤矛', nameEn: 'Mace', category: 'weapon',
+    props: '1d6 钝击 · 简单近战', weight: 4,
+    description: '简单近战武器，矮人天生熟练。' },
+  { id: 'quarterstaff', name: '四分杖', nameEn: 'Quarterstaff', category: 'weapon',
+    props: '1d6 钝击 · 多功（双手1d8）', weight: 4,
+    description: '多功武器，单手1d6，双手持握1d8。' },
+  { id: 'handaxe', name: '手斧', nameEn: 'Handaxe', category: 'weapon',
+    props: '1d6 劈砍 · 轻型 · 投掷 20/60尺', weight: 2,
+    description: '轻型武器，可近战或投掷。' },
+  { id: 'dagger', name: '匕首', nameEn: 'Dagger', category: 'weapon',
+    props: '1d4 穿刺 · 轻型 · 精妙 · 投掷 20/60尺', weight: 1,
+    description: '可用精妙攻击，可投掷。' },
+  { id: 'crossbow_light', name: '轻型弩', nameEn: 'Light Crossbow', category: 'weapon',
+    props: '1d8 穿刺 · 弹药 80/320尺 · 双手', weight: 5,
+    description: '远程武器，需要弩矢，需双手持握。' },
+  { id: 'warhammer', name: '战锤', nameEn: 'Warhammer', category: 'weapon',
+    props: '1d8 钝击 · 多功（双手1d10）', weight: 2,
+    description: '军用近战武器，矮人天生熟练。' },
+
+  /* ──────────────────── 护甲 (Armor) ──────────────────── */
+  { id: 'chain_mail', name: '链甲', nameEn: 'Chain Mail', category: 'armor',
+    props: 'AC 16 · 重型 · 需力量13 · 隐匿劣势', weight: 55,
+    description: '重型护甲，AC 16。' },
+  { id: 'scale_mail', name: '鳞甲', nameEn: 'Scale Mail', category: 'armor',
+    props: 'AC 14+敏(上限2) · 中型 · 隐匿劣势', weight: 45,
+    description: '中型护甲，敏捷加值上限2。' },
+  { id: 'shield', name: '盾牌', nameEn: 'Shield', category: 'armor',
+    props: 'AC +2 · 需盾牌熟练', weight: 6,
+    description: '与盾牌大师专长配合极佳。' },
+  { id: 'ring_mail', name: '环片甲', nameEn: 'Ring Mail', category: 'armor',
+    props: 'AC 14 · 重型 · 隐匿劣势', weight: 40,
+    description: '重型护甲，AC 14。' },
+  { id: 'leather_armor', name: '皮甲', nameEn: 'Leather Armor', category: 'armor',
+    props: 'AC 11+敏 · 轻型', weight: 10,
+    description: '轻型护甲，加入全部敏捷修正。' },
+  { id: 'half_plate', name: '半身板甲', nameEn: 'Half Plate', category: 'armor',
+    props: 'AC 15+敏(上限2) · 中型 · 隐匿劣势', weight: 40,
+    description: '中型护甲，敏捷加值上限2，AC15。' },
+
+  /* ──────────────────── 装备 (Gear) ──────────────────── */
+  { id: 'holy_symbol', name: '圣徽', nameEn: 'Holy Symbol', category: 'gear',
+    props: '施法焦点 · 牧师/圣武士', weight: 1,
+    description: '可附在盾牌上，战斗时无需腾出手。' },
+  { id: 'healers_kit', name: '治疗包', nameEn: "Healer's Kit", category: 'gear',
+    props: '10次 · 稳定濒死（无需投骰）', weight: 3,
+    description: '用于稳定濒死生物，无需检定，共10次。' },
+  { id: 'backpack', name: '背包', nameEn: 'Backpack', category: 'gear',
+    props: '容量 30磅', weight: 5,
+    description: '标准冒险者背包。' },
+  { id: 'waterskin', name: '水袋', nameEn: 'Waterskin', category: 'gear',
+    props: '4升容量', weight: 5,
+    description: '满装时重5磅。' },
+  { id: 'herbalism_kit', name: '草药学工具', nameEn: 'Herbalism Kit', category: 'gear',
+    props: '识别/制备草药', weight: 3,
+    description: '牧师常备工具，可制备基础药剂。' },
+  { id: 'blanket', name: '毯子', nameEn: 'Blanket', category: 'gear',
+    props: '宿营必备', weight: 3,
+    description: '厚实的毯子，野外宿营使用。' },
+
+  /* ──────────────────── 消耗品 (Consumable) ──────────────────── */
+  { id: 'holy_water', name: '圣水', nameEn: 'Holy Water', category: 'consumable',
+    props: '2d6 光耀 · 投掷20尺 · 仅对不死/恶魔有效', weight: 1,
+    description: '命中不死生物或恶魔造成2d6光耀伤害。' },
+  { id: 'potion_healing', name: '治愈药水', nameEn: 'Potion of Healing', category: 'consumable',
+    props: '恢复 2d4+2 HP · 饮用（动作）', weight: 0.5,
+    description: '服用药水作为一个动作。' },
+  { id: 'rations', name: '口粮', nameEn: 'Rations', category: 'consumable',
+    props: '一天份', weight: 2,
+    description: '一份干粮约可维持一天。' },
+  { id: 'torch', name: '火把', nameEn: 'Torch', category: 'consumable',
+    props: '1小时 · 明亮20尺+微光20尺', weight: 1,
+    description: '也可作近战武器用（1点火焰伤害）。' },
+  { id: 'rope', name: '麻绳（50尺）', nameEn: 'Hempen Rope', category: 'consumable',
+    props: '承重1000磅', weight: 10,
+    description: '用于攀爬、捆绑，攀爬时给予优势。' },
+  { id: 'tinderbox', name: '火绒盒', nameEn: 'Tinderbox', category: 'consumable',
+    props: '点火工具', weight: 1,
+    description: '有可燃物时1动作生火，否则需1分钟。' },
+  { id: 'candle', name: '蜡烛', nameEn: 'Candle', category: 'consumable',
+    props: '1小时 · 微光5尺', weight: 0,
+    description: '点燃1小时，微光光照5尺。' },
+  { id: 'crossbow_bolts', name: '弩矢×20', nameEn: 'Crossbow Bolts ×20', category: 'consumable',
+    props: '配轻型弩使用', weight: 1.5,
+    description: '20支轻型弩矢。' },
+  { id: 'antitoxin', name: '解毒剂', nameEn: 'Antitoxin', category: 'consumable',
+    props: '1小时内对毒素豁免有优势', weight: 0,
+    description: '服用后1小时内，毒素豁免具有优势。' },
+  { id: 'oil_flask', name: '灯油（瓶）', nameEn: 'Oil Flask', category: 'consumable',
+    props: '点灯6小时 / 泼溅1d4火焰', weight: 1,
+    description: '可燃液体，也可泼洒后点燃造成伤害。' },
+
+];
+
+/* ============================================================
    角色配置 (Character Config)
    修改此处即可定制角色数据，无需改动逻辑代码。
 ============================================================ */
@@ -1064,13 +1166,25 @@ function showInlineDetail(sp, row) {
   /* 若已展开同一行则收起 */
   const existing = row.nextElementSibling;
   if (existing && existing.classList.contains('srow-inline-detail')) {
-    existing.remove();
+    const parent = row.parentNode;
+    if (parent.classList.contains('srow-glow-wrap')) {
+      parent.parentNode.insertBefore(row, parent);
+      parent.remove();
+    } else {
+      existing.remove();
+      row.classList.remove('srow-active');
+    }
     return;
   }
+  /* 创建流光包装容器 */
+  const wrap = document.createElement('div');
+  wrap.className = 'srow-glow-wrap';
+  row.parentNode.insertBefore(wrap, row);
+  wrap.appendChild(row);
   const detail = document.createElement('div');
   detail.className = 'srow-inline-detail';
   detail.innerHTML = buildDetailHTML(sp);
-  row.after(detail);
+  wrap.appendChild(detail);
 }
 
 function formatCastTime(t) {
@@ -1114,9 +1228,13 @@ function renderCantripList() {
     state.cantripIds = cleaned;
     save('cantripIds', state.cantripIds);
   }
-  state.cantripIds.forEach(id => {
+  const colL = document.createElement('div'); colL.className = 'srow-col';
+  const colR = document.createElement('div'); colR.className = 'srow-col';
+  const wrap = document.createElement('div'); wrap.className = 'srow-2col';
+  wrap.appendChild(colL); wrap.appendChild(colR); container.appendChild(wrap);
+  state.cantripIds.forEach((id, i) => {
     const sp = getSpell(id);
-    if (sp) container.appendChild(buildSpellRow(sp, false, true));
+    if (sp) (i % 2 === 0 ? colL : colR).appendChild(buildSpellRow(sp, false, true));
   });
   $('cantrip-count').textContent = `${state.cantripIds.length} / ${CHAR.maxCantrips}`;
 }
@@ -1164,10 +1282,18 @@ function renderPreparedList() {
 
     container.appendChild(hdr);
 
-    /* 领域法术（锁定）先展示 */
-    domainAtLevel.forEach(sp => container.appendChild(buildSpellRow(sp, true, false)));
-    /* 自选法术 */
-    chosenAtLevel.forEach(sp => container.appendChild(buildSpellRow(sp, false, false)));
+    /* 左右两栏显示 */
+    const colL = document.createElement('div'); colL.className = 'srow-col';
+    const colR = document.createElement('div'); colR.className = 'srow-col';
+    const wrap = document.createElement('div'); wrap.className = 'srow-2col';
+    wrap.appendChild(colL); wrap.appendChild(colR); container.appendChild(wrap);
+    const allSpells = [
+      ...domainAtLevel.map(sp => ({ sp, isDomain: true })),
+      ...chosenAtLevel.map(sp => ({ sp, isDomain: false })),
+    ];
+    allSpells.forEach(({ sp, isDomain }, i) => {
+      (i % 2 === 0 ? colL : colR).appendChild(buildSpellRow(sp, isDomain, false));
+    });
   });
   $('prepared-count').textContent = `${state.preparedIds.length} / ${CHAR.maxPrepared}`;
 }
@@ -1291,10 +1417,17 @@ function renderPickerList() {
   const container = $('spell-modal-list');
   container.innerHTML = '';
 
+  const colL = document.createElement('div');
+  colL.className = 'picker-col';
+  const colR = document.createElement('div');
+  colR.className = 'picker-col';
+  container.appendChild(colL);
+  container.appendChild(colR);
+
   const domainIds = allDomainIds();
   const spells    = SPELL_DB.filter(sp => sp.level === pickerLevel);
 
-  spells.forEach(sp => {
+  spells.forEach((sp, i) => {
     const isDomain  = domainIds.includes(sp.id);
     const isAdded   = pickerLevel === 0
       ? state.cantripIds.includes(sp.id)
@@ -1324,7 +1457,13 @@ function renderPickerList() {
       addBtn.disabled = true;
     } else if (isAdded) {
       addBtn.textContent = '已备';
-      addBtn.disabled = true;
+      addBtn.classList.add('picker-added-btn');
+      addBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (pickerLevel === 0) removeCantrip(sp.id);
+        else removeSpell(sp.id);
+        renderPickerList();
+      });
     } else {
       addBtn.textContent = '＋ 备法';
       addBtn.addEventListener('click', e => {
@@ -1348,7 +1487,7 @@ function renderPickerList() {
       row.classList.toggle('expanded');
     });
 
-    container.appendChild(row);
+    (i % 2 === 0 ? colL : colR).appendChild(row);
   });
 }
 
@@ -1680,5 +1819,300 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.page).classList.add('active');
+    save('active_page', btn.dataset.page);
   });
 });
+/* 全收起按钮 */
+document.getElementById('btn-collapse-all').addEventListener('click', () => {
+  document.querySelectorAll('.srow-glow-wrap').forEach(w => {
+    const innerRow = w.querySelector('.srow');
+    if (innerRow) w.parentNode.insertBefore(innerRow, w);
+    w.remove();
+  });
+});
+
+/* 恢复上次标签页 */
+(function () {
+  const lastPage = load('active_page', '');
+  if (lastPage) {
+    const btn  = document.querySelector(`.tab-btn[data-page="${lastPage}"]`);
+    const page = document.getElementById(lastPage);
+    if (btn && page) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      page.classList.add('active');
+    }
+  }
+}());
+
+/* 先攻记录 — 旋钮拨盘 */
+(function () {
+  const toggle   = document.getElementById('initiative-toggle');
+  const knobWrap = $('initiative-knob-wrap');
+  const display  = $('initiative-value');
+  const fillArc  = $('knob-fill-arc');
+  const thumb    = $('knob-thumb');
+  const svg      = document.getElementById('initiative-knob-svg');
+
+  const CX = 60, CY = 60, R = 46;
+  const CIRC  = 2 * Math.PI * R;  // 289.027
+  const ARC   = CIRC * 270 / 360; // 216.770
+  const START = 135; // SVG angle (° from 3-o'clock, clockwise) where value=1 sits
+  let dragging = false;
+
+  function updateKnob(v) {
+    v = Math.max(1, Math.min(20, v));
+    display.textContent = v;
+    save('initiative_val', v);
+    const filled = (v - 1) / 19 * ARC;
+    fillArc.setAttribute('stroke-dasharray',
+      filled.toFixed(2) + ' ' + (CIRC - filled).toFixed(2));
+    const rad = (START + (v - 1) / 19 * 270) * Math.PI / 180;
+    thumb.setAttribute('cx', (CX + R * Math.cos(rad)).toFixed(2));
+    thumb.setAttribute('cy', (CY + R * Math.sin(rad)).toFixed(2));
+  }
+
+  function getAngle(e) {
+    const rect = svg.getBoundingClientRect();
+    const px = (e.touches ? e.touches[0].clientX : e.clientX) - (rect.left + rect.width  / 2);
+    const py = (e.touches ? e.touches[0].clientY : e.clientY) - (rect.top  + rect.height / 2);
+    return (Math.atan2(py, px) * 180 / Math.PI + 360) % 360;
+  }
+
+  function angleToVal(a) {
+    let rel = ((a - START) % 360 + 360) % 360;
+    if (rel > 270) rel = rel < 315 ? 270 : 0;
+    return Math.round(rel / 270 * 19) + 1;
+  }
+
+  svg.addEventListener('mousedown', e => {
+    dragging = true;
+    updateKnob(angleToVal(getAngle(e)));
+  });
+  window.addEventListener('mousemove', e => {
+    if (dragging) updateKnob(angleToVal(getAngle(e)));
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+
+  svg.addEventListener('touchstart', e => {
+    e.preventDefault();
+    dragging = true;
+    updateKnob(angleToVal(getAngle(e)));
+  }, { passive: false });
+  window.addEventListener('touchmove', e => {
+    if (dragging) { e.preventDefault(); updateKnob(angleToVal(getAngle(e))); }
+  }, { passive: false });
+  window.addEventListener('touchend', () => { dragging = false; });
+
+  toggle.addEventListener('change', () => {
+    if (toggle.checked) {
+      knobWrap.classList.remove('hidden');
+      updateKnob(load('initiative_val', 10));
+      save('initiative_active', true);
+    } else {
+      knobWrap.classList.add('hidden');
+      save('initiative_active', false);
+    }
+  });
+
+  // 恢复上次状态
+  if (load('initiative_active', false)) {
+    toggle.checked = true;
+    knobWrap.classList.remove('hidden');
+    updateKnob(load('initiative_val', 10));
+  }
+}());
+
+/* ============================================================
+   背包 & 物品管理
+============================================================ */
+(function () {
+  let equipItems = load('equip_items', []).filter(it => !it.id.startsWith('_c'));
+  let miscItems  = load('misc_items',  []).filter(it => !it.id.startsWith('_c'));
+  const currency = load('currency', { cp: 0, sp: 0, gp: 0, pp: 0 });
+
+  const equipPresetList = $('equip-preset-list');
+  const miscPresetList  = $('misc-preset-list');
+
+  /* 货币输入框 */
+  ['cp', 'sp', 'gp', 'pp'].forEach(key => {
+    const el = document.getElementById('cur-' + key);
+    if (!el) return;
+    el.value = currency[key];
+    el.addEventListener('input', () => {
+      currency[key] = parseInt(el.value) || 0;
+      save('currency', currency);
+    });
+  });
+
+  /* ── chip 构建工具 ── */
+  function makeChip(name, props, onRemove) {
+    const el = document.createElement('div');
+    el.className = 'item-chip';
+    el.innerHTML =
+      `<span class="item-chip-name">${name}</span>` +
+      `<span class="item-chip-props">${props}</span>` +
+      `<button class="item-chip-remove">✕</button>`;
+    el.querySelector('.item-chip-remove').addEventListener('click', onRemove);
+    return el;
+  }
+
+  function makeQtyChip(name, qty, onDelta, onRemove) {
+    const el = document.createElement('div');
+    el.className = 'item-chip';
+    el.innerHTML =
+      `<span class="item-chip-name">${name}</span>` +
+      `<span class="item-chip-fill"></span>` +
+      `<span class="item-qty-row">` +
+        `<button class="item-qty-btn" data-dir="-1">−</button>` +
+        `<span class="item-qty-val">${qty}</span>` +
+        `<button class="item-qty-btn" data-dir="1">＋</button>` +
+      `</span>` +
+      `<button class="item-chip-remove">✕</button>`;
+    el.querySelectorAll('.item-qty-btn').forEach(btn =>
+      btn.addEventListener('click', () => onDelta(+btn.dataset.dir))
+    );
+    el.querySelector('.item-chip-remove').addEventListener('click', onRemove);
+    return el;
+  }
+
+  /* ── 装备渲染 ── */
+  function renderEquip() {
+    equipPresetList.innerHTML = '';
+    equipItems.forEach(item => {
+      const db = ITEM_DB.find(d => d.id === item.id);
+      if (!db) return;
+      equipPresetList.appendChild(makeChip(db.name, db.props, () => {
+        equipItems = equipItems.filter(e => e.id !== item.id);
+        save('equip_items', equipItems);
+        renderEquip();
+      }));
+    });
+  }
+
+  /* ── 杂项渲染 ── */
+  function renderMisc() {
+    miscPresetList.innerHTML = '';
+    miscItems.forEach(item => {
+      const db = ITEM_DB.find(d => d.id === item.id);
+      if (!db) return;
+      miscPresetList.appendChild(makeQtyChip(db.name, item.qty,
+        delta => { item.qty = Math.max(1, item.qty + delta); save('misc_items', miscItems); renderMisc(); },
+        ()    => { miscItems = miscItems.filter(e => e.id !== item.id); save('misc_items', miscItems); renderMisc(); }
+      ));
+    });
+  }
+
+  /* ── 记事本初始化 ── */
+  const NOTEPAD_ROWS = 12;
+  function initNotepad(containerId, storageKey) {
+    const container = $(containerId);
+    const saved = load(storageKey, []);
+    for (let i = 0; i < NOTEPAD_ROWS; i++) {
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'notepad-line';
+      inp.value = saved[i] || '';
+      inp.addEventListener('input', () => {
+        const vals = Array.from(container.querySelectorAll('.notepad-line')).map(el => el.value);
+        save(storageKey, vals);
+      });
+      container.appendChild(inp);
+    }
+  }
+
+  /* ── 物品模态框（展示全部预设物品） ── */
+  const modal      = $('item-modal');
+  const modalTitle = $('item-modal-title');
+  const modalTabs  = $('item-modal-tabs');
+  const modalList  = $('item-modal-list');
+  let   modalSection  = 'equip';
+  let   modalCategory = 'all';
+
+  const CAT_LABELS = { weapon: '武器', armor: '护甲', gear: '装备', consumable: '消耗品' };
+  const ITEM_CATS  = [
+    { key: 'all',        label: '全部' },
+    { key: 'weapon',     label: '武器' },
+    { key: 'armor',      label: '护甲' },
+    { key: 'gear',       label: '装备' },
+    { key: 'consumable', label: '消耗品' },
+  ];
+
+  function renderModalTabs() {
+    modalTabs.innerHTML = '';
+    ITEM_CATS.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'item-tab' + (cat.key === modalCategory ? ' active' : '');
+      btn.textContent = cat.label;
+      btn.addEventListener('click', () => {
+        modalCategory = cat.key;
+        renderModalTabs();
+        renderModalList();
+      });
+      modalTabs.appendChild(btn);
+    });
+  }
+
+  function renderModalList() {
+    modalList.innerHTML = '';
+    const items = modalCategory === 'all'
+      ? ITEM_DB
+      : ITEM_DB.filter(it => it.category === modalCategory);
+    let lastCat = null;
+    items.forEach(item => {
+      if (modalCategory === 'all' && item.category !== lastCat) {
+        lastCat = item.category;
+        const hdr = document.createElement('div');
+        hdr.className = 'item-cat-header';
+        hdr.textContent = CAT_LABELS[item.category] || item.category;
+        modalList.appendChild(hdr);
+      }
+      const list    = modalSection === 'equip' ? equipItems : miscItems;
+      const already = list.some(e => e.id === item.id);
+      const row     = document.createElement('div');
+      row.className = 'item-row' + (already ? ' added' : '');
+      row.innerHTML =
+        `<div class="item-row-name">${item.name} <span class="item-name-en">${item.nameEn}</span></div>` +
+        `<div class="item-row-props">${item.props}</div>`;
+      if (!already) row.addEventListener('click', () => addPreset(item.id));
+      modalList.appendChild(row);
+    });
+  }
+
+  function addPreset(id) {
+    if (modalSection === 'equip') {
+      if (!equipItems.some(e => e.id === id)) {
+        equipItems.push({ id });
+        save('equip_items', equipItems);
+        renderEquip();
+      }
+    } else {
+      const existing = miscItems.find(e => e.id === id);
+      if (existing) { existing.qty++; }
+      else { miscItems.push({ id, qty: 1 }); }
+      save('misc_items', miscItems);
+      renderMisc();
+    }
+    renderModalList();
+  }
+
+  document.querySelectorAll('.btn-item-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      modalSection  = btn.dataset.section;
+      modalCategory = 'all';
+      modalTitle.textContent = modalSection === 'equip' ? '选择装备' : '选择物品';
+      renderModalTabs();
+      renderModalList();
+      modal.classList.remove('hidden');
+    });
+  });
+
+  $('item-modal-close').addEventListener('click', () => modal.classList.add('hidden'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+  renderEquip();
+  renderMisc();
+  initNotepad('equip-notepad', 'equip_notepad');
+  initNotepad('misc-notepad', 'misc_notepad');
+}());
