@@ -1999,6 +1999,17 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
         ()    => { bagItems = bagItems.filter(e => e.id !== item.id); save('bag_items', bagItems); renderBag(); }
       ));
     });
+    renderWeight();
+  }
+
+  /* ── 重量统计 ── */
+  function renderWeight() {
+    const total = bagItems.reduce((sum, item) => {
+      const db = ITEM_DB.find(d => d.id === item.id);
+      return sum + (db ? db.weight * item.qty : 0);
+    }, 0);
+    const rounded = Math.round(total * 10) / 10;
+    document.getElementById('total-weight').textContent = rounded;
   }
 
   /* ── 记事本初始化 ── */
