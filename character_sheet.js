@@ -1928,12 +1928,23 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
    背包 & 物品管理
 ============================================================ */
 (function () {
-  let equipItems = load('equip_items', []).filter(it => !it.id.startsWith('_c'));
-  let miscItems  = load('misc_items',  []).filter(it => !it.id.startsWith('_c'));
+  // 合并旧的 equip_items / misc_items，统一存到 bag_items
+  let bagItems = (() => {
+    const saved = load('bag_items', null);
+    if (saved !== null) {
+      return saved.filter(it => !it.id.startsWith('_c')).map(it => ({ ...it, qty: it.qty ?? 1 }));
+    }
+    const old = [...load('equip_items', []), ...load('misc_items', [])].filter(it => !it.id.startsWith('_c'));
+    const map = {};
+    old.forEach(it => {
+      if (map[it.id]) map[it.id].qty = (map[it.id].qty || 1) + (it.qty || 1);
+      else map[it.id] = { ...it, qty: it.qty ?? 1 };
+    });
+    return Object.values(map);
+  })();
   const currency = load('currency', { cp: 0, sp: 0, gp: 0, pp: 0 });
 
-  const equipPresetList = $('equip-preset-list');
-  const miscPresetList  = $('misc-preset-list');
+  const bagPresetList = $('equip-preset-list');
 
   /* 货币输入框 */
   ['cp', 'sp', 'gp', 'pp'].forEach(key => {
@@ -1977,35 +1988,21 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
     return el;
   }
 
-  /* ── 装备渲染 ── */
-  function renderEquip() {
-    equipPresetList.innerHTML = '';
-    equipItems.forEach(item => {
+  /* ── 物品渲染 ── */
+  function renderBag() {
+    bagPresetList.innerHTML = '';
+    bagItems.forEach(item => {
       const db = ITEM_DB.find(d => d.id === item.id);
       if (!db) return;
-      equipPresetList.appendChild(makeChip(db.name, db.props, () => {
-        equipItems = equipItems.filter(e => e.id !== item.id);
-        save('equip_items', equipItems);
-        renderEquip();
-      }));
-    });
-  }
-
-  /* ── 杂项渲染 ── */
-  function renderMisc() {
-    miscPresetList.innerHTML = '';
-    miscItems.forEach(item => {
-      const db = ITEM_DB.find(d => d.id === item.id);
-      if (!db) return;
-      miscPresetList.appendChild(makeQtyChip(db.name, item.qty,
-        delta => { item.qty = Math.max(1, item.qty + delta); save('misc_items', miscItems); renderMisc(); },
-        ()    => { miscItems = miscItems.filter(e => e.id !== item.id); save('misc_items', miscItems); renderMisc(); }
+      bagPresetList.appendChild(makeQtyChip(db.name, item.qty,
+        delta => { item.qty = Math.max(1, item.qty + delta); save('bag_items', bagItems); renderBag(); },
+        ()    => { bagItems = bagItems.filter(e => e.id !== item.id); save('bag_items', bagItems); renderBag(); }
       ));
     });
   }
 
   /* ── 记事本初始化 ── */
-  const NOTEPAD_ROWS = 12;
+  const NOTEPAD_ROWS = 20;
   function initNotepad(containerId, storageKey) {
     const container = $(containerId);
     const saved = load(storageKey, []);
@@ -2029,6 +2026,7 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
   const modalList  = $('item-modal-list');
   let   modalSection  = 'equip';
   let   modalCategory = 'all';
+  let   modalSearch   = '';
 
   const CAT_LABELS = { weapon: '武器', armor: '护甲', gear: '装备', consumable: '消耗品' };
   const ITEM_CATS  = [
@@ -2056,9 +2054,11 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
 
   function renderModalList() {
     modalList.innerHTML = '';
-    const items = modalCategory === 'all'
-      ? ITEM_DB
-      : ITEM_DB.filter(it => it.category === modalCategory);
+    const query = modalSearch.toLowerCase();
+    const base  = modalCategory === 'all' ? ITEM_DB : ITEM_DB.filter(it => it.category === modalCategory);
+    const items = query
+      ? base.filter(it => it.name.toLowerCase().includes(query) || it.nameEn.toLowerCase().includes(query))
+      : base;
     let lastCat = null;
     items.forEach(item => {
       if (modalCategory === 'all' && item.category !== lastCat) {
@@ -2068,8 +2068,7 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
         hdr.textContent = CAT_LABELS[item.category] || item.category;
         modalList.appendChild(hdr);
       }
-      const list    = modalSection === 'equip' ? equipItems : miscItems;
-      const already = list.some(e => e.id === item.id);
+      const already = bagItems.some(e => e.id === item.id);
       const row     = document.createElement('div');
       row.className = 'item-row' + (already ? ' added' : '');
       row.innerHTML =
@@ -2081,27 +2080,20 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
   }
 
   function addPreset(id) {
-    if (modalSection === 'equip') {
-      if (!equipItems.some(e => e.id === id)) {
-        equipItems.push({ id });
-        save('equip_items', equipItems);
-        renderEquip();
-      }
-    } else {
-      const existing = miscItems.find(e => e.id === id);
-      if (existing) { existing.qty++; }
-      else { miscItems.push({ id, qty: 1 }); }
-      save('misc_items', miscItems);
-      renderMisc();
-    }
+    const existing = bagItems.find(e => e.id === id);
+    if (existing) { existing.qty++; }
+    else { bagItems.push({ id, qty: 1 }); }
+    save('bag_items', bagItems);
+    renderBag();
     renderModalList();
   }
 
   document.querySelectorAll('.btn-item-add').forEach(btn => {
     btn.addEventListener('click', () => {
-      modalSection  = btn.dataset.section;
       modalCategory = 'all';
-      modalTitle.textContent = modalSection === 'equip' ? '选择装备' : '选择物品';
+      modalSearch   = '';
+      document.getElementById('item-modal-search').value = '';
+      modalTitle.textContent = '选择物品';
       renderModalTabs();
       renderModalList();
       modal.classList.remove('hidden');
@@ -2110,9 +2102,12 @@ document.getElementById('btn-collapse-all').addEventListener('click', () => {
 
   $('item-modal-close').addEventListener('click', () => modal.classList.add('hidden'));
   modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+  document.getElementById('item-modal-search').addEventListener('input', e => {
+    modalSearch = e.target.value.trim();
+    renderModalList();
+  });
 
-  renderEquip();
-  renderMisc();
+  save('bag_items', bagItems);
+  renderBag();
   initNotepad('equip-notepad', 'equip_notepad');
-  initNotepad('misc-notepad', 'misc_notepad');
 }());

@@ -325,12 +325,13 @@
   <div class="page" id="page-bag">
 
     <div id="panel-equip" class="panel">
-      <div class="panel-title">装备</div>
+      <div class="panel-title">装备 · 杂项</div>
+
       <div class="bag-columns">
         <div class="bag-col">
           <div class="bag-col-head">
             <span class="cinzel bag-col-lbl">预设</span>
-            <button class="btn-item-add" data-section="equip">＋ 选择</button>
+            <button class="btn-item-add">＋ 选择</button>
           </div>
           <div id="equip-preset-list"></div>
         </div>
@@ -341,41 +342,23 @@
           <div class="notepad" id="equip-notepad"></div>
         </div>
       </div>
-    </div>
 
-    <div id="panel-misc" class="panel">
-      <div class="panel-title">杂项 &amp; 货币</div>
       <div id="misc-currency">
         <div class="currency-box">
-          <span class="cinzel currency-label">铜</span>
-          <input type="number" id="cur-cp" min="0" value="0">
-        </div>
-        <div class="currency-box">
-          <span class="cinzel currency-label">银</span>
-          <input type="number" id="cur-sp" min="0" value="0">
+          <span class="cinzel currency-label">铂</span>
+          <input type="number" id="cur-pp" min="0" value="0">
         </div>
         <div class="currency-box">
           <span class="cinzel currency-label">金</span>
           <input type="number" id="cur-gp" min="0" value="0">
         </div>
         <div class="currency-box">
-          <span class="cinzel currency-label">铂</span>
-          <input type="number" id="cur-pp" min="0" value="0">
+          <span class="cinzel currency-label">银</span>
+          <input type="number" id="cur-sp" min="0" value="0">
         </div>
-      </div>
-      <div class="bag-columns">
-        <div class="bag-col">
-          <div class="bag-col-head">
-            <span class="cinzel bag-col-lbl">预设</span>
-            <button class="btn-item-add" data-section="misc">＋ 选择</button>
-          </div>
-          <div id="misc-preset-list"></div>
-        </div>
-        <div class="bag-col">
-          <div class="bag-col-head">
-            <span class="cinzel bag-col-lbl">笔记</span>
-          </div>
-          <div class="notepad" id="misc-notepad"></div>
+        <div class="currency-box">
+          <span class="cinzel currency-label">铜</span>
+          <input type="number" id="cur-cp" min="0" value="0">
         </div>
       </div>
     </div>
@@ -413,6 +396,9 @@
       <button id="item-modal-close">✕</button>
     </div>
     <div id="item-modal-tabs"></div>
+    <div id="item-modal-search-wrap">
+      <input type="text" id="item-modal-search" placeholder="搜索物品名…" autocomplete="off">
+    </div>
     <div id="item-modal-list"></div>
   </div>
 </div>

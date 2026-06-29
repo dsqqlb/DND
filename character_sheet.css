@@ -1201,28 +1201,35 @@ body {
   overscroll-behavior: contain;
 }
 
-/* 第四页：背包 —— 上下两栏 */
+/* 第四页：背包 —— 页面不滚动，预设和笔记分别独立滚动 */
 #page-bag.active {
-  display: grid;
-  grid-template-rows: 1fr 1.1fr;
-  gap: 8px;
-}
-
-#page-bag #panel-equip,
-#page-bag #panel-misc {
-  min-height: 0;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-/* 货币行 */
+#page-bag #panel-equip {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bag-section-div {
+  border-top: 1px solid var(--border-dim);
+  margin: 10px 0;
+  flex-shrink: 0;
+}
+
+/* 货币行（底部，始终可见） */
 #misc-currency {
   display: flex;
   gap: 6px;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-dim);
+  margin-top: 10px;
+  padding-top: 10px;
+  padding-bottom: 4px;
+  border-top: 1px solid var(--border-dim);
   flex-shrink: 0;
 }
 
@@ -1292,7 +1299,6 @@ body {
   gap: 8px;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
 }
 
 .bag-col {
@@ -1331,7 +1337,7 @@ body {
   background: var(--bg-deep);
   border: 1px solid var(--border-dim);
   color: var(--silver);
-  font-size: 10px;
+  font-size: 10px;  
   padding: 3px 6px;
   outline: none;
   min-width: 0;
@@ -1522,6 +1528,26 @@ body {
 }
 #item-modal-close:hover { border-color: var(--border-bright); color: var(--silver); }
 
+#item-modal-search-wrap {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+
+#item-modal-search {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dim);
+  color: var(--silver);
+  font-size: 12px;
+  padding: 5px 10px;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+#item-modal-search:focus { border-color: var(--border-bright); }
+#item-modal-search::placeholder { color: var(--silver-dim); }
+
 #item-modal-tabs {
   display: flex;
   border-bottom: 1px solid var(--border-dim);
@@ -1628,7 +1654,7 @@ body {
   border-right: 1px solid var(--border-dim);
   color: var(--silver-dim);
   font-family: var(--font-title);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 2px;
   padding: 13px 0;
   cursor: pointer;
@@ -1637,7 +1663,7 @@ body {
 }
 
 .tab-btn:last-child { border-right: none; }
-.tab-btn.active { color: var(--silver); background: rgba(229,229,229,0.06); border-top: 1px solid var(--silver-dim); }
+.tab-btn.active { color: var(--silver); background: rgba(229,229,229,0.06); border-top: 2px solid var(--silver-dim); }
 .tab-btn:hover:not(.active) { color: var(--silver); }
 
 /* 幸运骰子 */
