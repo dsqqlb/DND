@@ -81,26 +81,68 @@
       </div>
       <div class="buff-chips" id="buff-chips"></div>
 
-      <!-- 先攻记录 -->
-      <div id="initiative-block">
-        <div id="initiative-toggle-row">
-          <span class="cinzel init-toggle-label">先攻</span>
-          <label class="init-toggle">
-            <input type="checkbox" id="initiative-toggle">
-            <span class="init-toggle-track">
-              <span class="init-toggle-thumb"></span>
-            </span>
-          </label>
+      <div style="height:8px"></div>
+
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num cinzel">18</div>
+          <div class="stat-lbl">防御等级 AC</div>
         </div>
-        <div id="initiative-knob-wrap" class="hidden">
-          <svg id="initiative-knob-svg" viewBox="0 0 120 120">
-            <circle class="knob-track" cx="60" cy="60" r="46"/>
-            <circle class="knob-fill" cx="60" cy="60" r="46" id="knob-fill-arc"/>
-            <circle id="knob-thumb" cx="27.47" cy="92.53" r="5"/>
-          </svg>
-          <span id="initiative-value" class="cinzel">1</span>
+        <div class="stat-box">
+          <div class="stat-num cinzel">25</div>
+          <div class="stat-lbl">移动速度 ft</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num cinzel">+0</div>
+          <div class="stat-lbl">先攻</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num cinzel">+3</div>
+          <div class="stat-lbl">熟练加值</div>
         </div>
       </div>
+
+      <div class="death-saves-row">
+        <div class="death-saves">
+          <span class="death-saves-lbl">死亡豁免</span>
+          <div class="save-circles" id="death-success">
+            <div class="save-circle" data-type="success" data-idx="0"></div>
+            <div class="save-circle" data-type="success" data-idx="1"></div>
+            <div class="save-circle" data-type="success" data-idx="2"></div>
+          </div>
+          <div class="save-circles" id="death-fail" style="margin-left:8px;">
+            <div class="save-circle" data-type="fail" data-idx="0"></div>
+            <div class="save-circle" data-type="fail" data-idx="1"></div>
+            <div class="save-circle" data-type="fail" data-idx="2"></div>
+          </div>
+        </div>
+        <div class="death-saves">
+          <span class="death-saves-lbl">力竭计数</span>
+          <div class="save-circles" id="exhaustion-pips">
+            <div class="exhaust-pip" data-idx="0"></div>
+            <div class="exhaust-pip" data-idx="1"></div>
+            <div class="exhaust-pip" data-idx="2"></div>
+            <div class="exhaust-pip" data-idx="3"></div>
+          </div>
+        </div>
+      </div>
+
+      <span class="death-saves-lbl">施法核心属性</span>
+      <div class="cast-stats">
+        <div class="cast-stat-box">
+          <div class="cast-stat-num cinzel">13</div>
+          <div class="cast-stat-lbl">法术豁免 DC</div>
+        </div>
+        <div class="cast-stat-box">
+          <div class="cast-stat-num cinzel">+6</div>
+          <div class="cast-stat-lbl">法术攻击加成</div>
+        </div>
+        <div class="cast-stat-box">
+          <div class="cast-stat-num cinzel">+3</div>
+          <div class="cast-stat-lbl">感知调整值</div>
+        </div>
+      </div>
+
     </div>
 
     <div id="panel-survival" class="panel">
@@ -130,66 +172,36 @@
         <button class="hp-btn" id="hp-plus5">＋ 5</button>
       </div>
 
-      <div class="stat-row">
-        <div class="stat-box">
-          <div class="stat-num cinzel">18</div>
-          <div class="stat-lbl">防御等级 AC</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num cinzel">25</div>
-          <div class="stat-lbl">移动速度 ft</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num cinzel">+0</div>
-          <div class="stat-lbl">先攻</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num cinzel">+3</div>
-          <div class="stat-lbl">熟练加值</div>
-        </div>
-      </div>
-
-      <div class="death-saves">
-        <span class="death-saves-lbl">死亡豁免</span>
-        <div class="save-circles" id="death-success">
-          <div class="save-circle" data-type="success" data-idx="0"></div>
-          <div class="save-circle" data-type="success" data-idx="1"></div>
-          <div class="save-circle" data-type="success" data-idx="2"></div>
-        </div>
-        <div class="save-circles" id="death-fail" style="margin-left:8px;">
-          <div class="save-circle" data-type="fail" data-idx="0"></div>
-          <div class="save-circle" data-type="fail" data-idx="1"></div>
-          <div class="save-circle" data-type="fail" data-idx="2"></div>
+      <!-- 先攻顺序 -->
+      <div id="initiative-block">
+        <button id="initiative-toggle-card" class="init-toggle-btn">
+          <span id="init-toggle-status">⚔ 开始战斗</span>
+        </button>
+        <div id="initiative-tracker" class="hidden">
+          <div id="init-round-row">
+            <span id="init-round-num" class="cinzel">回合 1</span>
+            <span id="init-turn-indicator" class="cinzel">0 / 0</span>
+          </div>
+          <div id="init-carousel">
+            <div id="init-carousel-track">
+              <div id="init-combatant-list"></div>
+            </div>
+            <div id="init-carousel-nav">
+              <button id="init-prev-turn" class="init-nav-btn">◀</button>
+              <div id="init-carousel-dots"></div>
+              <button id="init-next-turn" class="init-nav-btn">▶</button>
+            </div>
+          </div>
+          <div id="init-add-row" class="hidden">
+            <input type="text" id="init-add-name" placeholder="名称" maxlength="16">
+            <input type="number" id="init-add-value" placeholder="先攻" min="1" max="99">
+            <button id="init-add-confirm" class="init-add-icon" title="确认">✔</button>
+            <button id="init-add-cancel" class="init-add-icon" title="取消">✕</button>
+          </div>
+          <button id="init-add-btn" class="init-add-btn">＋ 添加战斗员</button>
         </div>
       </div>
 
-      <div class="death-saves" style="margin-top:8px;">
-        <span class="death-saves-lbl">力竭计数</span>
-        <div class="save-circles" id="exhaustion-pips">
-          <div class="exhaust-pip" data-idx="0"></div>
-          <div class="exhaust-pip" data-idx="1"></div>
-          <div class="exhaust-pip" data-idx="2"></div>
-          <div class="exhaust-pip" data-idx="3"></div>
-        </div>
-      </div>
-
-      <div style="height: 20px;"></div>
-
-      <span class="death-saves-lbl">施法核心属性</span>
-      <div class="cast-stats">
-        <div class="cast-stat-box">
-          <div class="cast-stat-num cinzel">13</div>
-          <div class="cast-stat-lbl">法术豁免 DC</div>
-        </div>
-        <div class="cast-stat-box">
-          <div class="cast-stat-num cinzel">+6</div>
-          <div class="cast-stat-lbl">法术攻击加成</div>
-        </div>
-        <div class="cast-stat-box">
-          <div class="cast-stat-num cinzel">+3</div>
-          <div class="cast-stat-lbl">感知调整值</div>
-        </div>
-      </div>
     </div>
 
   </div><!-- /#page-combat -->
