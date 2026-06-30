@@ -1236,6 +1236,7 @@ body {
   color: var(--silver);
   text-align: center;
   outline: none;
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -1328,6 +1329,7 @@ body {
   color: var(--silver);
   text-align: center;
   outline: none;
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -1421,6 +1423,7 @@ body {
   padding: 5px 4px;
   text-align: center;
   outline: none;
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -1558,9 +1561,9 @@ body {
 /* 货币行（底部，始终可见） */
 #misc-currency {
   display: flex;
-  gap: 6px;
-  margin-top: 10px;
-  padding-top: 10px;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
   padding-bottom: 4px;
   border-top: 1px solid var(--border-dim);
   flex-shrink: 0;
@@ -1571,31 +1574,105 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 12px 4px 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-dim);
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
 }
 
+.currency-box:hover {
+  border-color: var(--border-bright);
+  background: rgba(255,255,255,0.04);
+}
+
+/* 各币种专属配色 */
+.currency-box:nth-child(1) { --coin-color: #b0c4de; }
+.currency-box:nth-child(2) { --coin-color: #e8b84b; }
+.currency-box:nth-child(3) { --coin-color: #c8c8c8; }
+.currency-box:nth-child(4) { --coin-color: #cd7f32; }
+
+/* ── 顶部彩色装饰线 ── */
+.currency-box::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--coin-color);
+  opacity: 0.4;
+  transition: left 0.25s, right 0.25s, opacity 0.25s;
+}
+
+.currency-box:hover::before {
+  left: 8%;
+  right: 8%;
+  opacity: 1;
+}
+
+/* ── 币种名 ── */
 .currency-label {
-  font-size: 13px;
-  letter-spacing: 2px;
+  font-size: 11px;
+  letter-spacing: 4px;
   color: var(--silver-dim);
   text-transform: uppercase;
+  position: relative;
+  transition: color 0.2s;
 }
 
+.currency-box:hover .currency-label {
+  color: var(--silver);
+}
+
+/* ── 币种名前的彩色小圆点 ── */
+.currency-label::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--coin-color);
+  margin-right: 5px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* ── 数值输入框 ── */
 .currency-box input {
   width: 100%;
   text-align: center;
   background: var(--bg-deep);
-  border: 1px solid var(--border-dim);
+  border: none;
+  border-bottom: 2px solid var(--border-dim);
   color: var(--silver);
   font-family: var(--font-title);
-  font-size: 16px;
-  padding: 5px 0;
+  font-size: 18px;
+  padding: 6px 0 4px;
   outline: none;
+  appearance: textfield;
   -moz-appearance: textfield;
+  transition: border-color 0.2s, color 0.2s;
 }
+
 .currency-box input::-webkit-inner-spin-button,
 .currency-box input::-webkit-outer-spin-button { -webkit-appearance: none; }
-.currency-box input:focus { border-color: var(--border-bright); }
+
+.currency-box input:focus {
+  border-bottom-color: var(--coin-color);
+  color: var(--coin-color);
+}
+
+.currency-box:hover input {
+  border-bottom-color: var(--border-bright);
+}
+
+.currency-box input:focus ~ .currency-label,
+.currency-box input:focus + .currency-label {
+  color: var(--coin-color);
+}
 
 /* 物品区段头 */
 .bag-sec-header {
@@ -2308,4 +2385,159 @@ body {
   font-size: 9px;
   color: var(--silver-dim);
   letter-spacing: 1px;
+}
+
+
+/* ============================================================
+   响应式布局
+============================================================ */
+
+/* ── 平板 768px-1199px ── */
+@media (max-width: 1199px) {
+  /* 战斗页：调整列比例 1fr→1.1fr */
+  #page-combat.active {
+    grid-template-columns: 1fr 1.3fr;
+  }
+
+  /* 职业页：两列缩小 */
+  #page-class.active {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  .panel { padding: 12px; }
+  #header { padding: 8px 12px; }
+  #header-stats { padding: 6px 10px; }
+  .tab-btn { font-size: 11px; padding: 11px 0; }
+  #char-name { font-size: 20px; letter-spacing: 3px; }
+}
+
+/* ── 手机 767px以下 ── */
+@media (max-width: 767px) {
+  body { padding: 6px 6px 0; }
+
+  /* ── 战斗页：单列 ── */
+  #page-combat.active {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 6px;
+  }
+  #page-combat #header         { grid-column: 1; grid-row: 1; }
+  #page-combat #header-stats   { grid-column: 1; grid-row: 2; }
+  #page-combat #panel-buff     { grid-column: 1; grid-row: 3; }
+  #page-combat #panel-survival { grid-column: 1; grid-row: 4; }
+
+  /* ── 职业页：单列 ── */
+  #page-class.active {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  #page-class #panel-class            { grid-column: 1; grid-row: 1; }
+  #page-class #panel-feat-shieldmaster { grid-column: 1; grid-row: 2; }
+  #page-class #panel-charinfo         { grid-column: 1; grid-row: 3; }
+
+  /* ── 背包页：单列 ── */
+  .bag-columns { flex-direction: column; }
+
+  /* ── Header ── */
+  #header { padding: 6px 10px; margin-bottom: 6px; }
+  #char-name { font-size: 17px; letter-spacing: 2px; }
+  #char-subtitle { font-size: 8px; letter-spacing: 2px; }
+  #btn-long-rest { font-size: 8px; padding: 6px 12px; }
+
+  /* ── 属性格 ── */
+  #header-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 4px 6px;
+  }
+  .cast-stat-num { font-size: 18px; }
+  .ability-mod { font-size: 9px; }
+  .cast-stat-lbl { font-size: 7px; letter-spacing: 1px; }
+
+  /* ── Panel ── */
+  .panel { padding: 8px; }
+  .panel-title { font-size: 9px; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; }
+
+  /* ── 生存面板 ── */
+  .hp-display { gap: 6px; }
+  #hp-current, #hp-max { font-size: 26px; }
+  .hp-sep { font-size: 26px; }
+  .hp-controls { gap: 4px; }
+  .hp-btn { font-size: 9px; padding: 5px 10px; }
+
+  /* ── 先攻 ── */
+  #init-round-num { font-size: 9px; }
+  #init-turn-indicator { font-size: 9px; }
+  #init-carousel-nav { gap: 8px; }
+  #init-carousel-nav .init-nav-btn { font-size: 11px; padding: 3px 10px; }
+  .init-toggle-btn { font-size: 10px; padding: 6px 14px; }
+
+  /* 先攻卡片：适应小屏 */
+  .init-card-inner { padding: 14px 10px; min-height: 52px; }
+  .init-card-value { font-size: 22px; min-width: 24px; }
+  .init-card-input { width: 44px; font-size: 22px; }
+  .init-card-value-lbl { font-size: 9px; letter-spacing: 1px; }
+  .init-card-head { gap: 5px; }
+
+  /* 添加战斗员 */
+  .init-add-btn { font-size: 9px; letter-spacing: 1px; padding: 6px 10px; }
+  #init-add-row input { font-size: 9px; padding: 4px 6px; }
+
+  /* ── 法术 ── */
+  .spell-sec-lbl { font-size: 9px; }
+  .spell-counter { font-size: 9px; }
+  .btn-spell-add { font-size: 7px; letter-spacing: 1px; padding: 2px 6px; }
+
+  /* ── 背包 ── */
+  .bag-col-lbl { font-size: 7px; }
+  .currency-label { font-size: 11px; }
+  .currency-box input { font-size: 13px; padding: 3px 0; }
+  #total-weight { font-size: 20px; }
+
+  /* ── Tab栏 ── */
+  #tab-bar { margin: 6px -6px 0; }
+  .tab-btn { font-size: 9px; padding: 8px 0; letter-spacing: 1px; }
+
+  /* ── 专注横幅 ── */
+  #concentration-banner { padding: 3px 6px; font-size: 8px; }
+  #conc-break { font-size: 8px; padding: 1px 6px; }
+
+  /* ── 幸运骰子 ── */
+  .lucky-lbl { font-size: 8px; }
+
+  /* ── 死亡豁免 ── */
+  .death-saves-lbl { font-size: 7px; letter-spacing: 1px; }
+
+  /* ── 施法核心属性 ── */
+  .cast-stats { gap: 4px; }
+  .cast-stat-box { padding: 4px 2px; }
+
+  /* ── 职业能力描述 ── */
+  .channel-ability-name { font-size: 11px; }
+  .channel-ability-desc { font-size: 9px; }
+
+  /* ── 角色信息 ── */
+  .charinfo-lbl { font-size: 8px; }
+  .charinfo-val { font-size: 9px; }
+  .skill-prof-name { font-size: 9px; }
+  .skill-prof-attr { font-size: 8px; }
+
+  /* ── 物品列表 ── */
+  .bag-preset-item { padding: 4px 6px; }
+  .bag-item-name { font-size: 9px; }
+  .bag-item-qty { font-size: 8px; min-width: 20px; }
+  .bag-item-wt { font-size: 8px; }
+  .bag-item-rm { font-size: 8px; padding: 1px 4px; }
+}
+
+/* ── 超小屏 400px以下微调 ── */
+@media (max-width: 400px) {
+  #header-stats { grid-template-columns: repeat(3, 1fr); gap: 1px; }
+  .cast-stat-num { font-size: 15px; }
+  .panel { padding: 6px; }
+  #header { padding: 4px 8px; }
+  #char-name { font-size: 15px; }
+  .init-card-inner { padding: 10px 8px; min-height: 46px; }
+  .init-card-value { font-size: 18px; }
+  .init-card-input { width: 36px; font-size: 18px; }
 }
