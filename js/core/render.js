@@ -168,6 +168,7 @@ function attachRowCast(row, sp) {
 
   const onDown = e => {
     if (e.target.closest('button')) return;   /* 专注/移除按钮自行处理，不触发施法 */
+    e.preventDefault();                        /* 阻止浏览器长按默认行为（文字选择/系统菜单）*/
     pressed = true;
     didCast = false;
     /* 有可用法术位才启动填充动画与施法计时；否则仅保留轻触展开 */
