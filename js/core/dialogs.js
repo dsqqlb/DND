@@ -1,0 +1,409 @@
+
+/* ============================================================
+   状态选择器 Modal（像法术一样挑选面板上显示哪些状态）
+============================================================ */
+const BUFF_CATS = [
+  { key: 'all',       label: '全部' },
+  { key: 'condition', label: '状态' },
+  { key: 'buff',      label: '增益' },
+  { key: 'tactic',    label: '战术' },
+];
+const BUFF_CAT_LABELS = { condition: '状态', buff: '增益', tactic: '战术' };
+let buffModalCat = 'all';
+
+function openBuffPicker() {
+  buffModalCat = 'all';
+  $('buff-modal-title').textContent = '选择状态标签';
+  renderBuffModalTabs();
+  renderBuffModalList();
+  $('buff-modal').classList.remove('hidden');
+}
+
+function renderBuffModalTabs() {
+  const tabs = $('buff-modal-tabs');
+  tabs.innerHTML = '';
+  BUFF_CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'sp-tab' + (c.key === buffModalCat ? ' active' : '');
+    btn.textContent = c.label;
+    btn.addEventListener('click', () => {
+      buffModalCat = c.key;
+      renderBuffModalTabs();
+      renderBuffModalList();
+    });
+    tabs.appendChild(btn);
+  });
+}
+
+function renderBuffModalList() {
+  const list = $('buff-modal-list');
+  list.innerHTML = '';
+  const base = buffModalCat === 'all' ? BUFF_DB : BUFF_DB.filter(b => b.cat === buffModalCat);
+  let lastCat = null;
+  base.forEach(b => {
+    /* “全部”视图下按分类插入小标题 */
+    if (buffModalCat === 'all' && b.cat !== lastCat) {
+      lastCat = b.cat;
+      const hdr = document.createElement('div');
+      hdr.className = 'item-cat-header';
+      hdr.textContent = BUFF_CAT_LABELS[b.cat] || b.cat;
+      list.appendChild(hdr);
+    }
+    const picked = state.buffPicks.includes(b.id);
+    const row = document.createElement('div');
+    row.className = 'picker-row' + (picked ? ' added' : '');
+    const main = document.createElement('div');
+    main.className = 'picker-row-main';
+    main.innerHTML =
+      `<div class="picker-name-area">
+         <span class="picker-spell-cn">${b.name}</span>
+         <span class="picker-spell-meta">${b.effect}</span>
+       </div>`;
+    const btn = document.createElement('button');
+    btn.className = 'picker-add-btn' + (picked ? ' picker-added-btn' : '');
+    btn.textContent = picked ? '移除' : '＋ 添加';
+    btn.addEventListener('click', () => toggleBuffPick(b.id));
+    main.appendChild(btn);
+    row.appendChild(main);
+    list.appendChild(row);
+  });
+}
+
+function toggleBuffPick(id) {
+  const i = state.buffPicks.indexOf(id);
+  if (i === -1) {
+    state.buffPicks.push(id);
+  } else {
+    state.buffPicks.splice(i, 1);
+    delete state.buffs[id];        /* 移除标签时一并清除其点亮状态 */
+    save('buffs', state.buffs);
+  }
+  save('buffPicks', state.buffPicks);
+  renderBuffModalList();
+  renderBuffs();
+}
+
+/* 状态选择器关闭 */
+$('buff-modal-close').addEventListener('click', () => $('buff-modal').classList.add('hidden'));
+$('buff-modal').addEventListener('click', e => {
+  if (e.target === $('buff-modal')) $('buff-modal').classList.add('hidden');
+});
+
+function renderLuckyDice() {
+  $('lucky-val').textContent = state.luckyDice;
+  const pips = $('lucky-pips');
+  pips.innerHTML = '';
+  for (let i = 0; i < state.luckyDice && i < 20; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'lucky-pip';
+    pips.appendChild(pip);
+  }
+}
+
+/* ============================================================
+   法术选择器 Modal
+============================================================ */
+let pickerMode  = 'prepared';  /* 'cantrip' | 'prepared' */
+let pickerLevel = 1;
+
+function openPicker(mode) {
+  pickerMode = mode;
+  pickerLevel = (mode === 'cantrip') ? 0 : 1;
+  $('spell-modal-title').textContent = (mode === 'cantrip') ? '选择戏法' : '选择备法';
+
+  /* 控制 tab 可见性 */
+  document.querySelectorAll('.sp-tab').forEach(tab => {
+    const lv = parseInt(tab.dataset.lv);
+    if (mode === 'cantrip') {
+      tab.style.display = (lv === 0) ? '' : 'none';
+    } else {
+      tab.style.display = (lv === 0) ? 'none' : '';
+    }
+    tab.classList.toggle('active', lv === pickerLevel);
+  });
+
+  renderPickerList();
+  $('spell-modal').classList.remove('hidden');
+}
+
+function renderPickerList() {
+  const container = $('spell-modal-list');
+  container.innerHTML = '';
+
+  const colL = document.createElement('div');
+  colL.className = 'picker-col';
+  const colR = document.createElement('div');
+  colR.className = 'picker-col';
+  container.appendChild(colL);
+  container.appendChild(colR);
+
+  const domainIds = allDomainIds();
+  const spells    = SPELL_DB.filter(sp => sp.level === pickerLevel);
+
+  spells.forEach((sp, i) => {
+    const isDomain  = domainIds.includes(sp.id);
+    const isAdded   = pickerLevel === 0
+      ? state.cantripIds.includes(sp.id)
+      : state.preparedIds.includes(sp.id);
+    const anyAdded  = isDomain || isAdded;
+
+    const row = document.createElement('div');
+    row.className = 'picker-row' + (anyAdded ? ' added' : '');
+
+    /* 主内容行 */
+    const main = document.createElement('div');
+    main.className = 'picker-row-main';
+
+    const nameArea = document.createElement('div');
+    nameArea.className = 'picker-name-area';
+    nameArea.innerHTML = `
+      <span class="picker-spell-cn cinzel">${sp.name}</span>
+      <span class="picker-spell-en">${sp.nameEn}</span>
+      <span class="picker-spell-meta">${sp.school}${sp.conc ? ' · 专注' : ''} · ${sp.castTime}</span>
+    `;
+
+    /* 添加按钮 */
+    const addBtn = document.createElement('button');
+    addBtn.className = 'picker-add-btn';
+    if (isDomain) {
+      addBtn.textContent = '领域';
+      addBtn.disabled = true;
+    } else if (isAdded) {
+      addBtn.textContent = '已备';
+      addBtn.classList.add('picker-added-btn');
+      addBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (pickerLevel === 0) removeCantrip(sp.id);
+        else removeSpell(sp.id);
+        renderPickerList();
+      });
+    } else {
+      addBtn.textContent = '＋ 备法';
+      addBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (pickerLevel === 0) addCantrip(sp.id);
+        else addSpell(sp.id);
+      });
+    }
+
+    main.appendChild(nameArea);
+    main.appendChild(addBtn);
+    row.appendChild(main);
+
+    /* 点击展开详情 */
+    const detail = document.createElement('div');
+    detail.className = 'picker-row-detail';
+    detail.innerHTML = buildDetailHTML(sp);
+    row.appendChild(detail);
+
+    main.addEventListener('click', () => {
+      row.classList.toggle('expanded');
+    });
+
+    (i % 2 === 0 ? colL : colR).appendChild(row);
+  });
+}
+
+/* ──── 动作：添加/移除 ──── */
+function addSpell(id) {
+  if (state.preparedIds.length >= CHAR.maxPrepared) {
+    showDialog({
+      icon: '✦',
+      title: '携带已满',
+      message: `已达到自选备法上限（${CHAR.maxPrepared} 个）。<br>先移除一个已备法术，再添加新的。`,
+      confirmText: '知道了',
+    });
+    return;
+  }
+  if (!state.preparedIds.includes(id)) {
+    state.preparedIds.push(id);
+    save('preparedIds', state.preparedIds);
+    renderPreparedList();
+    renderPickerList();
+  }
+}
+
+function removeSpell(id) {
+  state.preparedIds = state.preparedIds.filter(i => i !== id);
+  save('preparedIds', state.preparedIds);
+  if (state.concentration === id) {
+    state.concentration = null;
+    save('concentration', state.concentration);
+    renderConcentration();
+  }
+  document.querySelectorAll('.srow-inline-detail').forEach(el => el.remove());
+  renderPreparedList();
+}
+
+function addCantrip(id) {
+  if (state.cantripIds.length >= CHAR.maxCantrips) {
+    showDialog({
+      icon: '✦',
+      title: '戏法已满',
+      message: `已达到戏法上限（${CHAR.maxCantrips} 个）。<br>先移除一个戏法，再添加新的。`,
+      confirmText: '知道了',
+    });
+    return;
+  }
+  if (!state.cantripIds.includes(id)) {
+    state.cantripIds.push(id);
+    save('cantripIds', state.cantripIds);
+    renderCantripList();
+    renderPickerList();
+  }
+}
+
+function removeCantrip(id) {
+  state.cantripIds = state.cantripIds.filter(i => i !== id);
+  save('cantripIds', state.cantripIds);
+  if (state.concentration === id) {
+    state.concentration = null;
+    save('concentration', state.concentration);
+    renderConcentration();
+  }
+  document.querySelectorAll('.srow-inline-detail').forEach(el => el.remove());
+  renderCantripList();
+}
+
+/* ──── Modal 事件绑定 ──── */
+document.querySelectorAll('.sp-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    pickerLevel = parseInt(tab.dataset.lv);
+    document.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderPickerList();
+  });
+});
+
+$('spell-modal-close').addEventListener('click', () => $('spell-modal').classList.add('hidden'));
+$('spell-modal').addEventListener('click', e => {
+  if (e.target === $('spell-modal')) $('spell-modal').classList.add('hidden');
+});
+
+/* ──── 添加法术按钮 ──── */
+document.querySelectorAll('.btn-spell-add').forEach(btn => {
+  btn.addEventListener('click', () => openPicker(btn.dataset.mode));
+});
+
+/* ============================================================
+   交互：血量编辑
+============================================================ */
+function startHpEdit() {
+  $('hp-current').style.display = 'none';
+  $('hp-input').style.display = '';
+  $('hp-input').value = state.hp;
+  $('hp-input').focus();
+  $('hp-input').select();
+}
+
+function commitHpEdit() {
+  let v = parseInt($('hp-input').value, 10);
+  if (isNaN(v)) v = state.hp;
+  state.hp = Math.max(0, Math.min(state.maxHp, v));
+  save('hp', state.hp);
+  $('hp-current').style.display = '';
+  $('hp-input').style.display = 'none';
+  renderHp();
+}
+
+function startMaxHpEdit() {
+  $('hp-max').style.display = 'none';
+  $('hp-max-input').style.display = '';
+  $('hp-max-input').value = state.maxHp;
+  $('hp-max-input').focus();
+  $('hp-max-input').select();
+}
+
+function commitMaxHpEdit() {
+  let v = parseInt($('hp-max-input').value, 10);
+  if (isNaN(v) || v < 1) v = state.maxHp;
+  state.maxHp = v;
+  state.hp = Math.min(state.hp, state.maxHp);
+  save('maxHp', state.maxHp);
+  save('hp', state.hp);
+  $('hp-max').style.display = '';
+  $('hp-max-input').style.display = 'none';
+  renderHp();
+}
+
+$('hp-current').addEventListener('click', startHpEdit);
+$('hp-input').addEventListener('blur', commitHpEdit);
+$('hp-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitHpEdit(); });
+
+$('hp-max').addEventListener('click', startMaxHpEdit);
+$('hp-max-input').addEventListener('blur', commitMaxHpEdit);
+$('hp-max-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitMaxHpEdit(); });
+
+function applyDamage(dmg) {
+  const absorbed = Math.min(state.tempHp, dmg);
+  state.tempHp -= absorbed;
+  state.hp = Math.max(0, state.hp - (dmg - absorbed));
+  save('hp', state.hp);
+  save('tempHp', state.tempHp);
+  $('temp-hp-slider').value = state.tempHp;
+  $('temp-hp-slider-val').textContent = state.tempHp;
+  renderHp();
+}
+
+$('hp-minus').addEventListener('click',  () => applyDamage(1));
+$('hp-plus').addEventListener('click',   () => { state.hp = Math.min(state.maxHp, state.hp + 1); save('hp', state.hp); renderHp(); });
+$('hp-minus5').addEventListener('click', () => applyDamage(5));
+$('hp-plus5').addEventListener('click',  () => { state.hp = Math.min(state.maxHp, state.hp + 5); save('hp', state.hp); renderHp(); });
+
+/* 血条拖拽 / 点击 */
+function setHpFromBarX(clientX) {
+  const track = $('hp-bar-track');
+  const rect = track.getBoundingClientRect();
+  const total = state.maxHp + state.tempHp;
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  state.hp = Math.min(state.maxHp, Math.round(ratio * total));
+  save('hp', state.hp);
+  renderHp();
+}
+
+let _draggingHpBar = false;
+$('hp-bar-track').addEventListener('mousedown', e => {
+  _draggingHpBar = true;
+  setHpFromBarX(e.clientX);
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => { if (_draggingHpBar) setHpFromBarX(e.clientX); });
+document.addEventListener('mouseup',   () => { _draggingHpBar = false; });
+
+$('hp-bar-track').addEventListener('touchstart', e => {
+  _draggingHpBar = true;
+  setHpFromBarX(e.touches[0].clientX);
+  e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchmove', e => { if (_draggingHpBar) setHpFromBarX(e.touches[0].clientX); }, { passive: false });
+document.addEventListener('touchend',  () => { _draggingHpBar = false; });
+
+/* 临时HP滑块 */
+let _tempSliderOpen = false;
+
+$('temp-hp-badge').addEventListener('click', e => {
+  e.stopPropagation();
+  _tempSliderOpen = !_tempSliderOpen;
+  $('temp-hp-slider-wrap').classList.toggle('hidden', !_tempSliderOpen);
+  if (_tempSliderOpen) {
+    $('temp-hp-slider').value = state.tempHp;
+    $('temp-hp-slider-val').textContent = state.tempHp;
+  }
+});
+
+$('temp-hp-slider-wrap').addEventListener('click', e => e.stopPropagation());
+
+document.addEventListener('click', () => {
+  if (_tempSliderOpen) {
+    _tempSliderOpen = false;
+    $('temp-hp-slider-wrap').classList.add('hidden');
+  }
+});
+
+$('temp-hp-slider').addEventListener('input', e => {
+  state.tempHp = parseInt(e.target.value, 10);
+  $('temp-hp-slider-val').textContent = state.tempHp;
+  save('tempHp', state.tempHp);
+  renderHp();
+});
+

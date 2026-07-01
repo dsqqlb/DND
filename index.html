@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DND 角色卡</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 <!--
@@ -31,41 +31,14 @@
         <div id="char-name">金雳</div>
         <div id="char-subtitle">生命领域 · 牧师 · 5级 · 丘陵矮人</div>
       </div>
-      <button id="btn-long-rest">⌛ 长休</button>
+      <div class="rest-btns">
+        <button id="btn-short-rest">☾ 短休</button>
+        <button id="btn-long-rest">⌛ 长休</button>
+      </div>
     </div>
 
-    <div id="header-stats">
-      <div class="cast-stat-box">
-        <div class="cast-stat-lbl">力量</div>
-        <div class="cast-stat-num cinzel">6</div>
-        <div class="ability-mod cinzel">-2</div>
-      </div>
-      <div class="cast-stat-box">
-        <div class="cast-stat-lbl">敏捷</div>
-        <div class="cast-stat-num cinzel">10</div>
-        <div class="ability-mod cinzel">+0</div>
-      </div>
-      <div class="cast-stat-box">
-        <div class="cast-stat-lbl">体质</div>
-        <div class="cast-stat-num cinzel">12</div>
-        <div class="ability-mod cinzel">+1</div>
-      </div>
-      <div class="cast-stat-box">
-        <div class="cast-stat-lbl">智力</div>
-        <div class="cast-stat-num cinzel">11</div>
-        <div class="ability-mod cinzel">+0</div>
-      </div>
-      <div class="cast-stat-box">
-        <div class="cast-stat-lbl">感知</div>
-        <div class="cast-stat-num cinzel">17</div>
-        <div class="ability-mod cinzel">+3</div>
-      </div>
-      <div class="cast-stat-box">
-        <div class="cast-stat-lbl">魅力</div>
-        <div class="cast-stat-num cinzel">11</div>
-        <div class="ability-mod cinzel">+0</div>
-      </div>
-    </div>
+    <!-- 六维属性由 JS 从 CHAR.abilities 渲染，见 renderCharSheet() -->
+    <div id="header-stats"></div>
 
     <div id="panel-buff" class="panel">
       <div class="panel-title">局势 · 状态</div>
@@ -81,26 +54,10 @@
       </div>
       <div class="buff-chips" id="buff-chips"></div>
 
-      <div style="height:8px"></div>
+      <div style="height:4px"></div>
 
-      <div class="stat-row">
-        <div class="stat-box">
-          <div class="stat-num cinzel">18</div>
-          <div class="stat-lbl">防御等级 AC</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num cinzel">25</div>
-          <div class="stat-lbl">移动速度 ft</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num cinzel">+0</div>
-          <div class="stat-lbl">先攻</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num cinzel">+3</div>
-          <div class="stat-lbl">熟练加值</div>
-        </div>
-      </div>
+      <!-- AC / 速度 / 先攻 / 熟练加值 由 JS 渲染，见 renderCharSheet() -->
+      <div class="stat-row" id="core-stats-row"></div>
 
       <div class="death-saves-row">
         <div class="death-saves">
@@ -128,20 +85,8 @@
       </div>
 
       <span class="death-saves-lbl">施法核心属性</span>
-      <div class="cast-stats">
-        <div class="cast-stat-box">
-          <div class="cast-stat-num cinzel">13</div>
-          <div class="cast-stat-lbl">法术豁免 DC</div>
-        </div>
-        <div class="cast-stat-box">
-          <div class="cast-stat-num cinzel">+6</div>
-          <div class="cast-stat-lbl">法术攻击加成</div>
-        </div>
-        <div class="cast-stat-box">
-          <div class="cast-stat-num cinzel">+3</div>
-          <div class="cast-stat-lbl">感知调整值</div>
-        </div>
-      </div>
+      <!-- 法术豁免DC / 法术攻击加成 / 施法属性调整值 由 JS 渲染 -->
+      <div class="cast-stats" id="cast-core-stats"></div>
 
     </div>
 
@@ -222,7 +167,7 @@
         <div class="channel-ability-name cinzel">摧毁不死生物</div>
         <div class="channel-ability-desc">
           消耗引导神力，展示圣徽。30尺内所有不死生物须通过
-          <b>感知豁免（DC 13）</b>，失败则被<b>摧毁</b> 1分钟；
+          <b>感知豁免（DC <span id="cd-turn-dc">13</span>）</b>，失败则被<b>摧毁</b> 1分钟；
           每轮结束时可重新豁免，成功则摧毁终止。
           被摧毁的不死生物必须在其回合内远离你，且不能主动靠近。
         </div>
@@ -235,7 +180,7 @@
         </div>
         <div class="channel-ability-desc">
           消耗引导神力，对30尺内任意数量当前生命值低于其上限一半的生物
-          分配最多 <b>25点</b>（5 × 牧师等级）治愈量，每个目标最少分配1点。
+          分配最多 <b><span id="cd-life-heal">25</span>点</b>（5 × 牧师等级）治愈量，每个目标最少分配1点。
           对亡灵生物和构装体无效。
         </div>
       </div>
@@ -277,35 +222,15 @@
       <div class="panel-title">角色信息</div>
       <div class="charinfo-row">
         <span class="charinfo-lbl">阵营</span>
-        <span class="charinfo-val">守序中立</span>
+        <span class="charinfo-val" id="info-alignment">守序中立</span>
       </div>
       <div class="charinfo-row">
         <span class="charinfo-lbl">语言</span>
-        <span class="charinfo-val">龙语、矮人语</span>
+        <span class="charinfo-val" id="info-languages">龙语、矮人语</span>
       </div>
       <div class="charinfo-section-title">技能熟练</div>
-      <div class="skill-prof-list">
-        <div class="skill-prof-item">
-          <span class="skill-prof-mark">◆</span>
-          <span class="skill-prof-name">历史</span>
-          <span class="skill-prof-attr">智力</span>
-        </div>
-        <div class="skill-prof-item">
-          <span class="skill-prof-mark">◆</span>
-          <span class="skill-prof-name">洞悉</span>
-          <span class="skill-prof-attr">感知</span>
-        </div>
-        <div class="skill-prof-item">
-          <span class="skill-prof-mark">◆</span>
-          <span class="skill-prof-name">医药</span>
-          <span class="skill-prof-attr">感知</span>
-        </div>
-        <div class="skill-prof-item">
-          <span class="skill-prof-mark">◆</span>
-          <span class="skill-prof-name">游说</span>
-          <span class="skill-prof-attr">魅力</span>
-        </div>
-      </div>
+      <!-- 技能熟练由 JS 从 CHAR.skills 渲染 -->
+      <div class="skill-prof-list" id="skill-prof-list"></div>
     </div>
 
   </div><!-- /#page-class -->
@@ -379,6 +304,13 @@
           <input type="number" id="cur-cp" min="0" value="0">
         </div>
       </div>
+
+      <div id="backup-row">
+        <span class="cinzel backup-lbl">数据备份</span>
+        <button id="btn-export" class="backup-btn">⬇ 导出</button>
+        <button id="btn-import" class="backup-btn">⬆ 导入</button>
+        <input type="file" id="import-file" accept="application/json,.json" style="display:none;">
+      </div>
     </div>
 
   </div><!-- /#page-bag -->
@@ -421,11 +353,41 @@
   </div>
 </div>
 
-<!-- 数据层：必须在逻辑层 character_sheet.js 之前加载 -->
-<script src="js/data/spells.js"></script>
-<script src="js/data/items.js"></script>
-<script src="js/character_config.js"></script>
-<!-- 逻辑层 -->
-<script src="js/character_sheet.js"></script>
+<div id="buff-modal" class="hidden">
+  <div id="buff-modal-panel">
+    <div id="buff-modal-head">
+      <span class="cinzel" id="buff-modal-title">选择状态标签</span>
+      <button id="buff-modal-close">✕</button>
+    </div>
+    <div id="buff-modal-tabs"></div>
+    <div id="buff-modal-list"></div>
+  </div>
+</div>
+
+<!-- 通用对话框（确认 / 提示），替代浏览器原生 alert / confirm -->
+<div id="dialog-modal" class="hidden">
+  <div id="dialog-panel">
+    <div id="dialog-icon" class="cinzel"></div>
+    <div id="dialog-title" class="cinzel"></div>
+    <div id="dialog-message"></div>
+    <div id="dialog-actions">
+      <button id="dialog-cancel" class="dialog-btn">取消</button>
+      <button id="dialog-confirm" class="dialog-btn">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- JS 模块：按依赖顺序加载（经典脚本，共享全局变量） -->
+<script src="js/data/spells.js"></script>           <!-- 法术数据库 -->
+<script src="js/data/items.js"></script>            <!-- 物品数据库 -->
+<script src="js/data/buffs.js"></script>            <!-- 状态 / 增益库 BUFF_DB -->
+<script src="js/config/character.js"></script>      <!-- 角色配置 CHAR -->
+<script src="js/core/state.js"></script>            <!-- localStorage工具 + state + 派生计算 -->
+<script src="js/core/render.js"></script>           <!-- 渲染函数：角色卡/血量/法术/状态等 -->
+<script src="js/core/dialogs.js"></script>          <!-- 对话框系统 + 法术/状态选择器 -->
+<script src="js/features/rest.js"></script>         <!-- 长休/短休 + HP/死亡豁免/力竭交互 -->
+<script src="js/features/initiative.js"></script>   <!-- 先攻追踪器（独立IIFE） -->
+<script src="js/features/bag.js"></script>          <!-- 背包管理（独立IIFE） -->
+<script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->
 </body>
 </html>

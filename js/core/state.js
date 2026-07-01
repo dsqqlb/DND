@@ -1,0 +1,84 @@
+/* ============================================================
+   localStorage 工具
+============================================================ */
+function save(key, val) { localStorage.setItem('dnd_' + key, JSON.stringify(val)); }
+function load(key, def) {
+  const v = localStorage.getItem('dnd_' + key);
+  return v === null ? def : JSON.parse(v);
+}
+
+/* ============================================================
+   初始化状态
+============================================================ */
+let state = {
+  hp:            load('hp', CHAR.maxHp),
+  maxHp:         load('maxHp', CHAR.maxHp),
+  tempHp:        load('tempHp', 0),
+  slots:         load('slots', [[], [false,false,false,false], [false,false,false], [false,false]]),
+  cantripIds:    load('cantripIds',  []),   // 已知戏法 ID 列表
+  preparedIds:   load('preparedIds', []),   // 自选备法 ID 列表（含环1-3，不超过 maxPrepared）
+  deathSave:     load('deathSave', { success:[false,false,false], fail:[false,false,false] }),
+  exhaustion:    load('exhaustion', [false, false, false, false]),
+  channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
+  buffs:         load('buffs', {}),
+  buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
+  concentration: load('concentration', null),  // 专注中的法术 ID，或 null
+  luckyDice:     load('luckyDice', 0),
+};
+
+/* ============================================================
+   辅助函数
+============================================================ */
+const $ = id => document.getElementById(id);
+
+function getSpell(id) { return SPELL_DB.find(s => s.id === id); }
+
+function allDomainIds() {
+  return Object.values(CHAR.domainSpells).flat();
+}
+
+function isPrepared(id) {
+  return state.preparedIds.includes(id) || allDomainIds().includes(id) || state.cantripIds.includes(id);
+}
+
+/* ============================================================
+   派生数值计算 (Derived Stats)
+   ------------------------------------------------------------
+   以下数值全部由 CHAR 按 D&D 5e 公式自动算出，配置里无需手填。
+   升级时只改 character_config.js 的原始数字，这里会自动重算。
+============================================================ */
+
+/* 属性调整值 = ⌊(属性得分 − 10) / 2⌋ */
+function abilityMod(score) { return Math.floor((score - 10) / 2); }
+
+/* 熟练加值 = ⌈等级 / 4⌉ + 1
+   （5e 规则：1–4级 +2，5–8级 +3，9–12级 +4，13–16级 +5，17–20级 +6） */
+function profBonus(level) { return Math.ceil(level / 4) + 1; }
+
+/* 把数值格式化为带正负号的字符串：3 → "+3"，-2 → "-2"，0 → "+0" */
+function signed(n) { return (n >= 0 ? '+' : '') + n; }
+
+/* 六大属性的中文名与展示顺序 */
+const ABILITY_META = [
+  { key: 'str', label: '力量' },
+  { key: 'dex', label: '敏捷' },
+  { key: 'con', label: '体质' },
+  { key: 'int', label: '智力' },
+  { key: 'wis', label: '感知' },
+  { key: 'cha', label: '魅力' },
+];
+const ABILITY_LABEL = { str: '力量', dex: '敏捷', con: '体质', int: '智力', wis: '感知', cha: '魅力' };
+
+/* 统一派生值：页面上所有“算出来的数字”都从这里取 */
+const DERIVED = {
+  get prof()     { return profBonus(CHAR.level); },                          // 熟练加值
+  get spellMod() { return abilityMod(CHAR.abilities[CHAR.spellAbility]); },  // 施法属性调整值
+  get initiative() { return abilityMod(CHAR.abilities.dex); },              // 先攻 = 敏捷调整值
+  get spellSaveDC() {                                                        // 法术豁免 DC
+    // 有手动覆盖则用覆盖值，否则走公式：8 + 熟练加值 + 施法属性调整值
+    return CHAR.spellSaveDC != null ? CHAR.spellSaveDC : 8 + this.prof + this.spellMod;
+  },
+  get spellAttack() { return this.prof + this.spellMod; },                   // 法术攻击加成 = 熟练加值 + 施法属性调整值
+  get channelHeal() { return CHAR.channelHealPerLevel * CHAR.level; },       // 生命维持治疗量 = 每级系数 × 等级
+};
+
