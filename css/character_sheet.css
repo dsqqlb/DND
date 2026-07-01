@@ -549,6 +549,8 @@ body {
    法术行 (srow) — 已备法术列表中的每一行
 ============================================================ */
 .srow {
+  position: relative;      /* 作为长按填充层的定位父级 */
+  overflow: hidden;        /* 裁掉溢出的金色填充 */
   display: flex;
   align-items: center;
   gap: 6px;
@@ -556,6 +558,16 @@ body {
   padding: 5px 8px;
   margin-bottom: 4px;
   background: var(--bg-card);
+  user-select: none;                 /* 长按不选中文字 */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;       /* 长按不弹系统菜单 */
+  touch-action: pan-y;               /* 保留纵向滚动，静止长按才触发施法 */
+}
+
+/* 行内内容浮于金色填充层之上 */
+.srow > *:not(.srow-cast-fill) {
+  position: relative;
+  z-index: 1;
 }
 
 .srow-domain {
@@ -619,6 +631,32 @@ body {
   color: var(--accent-glow);
   background: rgba(212,200,154,0.08);
 }
+
+/* ── 长按施法：整行金色填充动效 ── */
+/* 填充层铺满整行、置于内容之下；行内内容通过 z-index 浮于其上 */
+.srow-cast-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, #6a4400 0%, #b8901f 55%, #e8b84b 88%, #fffbe8 100%);
+  box-shadow: 0 0 12px rgba(232,184,75,0.45);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 按住时：填充在 0.70s 内涨满（时长须与 JS HOLD_MS 一致）*/
+.srow.srow-casting .srow-cast-fill {
+  width: 100%;
+  transition: width 0.70s linear;
+}
+/* 松手：填充快速回落 */
+.srow:not(.srow-casting) .srow-cast-fill {
+  width: 0;
+  transition: width 0.18s ease;
+}
+/* 按住时行内文字提亮，确保在金色填充上清晰可读 */
+.srow.srow-casting .srow-cn { color: #fff; text-shadow: 0 0 3px rgba(0,0,0,0.55); }
+.srow.srow-casting .srow-en { color: rgba(255,255,255,0.85); }
 
 .srow-remove-btn {
   background: none;
@@ -2755,6 +2793,66 @@ body {
 @keyframes dialog-pop {
   from { opacity: 0; transform: translateY(10px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================================
+   升环施法：环阶选择对话框内的选项按钮
+============================================================ */
+.upcast-hint {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--silver-dim);
+  margin-bottom: 14px;
+}
+
+.upcast-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.upcast-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 72px;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-dim);
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  color: var(--silver-dim);
+  transition: color 0.15s, border-color 0.15s, background 0.15s, outline-color 0.15s;
+}
+.upcast-opt:hover {
+  border-color: var(--accent-glow);
+  color: #f0d0ff;
+  background: rgba(226,163,255,0.10);
+  outline-color: rgba(226,163,255,0.35);
+}
+
+.upcast-opt-base {
+  border-color: var(--border-bright);
+  color: var(--silver);
+}
+
+.upcast-opt-lv {
+  font-size: 17px;
+  letter-spacing: 1px;
+}
+
+.upcast-opt-tag {
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.upcast-opt-free {
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: 0.65;
 }
 
 /* ============================================================

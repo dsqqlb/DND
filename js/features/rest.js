@@ -51,6 +51,7 @@ function showDialog(opts) {
   $('dialog-title').textContent = title;
   $('dialog-message').innerHTML = message;   /* 允许简单 <br> 标记 */
   $('dialog-confirm').textContent = confirmText;
+  $('dialog-confirm').style.display = '';     /* 复位：升环对话框可能曾隐藏它 */
   const cancelBtn = $('dialog-cancel');
   if (cancelText) { cancelBtn.textContent = cancelText; cancelBtn.style.display = ''; }
   else            { cancelBtn.style.display = 'none'; }

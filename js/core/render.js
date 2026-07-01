@@ -86,10 +86,136 @@ function renderSpellPanel() {
   renderPreparedList();
 }
 
+/* ──── 查找可用法术位：从指定环阶起向上找第一个未使用的（支持自动升环）──── */
+function findCastableSlot(minLevel) {
+  const maxLv = CHAR.spellSlots.length - 1;
+  for (let lv = minLevel; lv <= maxLv; lv++) {
+    const count = CHAR.spellSlots[lv] || 0;
+    for (let i = 0; i < count; i++) {
+      if (!(state.slots[lv] && state.slots[lv][i])) return { lv, i };
+    }
+  }
+  return null;   /* 该环阶及以上都没有空余法术位 */
+}
+
+/* ──── 指定环阶的空闲法术位数量 ──── */
+function slotsFreeAt(lv) {
+  const count = CHAR.spellSlots[lv] || 0;
+  let free = 0;
+  for (let i = 0; i < count; i++) {
+    if (!(state.slots[lv] && state.slots[lv][i])) free++;
+  }
+  return free;
+}
+
+/* ──── 从 minLevel 起、所有拥有空闲法术位的环阶（升序）──── */
+function availableSlotLevels(minLevel) {
+  const maxLv = CHAR.spellSlots.length - 1;
+  const levels = [];
+  for (let lv = minLevel; lv <= maxLv; lv++) {
+    if (slotsFreeAt(lv) > 0) levels.push(lv);
+  }
+  return levels;
+}
+
+/* ──── 该法术是否带有“升环施法效应” ──── */
+function hasUpcast(sp) {
+  return sp.level > 0 && /升环施法效应/.test(sp.description || '');
+}
+
+/* ──── 长按触发入口：带升环效应且有多档可用环阶时先询问，否则直接施放 ──── */
+function promptCast(sp) {
+  const levels = availableSlotLevels(sp.level);
+  if (!levels.length) return;   /* 无可用法术位（长按此时不会启动，双保险）*/
+
+  /* 无升环效应，或只有一档可用环阶 → 直接按最低可用环阶施放（保留原自动升环行为）*/
+  if (!hasUpcast(sp) || levels.length === 1) {
+    castSpell(sp, levels[0]);
+    return;
+  }
+
+  /* 带升环效应且有多档环阶可选 → 询问用本环还是升环（升到几环）*/
+  showUpcastDialog(sp, levels);
+}
+
+/* ──── 施放法术：扣除指定环阶（或自动最低可用）法术位 + 记录专注 ──── */
+function castSpell(sp, castLevel) {
+  /* 未指定环阶时从法术本环起自动查找（兼容旧调用）*/
+  const startLevel = (castLevel != null) ? castLevel : sp.level;
+  const slot = findCastableSlot(startLevel);
+  if (!slot) return;   /* 无可用法术位 */
+
+  /* 扣除法术位 */
+  state.slots[slot.lv][slot.i] = true;
+  save('slots', state.slots);
+
+  /* 需要专注的法术：记录专注（自动替换旧专注，符合 5e 规则）*/
+  if (sp.conc) {
+    state.concentration = sp.id;
+    save('concentration', state.concentration);
+    renderConcentration();
+  }
+
+  renderSpellPanel();   /* 刷新法术位宝石与整行状态 */
+}
+
+/* ──── 整行长按施法交互：按住约 0.70s 施法；轻触则展开详情 ──── */
+function attachRowCast(row, sp) {
+  const HOLD_MS = 700;   /* 需与 CSS .srow-casting 的填充过渡时长一致 */
+  let holdTimer = null;
+  let pressed = false;
+  let didCast = false;
+
+  const onDown = e => {
+    if (e.target.closest('button')) return;   /* 专注/移除按钮自行处理，不触发施法 */
+    pressed = true;
+    didCast = false;
+    /* 有可用法术位才启动填充动画与施法计时；否则仅保留轻触展开 */
+    if (findCastableSlot(sp.level) != null) {
+      row.classList.add('srow-casting');
+      holdTimer = setTimeout(() => {
+        holdTimer = null;
+        didCast = true;
+        pressed = false;
+        row.classList.remove('srow-casting');
+        promptCast(sp);           /* 带升环效应先询问环阶，否则直接施放 */
+      }, HOLD_MS);
+    }
+  };
+
+  const onUp = e => {
+    if (!pressed) return;
+    pressed = false;
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    row.classList.remove('srow-casting');
+    if (didCast) { didCast = false; return; }                    /* 已施法，不再展开 */
+    if (!e.target.closest('button')) showInlineDetail(sp, row);  /* 轻触展开详情 */
+  };
+
+  const onCancel = () => {
+    pressed = false;
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    row.classList.remove('srow-casting');
+  };
+
+  row.addEventListener('pointerdown', onDown);
+  row.addEventListener('pointerup', onUp);
+  row.addEventListener('pointercancel', onCancel);   /* 滚动等系统手势打断 → 取消 */
+  row.addEventListener('pointerleave', onCancel);
+  row.addEventListener('contextmenu', e => e.preventDefault());
+}
+
 /* ──── 构建单行法术卡片 ──── */
 function buildSpellRow(sp, isDomain, isCantrip) {
   const row = document.createElement('div');
   row.className = 'srow' + (isDomain ? ' srow-domain' : '');
+
+  /* 长按施法的金色填充层（仅消耗法术位的 1 环及以上法术）*/
+  if (!isCantrip) {
+    const fill = document.createElement('span');
+    fill.className = 'srow-cast-fill';
+    row.appendChild(fill);
+  }
 
   /* 环阶徽章 */
   if (!isCantrip) {
@@ -99,13 +225,19 @@ function buildSpellRow(sp, isDomain, isCantrip) {
     row.appendChild(badge);
   }
 
-  /* 名称区域（点击展开详情） */
+  /* 名称区域 */
   const nameWrap = document.createElement('div');
   nameWrap.className = 'srow-name';
   nameWrap.innerHTML = `<span class="srow-cn cinzel">${sp.name}</span><span class="srow-en">${sp.nameEn}</span>`;
-  nameWrap.title = '点击查看详情';
-  nameWrap.style.cursor = 'pointer';
-  nameWrap.addEventListener('click', () => showInlineDetail(sp, row));
+  if (isCantrip) {
+    /* 戏法：不耗法术位，点击名称展开详情 */
+    nameWrap.title = '点击查看详情';
+    nameWrap.style.cursor = 'pointer';
+    nameWrap.addEventListener('click', () => showInlineDetail(sp, row));
+  } else {
+    /* 1 环及以上：轻触展开、按住施法（交互挂在整行）*/
+    nameWrap.title = '轻触展开详情 · 按住施法';
+  }
   row.appendChild(nameWrap);
 
   /* 专注徽章（可点击激活专注） */
@@ -135,6 +267,12 @@ function buildSpellRow(sp, isDomain, isCantrip) {
       else removeSpell(sp.id);
     });
     row.appendChild(rm);
+  }
+
+  /* 1 环及以上：挂载整行长按施法交互 */
+  if (!isCantrip) {
+    row.style.cursor = 'pointer';
+    attachRowCast(row, sp);
   }
 
   return row;

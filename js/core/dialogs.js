@@ -286,6 +286,52 @@ document.querySelectorAll('.btn-spell-add').forEach(btn => {
 });
 
 /* ============================================================
+   升环施法环阶选择对话框
+   holdCast 触发后，若法术带“升环施法效应”且有多档可用法术位，
+   弹出本对话框询问：用本环，还是升环（升到几环），
+   随后消耗对应环阶的法术位。
+============================================================ */
+function showUpcastDialog(sp, levels) {
+  $('dialog-icon').textContent = '🪄';
+  $('dialog-icon').style.display = '';
+  $('dialog-title').textContent = '选择施法环阶';
+
+  const opts = levels.map(lv => {
+    const isBase = lv === sp.level;
+    const tag = isBase ? '本环' : `升 ${lv - sp.level} 环`;
+    const free = slotsFreeAt(lv);
+    return `
+      <button class="upcast-opt${isBase ? ' upcast-opt-base' : ''}" data-lv="${lv}">
+        <span class="upcast-opt-lv cinzel">${lv} 环</span>
+        <span class="upcast-opt-tag">${tag}</span>
+        <span class="upcast-opt-free">剩 ${free}</span>
+      </button>`;
+  }).join('');
+
+  $('dialog-message').innerHTML = `
+    <div class="upcast-hint">${sp.name}（本环 ${sp.level} 环）<br>选择要消耗的法术位环阶</div>
+    <div class="upcast-opts">${opts}</div>`;
+
+  /* 只保留取消按钮，隐藏确定按钮 */
+  $('dialog-confirm').style.display = 'none';
+  const cancelBtn = $('dialog-cancel');
+  cancelBtn.textContent = '取消';
+  cancelBtn.style.display = '';
+  dialogOnConfirm = null;
+
+  $('dialog-modal').classList.remove('hidden');
+
+  /* 绑定环阶按钮：点击后关闭对话框并按所选环阶施放 */
+  $('dialog-message').querySelectorAll('.upcast-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lv = parseInt(btn.dataset.lv, 10);
+      closeDialog();
+      castSpell(sp, lv);
+    });
+  });
+}
+
+/* ============================================================
    交互：血量编辑
 ============================================================ */
 function startHpEdit() {
