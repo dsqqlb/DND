@@ -9,7 +9,7 @@
   样式 → character_sheet.css
   逻辑 → character_sheet.js
 -->
-<link rel="stylesheet" href="character_sheet.css">
+<link rel="stylesheet" href="css/character_sheet.css">
 </head>
 <body>
 
@@ -421,6 +421,11 @@
   </div>
 </div>
 
-<script src="character_sheet.js"></script>
+<!-- 数据层：必须在逻辑层 character_sheet.js 之前加载 -->
+<script src="js/data/spells.js"></script>
+<script src="js/data/items.js"></script>
+<script src="js/character_config.js"></script>
+<!-- 逻辑层 -->
+<script src="js/character_sheet.js"></script>
 </body>
 </html>
