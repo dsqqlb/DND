@@ -2905,32 +2905,38 @@ body {
    日志页：跑团计时器 + 冒险日志
 ============================================================ */
 
-/* ── 计时器 ── */
+/* ── 计时器（细条，突出下方日志）── */
+#timer-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+}
+#timer-icon { color: var(--silver-dim); font-size: 14px; flex-shrink: 0; }
 #timer-display {
-  text-align: center;
-  font-size: 44px;
-  letter-spacing: 4px;
+  font-size: 20px;
+  letter-spacing: 2px;
   color: var(--silver);
-  padding: 6px 0 10px;
   font-variant-numeric: tabular-nums;
 }
-#timer-display.timer-live { color: var(--accent-glow); text-shadow: 0 0 10px rgba(226,163,255,0.35); }
+#timer-display.timer-live { color: var(--accent-glow); text-shadow: 0 0 6px rgba(226,163,255,0.3); }
 
 #timer-controls {
+  margin-left: auto;
   display: flex;
-  gap: 10px;
-  justify-content: center;
+  gap: 6px;
 }
 .timer-btn {
-  min-width: 96px;
-  padding: 9px 16px;
+  padding: 5px 12px;
+  font-size: 12px;
   cursor: pointer;
   background: none;
   border: 1px solid var(--border-dim);
-  outline: 1px solid transparent;
-  outline-offset: 2px;
   color: var(--silver-dim);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 .timer-btn:hover { border-color: var(--border-bright); color: var(--silver); }
