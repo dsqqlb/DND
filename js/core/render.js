@@ -373,7 +373,9 @@ function renderPreparedList() {
     state.preparedIds = cleaned;
     save('preparedIds', state.preparedIds);
   }
-  [1, 2, 3].forEach(lv => {
+  /* 按环阶分组，环数由 CHAR.spellSlots 决定（1 环到最高环）*/
+  const maxLv = CHAR.spellSlots.length - 1;
+  Array.from({ length: maxLv }, (_, i) => i + 1).forEach(lv => {
     const domainAtLevel = (CHAR.domainSpells[lv] || []).map(getSpell).filter(Boolean);
     const chosenAtLevel = state.preparedIds.map(getSpell).filter(sp => sp && sp.level === lv);
     if (!domainAtLevel.length && !chosenAtLevel.length) return;

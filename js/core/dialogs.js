@@ -106,13 +106,35 @@ function renderLuckyDice() {
 let pickerMode  = 'prepared';  /* 'cantrip' | 'prepared' */
 let pickerLevel = 1;
 
+/* 动态生成法术选择器的环阶标签：戏法 + 1环…最高环（最高环由 CHAR.spellSlots 决定）。
+   这样以后在配置里解锁更高环，标签会自动出现，无需改 index.html。 */
+function buildSpellTabs() {
+  const wrap = $('spell-modal-tabs');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const maxLv = CHAR.spellSlots.length - 1;
+  for (let lv = 0; lv <= maxLv; lv++) {
+    const btn = document.createElement('button');
+    btn.className = 'sp-tab' + (lv === 1 ? ' active' : '');
+    btn.dataset.lv = lv;
+    btn.textContent = (lv === 0) ? '戏法' : `${lv}环`;
+    btn.addEventListener('click', () => {
+      pickerLevel = lv;
+      wrap.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderPickerList();
+    });
+    wrap.appendChild(btn);
+  }
+}
+
 function openPicker(mode) {
   pickerMode = mode;
   pickerLevel = (mode === 'cantrip') ? 0 : 1;
   $('spell-modal-title').textContent = (mode === 'cantrip') ? '选择戏法' : '选择备法';
 
-  /* 控制 tab 可见性 */
-  document.querySelectorAll('.sp-tab').forEach(tab => {
+  /* 控制 tab 可见性（仅作用于法术选择器自身的标签）*/
+  $('spell-modal-tabs').querySelectorAll('.sp-tab').forEach(tab => {
     const lv = parseInt(tab.dataset.lv);
     if (mode === 'cantrip') {
       tab.style.display = (lv === 0) ? '' : 'none';
@@ -266,14 +288,7 @@ function removeCantrip(id) {
 }
 
 /* ──── Modal 事件绑定 ──── */
-document.querySelectorAll('.sp-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    pickerLevel = parseInt(tab.dataset.lv);
-    document.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    renderPickerList();
-  });
-});
+buildSpellTabs();   /* 依据 CHAR.spellSlots 生成法术选择器环阶标签（含点击绑定）*/
 
 $('spell-modal-close').addEventListener('click', () => $('spell-modal').classList.add('hidden'));
 $('spell-modal').addEventListener('click', e => {

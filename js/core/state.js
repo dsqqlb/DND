@@ -14,7 +14,7 @@ let state = {
   hp:            load('hp', CHAR.maxHp),
   maxHp:         load('maxHp', CHAR.maxHp),
   tempHp:        load('tempHp', 0),
-  slots:         load('slots', [[], [false,false,false,false], [false,false,false], [false,false]]),
+  slots:         load('slots', []),   // 法术位使用状态；形状由 reconcileState() 按 CHAR.spellSlots 对齐
   cantripIds:    load('cantripIds',  []),   // 已知戏法 ID 列表
   preparedIds:   load('preparedIds', []),   // 自选备法 ID 列表（含环1-3，不超过 maxPrepared）
   deathSave:     load('deathSave', { success:[false,false,false], fail:[false,false,false] }),
@@ -32,6 +32,36 @@ let state = {
   sessions:         load('sessions', []),
   currentSessionId: load('currentSessionId', null),  // 进行中的跑团 id，或 null
 };
+
+/* ============================================================
+   存档对账 (Reconcile) —— 升级安全
+   ------------------------------------------------------------
+   当你在 character.js 里调整了 spellSlots（解锁更高环）或 channelDivinity，
+   旧存档（localStorage）里的数组形状可能和新配置不一致。
+   这里在每次载入时把 state.slots / state.channel 对齐到当前 CHAR 的形状：
+   · 保留仍在范围内的“已使用”状态，不丢进度
+   · 新增的环阶 / 次数自动补为“可用”
+   · 超出的部分自动裁掉
+   这样你只改配置就能即时生效，无需清缓存或改任何逻辑代码。
+============================================================ */
+function reconcileState() {
+  /* 法术位：按 CHAR.spellSlots 逐环阶对齐（index 0 为戏法占位，恒为空数组）*/
+  const prevSlots = Array.isArray(state.slots) ? state.slots : [];
+  state.slots = CHAR.spellSlots.map((count, lv) => {
+    const prev = Array.isArray(prevSlots[lv]) ? prevSlots[lv] : [];
+    const arr = new Array(count).fill(false);
+    for (let i = 0; i < count; i++) arr[i] = !!prev[i];   /* 保留已用/未用状态 */
+    return arr;
+  });
+  save('slots', state.slots);
+
+  /* 引导神力：按 CHAR.channelDivinity 对齐 */
+  const prevChannel = Array.isArray(state.channel) ? state.channel : [];
+  state.channel = new Array(CHAR.channelDivinity).fill(false)
+    .map((_, i) => !!prevChannel[i]);
+  save('channel', state.channel);
+}
+reconcileState();
 
 /* ============================================================
    辅助函数

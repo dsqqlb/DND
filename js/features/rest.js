@@ -90,9 +90,7 @@ function doLongRest() {
   state.maxHp         = CHAR.maxHp;
   state.hp            = state.maxHp;
   state.tempHp        = 0;
-  state.slots         = [[], new Array(CHAR.spellSlots[1]).fill(false),
-                             new Array(CHAR.spellSlots[2]).fill(false),
-                             new Array(CHAR.spellSlots[3]).fill(false)];
+  state.slots         = CHAR.spellSlots.map(count => new Array(count).fill(false));  /* 各环阶法术位全恢复，环数由配置决定 */
   state.channel       = new Array(CHAR.channelDivinity).fill(false);
   state.deathSave     = { success:[false,false,false], fail:[false,false,false] };
   state.concentration = null;
