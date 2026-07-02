@@ -10,6 +10,10 @@
   逻辑 → character_sheet.js
 -->
 <link rel="stylesheet" href="css/character_sheet.css">
+<script>
+  /* 尽早应用已保存的主题，避免刷新时闪一下默认配色 */
+  try { var _t = JSON.parse(localStorage.getItem('dnd_theme')); if (_t) document.documentElement.dataset.theme = _t; } catch (e) {}
+</script>
 </head>
 <body>
 
@@ -32,6 +36,7 @@
         <div id="char-subtitle">生命领域 · 牧师 · 5级 · 丘陵矮人</div>
       </div>
       <div class="rest-btns">
+        <button id="btn-theme" title="切换主题">◐ 主题</button>
         <button id="btn-short-rest">☾ 短休</button>
         <button id="btn-long-rest">⌛ 长休</button>
       </div>
@@ -421,6 +426,17 @@
   </div>
 </div>
 
+<!-- 主题选择面板 -->
+<div id="theme-modal" class="hidden">
+  <div id="theme-panel">
+    <div id="theme-head">
+      <span class="cinzel">选择主题</span>
+      <button id="theme-close">✕</button>
+    </div>
+    <div id="theme-grid"><!-- 主题卡片由 theme.js 生成 --></div>
+  </div>
+</div>
+
 <!-- 通用对话框（确认 / 提示），替代浏览器原生 alert / confirm -->
 <div id="dialog-modal" class="hidden">
   <div id="dialog-panel">
@@ -446,6 +462,7 @@
 <script src="js/features/initiative.js"></script>   <!-- 先攻追踪器（独立IIFE） -->
 <script src="js/features/bag.js"></script>          <!-- 背包管理（独立IIFE） -->
 <script src="js/features/log.js"></script>          <!-- 日志页 + 跑团计时器 -->
+<script src="js/features/theme.js"></script>        <!-- 主题切换面板 -->
 <script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->
 </body>
 </html>

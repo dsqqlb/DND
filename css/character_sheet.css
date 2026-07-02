@@ -19,6 +19,47 @@
   --font-body:     'Georgia', serif;
 }
 
+/* ============================================================
+   主题配色（覆盖 :root 的色板）—— 由 theme.js 切换 <html data-theme>
+   默认 violet 用 :root 的值，无需单独块。
+============================================================ */
+[data-theme="amber"] {
+  --bg-deep:       #0d0b08;
+  --bg-panel:      #14110c;
+  --bg-card:       #1a160f;
+  --border-dim:    #3a332a;
+  --border-bright: #d8c088;
+  --silver-ghost:  rgba(224,168,82,0.14);
+  --accent-glow:   #e0a852;
+}
+[data-theme="blood"] {
+  --bg-deep:       #0d0808;
+  --bg-panel:      #140f0f;
+  --bg-card:       #1a1212;
+  --border-dim:    #3a2e2e;
+  --border-bright: #d0a0a0;
+  --silver-ghost:  rgba(224,106,106,0.14);
+  --accent-glow:   #e06a6a;
+}
+[data-theme="emerald"] {
+  --bg-deep:       #080d0a;
+  --bg-panel:      #0f1411;
+  --bg-card:       #121a16;
+  --border-dim:    #2c3a32;
+  --border-bright: #9fcbb2;
+  --silver-ghost:  rgba(90,192,138,0.14);
+  --accent-glow:   #5ac08a;
+}
+[data-theme="azure"] {
+  --bg-deep:       #080b0d;
+  --bg-panel:      #0f1214;
+  --bg-card:       #12171a;
+  --border-dim:    #2c343a;
+  --border-bright: #a6c4e0;
+  --silver-ghost:  rgba(106,168,224,0.14);
+  --accent-glow:   #6aa8e0;
+}
+
 body {
   background: var(--bg-deep);
   color: var(--silver);
@@ -3339,3 +3380,102 @@ body {
   color: var(--accent-glow);
 }
 .log-export-both:hover { background: rgba(226, 163, 255, 0.08); }
+
+/* ============================================================
+   主题切换：头部按钮 + 选择面板
+============================================================ */
+#btn-theme {
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  font-family: var(--font-title);
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+#btn-theme:hover { border-color: var(--accent-glow); color: var(--accent-glow); }
+
+#theme-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 20px;
+}
+#theme-modal.hidden { display: none; }
+
+#theme-panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-bright);
+  outline: 1px solid var(--border-dim);
+  outline-offset: 3px;
+}
+
+#theme-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-dim);
+  color: var(--silver);
+  letter-spacing: 2px;
+}
+#theme-close {
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  cursor: pointer;
+  padding: 2px 8px;
+}
+#theme-close:hover { border-color: var(--border-bright); color: var(--silver); }
+
+#theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+.theme-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  color: var(--silver-dim);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, outline-color 0.15s;
+}
+.theme-card:hover { border-color: var(--border-bright); color: var(--silver); }
+.theme-card.active {
+  border-color: var(--accent-glow);
+  outline-color: var(--accent-glow);
+  color: var(--silver);
+}
+.theme-dots { display: inline-flex; gap: 3px; flex-shrink: 0; }
+.theme-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.theme-name {
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.theme-check {
+  margin-left: auto;
+  color: var(--accent-glow);
+  opacity: 0;
+}
+.theme-card.active .theme-check { opacity: 1; }
