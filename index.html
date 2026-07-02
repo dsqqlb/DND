@@ -360,6 +360,11 @@
 
 </div><!-- /#pages-container -->
 
+<!-- 撤销上一步：浮动按钮 + 短暂提示 -->
+<button id="btn-undo" class="hidden" title="撤销上一步">↶ 撤销</button>
+<div id="undo-toast"></div>
+
+
 <!-- 底部翻页标签栏 -->
 <nav id="tab-bar">
   <button class="tab-btn active" data-page="page-combat">⚔ 战斗</button>
@@ -463,6 +468,7 @@
 <script src="js/features/bag.js"></script>          <!-- 背包管理（独立IIFE） -->
 <script src="js/features/log.js"></script>          <!-- 日志页 + 跑团计时器 -->
 <script src="js/features/theme.js"></script>        <!-- 主题切换面板 -->
+<script src="js/features/undo.js"></script>         <!-- 撤销上一步 -->
 <script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->
 </body>
 </html>

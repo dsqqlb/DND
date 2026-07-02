@@ -29,11 +29,11 @@
     let before = currency[key];
     el.addEventListener('focus', () => { before = currency[key]; });
     el.addEventListener('input', () => {
-      currency[key] = parseInt(el.value) || 0;
-      save('currency', currency);
+      currency[key] = parseInt(el.value) || 0;   /* 编辑中只更新内存，提交(change)时才落盘，便于整体撤销 */
     });
     el.addEventListener('change', () => {
       const d = currency[key] - before;
+      save('currency', currency);
       if (d && typeof logEvent === 'function') {
         logEvent('bag', '🪙', `${CUR_LABEL[key]}币 ${d > 0 ? '+' : ''}${d}（共 ${currency[key]}）`);
       }
@@ -227,4 +227,12 @@
   save('bag_items', bagItems);
   renderBag();
   initNotepad('equip-notepad', 'equip_notepad');
+
+  /* 撤销还原后，重新载入背包/货币并刷新 */
+  document.addEventListener('undorestore', () => {
+    bagItems = load('bag_items', bagItems);
+    Object.assign(currency, load('currency', currency));
+    ['cp', 'sp', 'gp', 'pp'].forEach(k => { const el = document.getElementById('cur-' + k); if (el) el.value = currency[k]; });
+    renderBag();
+  });
 }());

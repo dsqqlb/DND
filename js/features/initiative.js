@@ -411,4 +411,12 @@
     tracker.classList.remove('hidden');
     renderAll();
   }
+
+  /* 撤销还原后，重新载入先攻状态并刷新 */
+  document.addEventListener('undorestore', () => {
+    state = loadState();
+    updateToggleCard();
+    tracker.classList.toggle('hidden', !state.active);
+    renderAll();
+  });
 }());

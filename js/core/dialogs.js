@@ -467,8 +467,7 @@ function setHpFromBarX(clientX) {
   const total = state.maxHp + state.tempHp;
   const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
   state.hp = Math.min(state.maxHp, Math.round(ratio * total));
-  save('hp', state.hp);
-  renderHp();
+  renderHp();   /* 拖拽过程只更新界面，不落盘；松手时统一保存+记日志（便于整体撤销）*/
 }
 
 let _draggingHpBar = false;
@@ -489,7 +488,7 @@ $('hp-bar-track').addEventListener('mousedown', e => {
   e.preventDefault();
 });
 document.addEventListener('mousemove', e => { if (_draggingHpBar) setHpFromBarX(e.clientX); });
-document.addEventListener('mouseup',   () => { if (_draggingHpBar) { _draggingHpBar = false; logHpDelta(_hpBeforeDrag, state.hp); } });
+document.addEventListener('mouseup',   () => { if (_draggingHpBar) { _draggingHpBar = false; save('hp', state.hp); logHpDelta(_hpBeforeDrag, state.hp); } });
 
 $('hp-bar-track').addEventListener('touchstart', e => {
   _draggingHpBar = true;
@@ -498,7 +497,7 @@ $('hp-bar-track').addEventListener('touchstart', e => {
   e.preventDefault();
 }, { passive: false });
 document.addEventListener('touchmove', e => { if (_draggingHpBar) setHpFromBarX(e.touches[0].clientX); }, { passive: false });
-document.addEventListener('touchend',  () => { if (_draggingHpBar) { _draggingHpBar = false; logHpDelta(_hpBeforeDrag, state.hp); } });
+document.addEventListener('touchend',  () => { if (_draggingHpBar) { _draggingHpBar = false; save('hp', state.hp); logHpDelta(_hpBeforeDrag, state.hp); } });
 
 /* 临时HP滑块 */
 let _tempSliderOpen = false;

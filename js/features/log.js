@@ -149,6 +149,7 @@
         renderTimer();
         renderLog();
         syncTick();
+        if (typeof window.clearUndoHistory === 'function') window.clearUndoHistory();   /* 结束跑团后不再保留撤销 */
       },
     });
   }
