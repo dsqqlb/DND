@@ -653,26 +653,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-.srow-conc-btn {
-  background: none;
-  border: 1px solid var(--border-dim);
-  color: var(--silver-dim);
-  font-family: var(--font-title);
-  font-size: 8px;
-  letter-spacing: 1px;
-  padding: 1px 5px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.srow-conc-btn:hover { border-color: var(--border-bright); color: var(--silver); }
-
-.srow-conc-btn.active {
-  border-color: var(--accent-glow);
-  color: var(--accent-glow);
-  background: rgba(212,200,154,0.08);
-}
-
 /* ── 长按施法：整行金色填充动效 ── */
 /* 填充层铺满整行、置于内容之下；行内内容通过 z-index 浮于其上 */
 .srow-cast-fill {
@@ -699,18 +679,29 @@ body {
 .srow.srow-casting .srow-cn { color: #fff; text-shadow: 0 0 3px rgba(0,0,0,0.55); }
 .srow.srow-casting .srow-en { color: rgba(255,255,255,0.85); }
 
-.srow-remove-btn {
+/* 详情展开按钮：固定在最右侧、贴满行高的竖条（比行高略矮一点）。
+   独立热区，与“按住施法”解耦，触屏单击即响应；移除法术改由“＋选择”选择器完成，此处不再放 ×。*/
+.srow-detail-btn {
+  align-self: stretch;         /* 高度贴满整行（比 .srow 的上下 padding 略矮）*/
+  margin: -5px -8px -5px 0;    /* 抵消 .srow 的内边距，让竖条贴到行的上下左右边缘 */
   background: none;
   border: none;
+  border-left: 1px solid var(--border-dim);
   color: var(--silver-dim);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1;
-  padding: 0 3px;
+  padding: 0 10px;
   cursor: pointer;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s, transform 0.15s;
 }
-
-.srow-remove-btn:hover { color: var(--red-dark); }
+.srow-detail-btn:hover { color: var(--silver); background: rgba(229,229,229,0.05); }
+.srow-detail-btn.open { color: var(--accent-glow); }
+.srow-detail-arrow { display: inline-block; transition: transform 0.15s; }
+.srow-detail-btn.open .srow-detail-arrow { transform: rotate(180deg); }
 
 .srow-domain-lock {
   font-size: 11px;
@@ -2459,17 +2450,19 @@ body {
 }
 
 /* ============================================================
-   力竭计数
+   力竭计数（5e 规则：6 级，格子略缩小以容纳）
 ============================================================ */
 .exhaust-pip {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   border-radius: 3px;
   border: 1px solid var(--border-dim);
   background: none;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
 }
+#exhaustion-pips { gap: 4px; }
 
 .exhaust-pip.active {
   background: #6b4a1a;
@@ -3527,3 +3520,359 @@ body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ============================================================
+   施法全屏特效（按法术学派区分，戏法为缩小版）
+   ------------------------------------------------------------
+   #cast-fx-layer 平时为空、不可点；播放时注入 .fx-root 并挂
+   [data-school]，由下方各学派规则决定具体表现。
+============================================================ */
+#cast-fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;           /* 高于所有弹窗（最高 1100），确保盖满全屏 */
+  pointer-events: none;    /* 绝不拦截点击/触摸 */
+  overflow: hidden;
+}
+
+.fx-root { position: absolute; inset: 0; }
+
+/* 缩小版（戏法）整体收拢一点视觉强度 */
+#cast-fx-layer.fx-mini .fx-root { opacity: 0.8; }
+
+/* ── 通用图层：闪光 ── */
+.fx-flash {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, var(--fx-color, #fffbe8) 0%, transparent 62%);
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+/* ── 通用图层：双圈冲击环，从中心炸开 ── */
+.fx-ring {
+  position: absolute; left: 50%; top: 50%;
+  width: 10vmin; height: 10vmin;
+  margin: -5vmin 0 0 -5vmin;
+  border-radius: 50%;
+  border: 3px solid var(--fx-color, #e8b84b);
+  box-shadow: 0 0 30px var(--fx-color, #e8b84b);
+  opacity: 0;
+  transform: scale(0.3);
+}
+.fx-ring-b { border-width: 1.5px; }
+
+/* ── 通用图层：四角晕影（用色调渲染战况气氛） ── */
+.fx-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 40%, var(--fx-color, #000) 130%);
+  opacity: 0;
+  mix-blend-mode: multiply;
+}
+
+/* ── 通用图层：斜向扫光条（变化系用）── */
+.fx-sweep {
+  position: absolute; top: 0; bottom: 0;
+  left: -30%;
+  width: 22%;
+  background: linear-gradient(100deg, transparent 0%, var(--fx-color, #fff) 50%, transparent 100%);
+  opacity: 0;
+  filter: blur(2px);
+}
+
+/* ── 通用图层：中心螺旋扭曲（惑控系用）── */
+.fx-twist {
+  position: absolute; left: 50%; top: 50%;
+  width: 60vmin; height: 60vmin;
+  margin: -30vmin 0 0 -30vmin;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--fx-color, #d15aff) 30deg, transparent 70deg, transparent 180deg, var(--fx-color, #d15aff) 210deg, transparent 260deg);
+  opacity: 0;
+  filter: blur(6px);
+  transform: scale(0) rotate(0deg);
+}
+
+/* ── 粒子层：塑能/咒法/死灵用，围绕中心飞散或汇聚 ── */
+.fx-particles { position: absolute; inset: 0; }
+.fx-particle {
+  position: absolute; left: 50%; top: 50%;
+  width: 8px; height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--fx-color, #e8b84b);
+  box-shadow: 0 0 8px var(--fx-color, #e8b84b);
+  opacity: 0;
+}
+#cast-fx-layer.fx-mini .fx-particle { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; }
+
+/* ============================================================
+   屏幕正中央：法术名（中文大字 + 英文小字），随特效淡入淡出
+============================================================ */
+.fx-title {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fx-title-pop 0.9s cubic-bezier(.2,.8,.3,1) forwards;
+}
+#cast-fx-layer.fx-mini .fx-title { animation-duration: 0.62s; }
+
+.fx-title-cn {
+  font-size: 40px;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 18px var(--fx-color, #e8b84b), 0 0 6px rgba(0,0,0,0.6);
+}
+#cast-fx-layer.fx-mini .fx-title-cn { font-size: 26px; letter-spacing: 2px; }
+
+.fx-title-en {
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.82);
+  text-shadow: 0 0 8px rgba(0,0,0,0.6);
+}
+#cast-fx-layer.fx-mini .fx-title-en { font-size: 10px; letter-spacing: 1px; }
+
+@keyframes fx-title-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.82); }
+  22%  { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+  32%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  78%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* ============================================================
+   减弱动态效果：只做一次极简淡入淡出，不跑完整关键帧
+============================================================ */
+.fx-reduced-flash {
+  position: absolute; inset: 0;
+  background: rgba(226,163,255,0.18);
+  animation: fx-reduced-fade 0.26s ease;
+}
+@keyframes fx-reduced-fade {
+  0%   { opacity: 0; }
+  40%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   学派配色（--fx-color 变量，各关键帧统一取用）
+============================================================ */
+#cast-fx-layer[data-school="evocation"]      { --fx-color: #ffcf5c; }
+#cast-fx-layer[data-school="abjuration"]     { --fx-color: #6ab8ff; }
+#cast-fx-layer[data-school="divination"]     { --fx-color: #c9a6ff; }
+#cast-fx-layer[data-school="conjuration"]    { --fx-color: #ffb156; }
+#cast-fx-layer[data-school="enchantment"]    { --fx-color: #ff5cc8; }
+#cast-fx-layer[data-school="illusion"]       { --fx-color: #7ce0e0; }
+#cast-fx-layer[data-school="necromancy"]     { --fx-color: #5cff9e; }
+#cast-fx-layer[data-school="transmutation"]  { --fx-color: var(--accent-glow); }
+
+/* ============================================================
+   塑能 Evocation —— 中心爆闪 + 双环冲击波 + 粒子四射（最有力量感）
+============================================================ */
+#cast-fx-layer[data-school="evocation"] .fx-flash { animation: fx-evo-flash 0.5s ease-out forwards; }
+#cast-fx-layer[data-school="evocation"] .fx-ring-a { animation: fx-evo-ring 0.6s cubic-bezier(.2,.8,.3,1) forwards; }
+#cast-fx-layer[data-school="evocation"] .fx-ring-b { animation: fx-evo-ring 0.6s cubic-bezier(.2,.8,.3,1) 0.08s forwards; }
+#cast-fx-layer[data-school="evocation"] .fx-particle {
+  animation: fx-evo-particle 0.7s cubic-bezier(.15,.7,.3,1) forwards;
+}
+@keyframes fx-evo-flash {
+  0%   { opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+@keyframes fx-evo-ring {
+  0%   { opacity: 0.9; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(9); }
+}
+@keyframes fx-evo-particle {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% {
+    opacity: 0;
+    transform:
+      translate(calc(cos(var(--angle)) * var(--dist)), calc(sin(var(--angle)) * var(--dist)))
+      scale(0.2);
+  }
+}
+
+/* ============================================================
+   防护 Abjuration —— 冷色护盾环从外向内收拢，稳重结实
+============================================================ */
+#cast-fx-layer[data-school="abjuration"] .fx-ring-a {
+  animation: fx-abj-ring 0.75s cubic-bezier(.3,.9,.4,1) forwards;
+}
+#cast-fx-layer[data-school="abjuration"] .fx-ring-b {
+  animation: fx-abj-ring 0.75s cubic-bezier(.3,.9,.4,1) 0.1s forwards;
+}
+#cast-fx-layer[data-school="abjuration"] .fx-flash { animation: fx-abj-flash 0.75s ease forwards; }
+@keyframes fx-abj-ring {
+  0%   { opacity: 0; transform: scale(9); }
+  60%  { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes fx-abj-flash {
+  0%   { opacity: 0; }
+  70%  { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   预言 Divination —— 柔和同心波纹，慢一点、透一点
+============================================================ */
+#cast-fx-layer[data-school="divination"] .fx-ring-a {
+  animation: fx-div-ring 0.9s ease-out forwards;
+}
+#cast-fx-layer[data-school="divination"] .fx-ring-b {
+  animation: fx-div-ring 0.9s ease-out 0.18s forwards;
+}
+#cast-fx-layer[data-school="divination"] .fx-flash { animation: fx-div-flash 0.9s ease forwards; }
+@keyframes fx-div-ring {
+  0%   { opacity: 0.6; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(6); }
+}
+@keyframes fx-div-flash {
+  0%   { opacity: 0; }
+  30%  { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   咒法 Conjuration —— 粒子从四周汇聚成型，再一闪召唤完成
+============================================================ */
+#cast-fx-layer[data-school="conjuration"] .fx-particle {
+  animation: fx-con-particle 0.65s cubic-bezier(.2,.6,.25,1) forwards;
+}
+#cast-fx-layer[data-school="conjuration"] .fx-flash {
+  animation: fx-con-flash 0.55s ease-in 0.35s forwards;
+}
+@keyframes fx-con-particle {
+  0%   {
+    opacity: 0;
+    transform:
+      translate(calc(cos(var(--angle)) * var(--dist)), calc(sin(var(--angle)) * var(--dist)))
+      scale(0.4);
+  }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0) scale(1.3); }
+}
+@keyframes fx-con-flash {
+  0%   { opacity: 0; }
+  40%  { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   附魔 Enchantment —— 品紫螺旋扭曲扩散，带一点眩晕感
+============================================================ */
+#cast-fx-layer[data-school="enchantment"] .fx-twist {
+  animation: fx-ench-twist 0.85s ease-out forwards;
+}
+#cast-fx-layer[data-school="enchantment"] .fx-flash { animation: fx-ench-flash 0.85s ease forwards; }
+@keyframes fx-ench-twist {
+  0%   { opacity: 0; transform: scale(0.1) rotate(0deg); }
+  50%  { opacity: 0.85; }
+  100% { opacity: 0; transform: scale(1.3) rotate(220deg); }
+}
+@keyframes fx-ench-flash {
+  0%   { opacity: 0; }
+  50%  { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   幻术 Illusion —— 双重影重叠漂移，冷青色，虚实交错
+============================================================ */
+#cast-fx-layer[data-school="illusion"] .fx-ring-a {
+  animation: fx-ill-ghost-a 0.8s ease-in-out forwards;
+}
+#cast-fx-layer[data-school="illusion"] .fx-ring-b {
+  animation: fx-ill-ghost-b 0.8s ease-in-out forwards;
+}
+#cast-fx-layer[data-school="illusion"] .fx-flash { animation: fx-ill-flash 0.8s ease forwards; }
+@keyframes fx-ill-ghost-a {
+  0%   { opacity: 0; transform: scale(2) translate(-6vmin, 0); }
+  50%  { opacity: 0.6; }
+  100% { opacity: 0; transform: scale(4.5) translate(6vmin, -3vmin); }
+}
+@keyframes fx-ill-ghost-b {
+  0%   { opacity: 0; transform: scale(2) translate(6vmin, 0); }
+  50%  { opacity: 0.6; }
+  100% { opacity: 0; transform: scale(4.5) translate(-6vmin, 3vmin); }
+}
+@keyframes fx-ill-flash {
+  0%   { opacity: 0; }
+  35%  { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   死灵 Necromancy —— 暗色晕影从边缘吞入，中心一丝幽绿闪现再退散
+============================================================ */
+#cast-fx-layer[data-school="necromancy"] .fx-vignette {
+  animation: fx-necro-vig 0.9s ease-in-out forwards;
+}
+#cast-fx-layer[data-school="necromancy"] .fx-flash { animation: fx-necro-flash 0.9s ease forwards; }
+#cast-fx-layer[data-school="necromancy"] .fx-particle {
+  animation: fx-necro-particle 0.7s ease-in-out forwards;
+}
+@keyframes fx-necro-vig {
+  0%   { opacity: 0; }
+  50%  { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+@keyframes fx-necro-flash {
+  0%   { opacity: 0; }
+  55%  { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+@keyframes fx-necro-particle {
+  0%   { opacity: 0; transform: translate(0,0) scale(0.6); }
+  55%  { opacity: 0.9; }
+  100% {
+    opacity: 0;
+    transform:
+      translate(calc(cos(var(--angle)) * var(--dist) * 0.5), calc(sin(var(--angle)) * var(--dist) * 0.5))
+      scale(0.3);
+  }
+}
+
+/* ============================================================
+   变化 Transmutation —— 一道扫光条掠过全屏，跟随当前主题强调色
+============================================================ */
+#cast-fx-layer[data-school="transmutation"] .fx-sweep {
+  animation: fx-trans-sweep 0.6s ease-in-out forwards;
+}
+#cast-fx-layer[data-school="transmutation"] .fx-flash { animation: fx-trans-flash 0.6s ease forwards; }
+@keyframes fx-trans-sweep {
+  0%   { opacity: 0; left: -30%; }
+  20%  { opacity: 0.8; }
+  100% { opacity: 0; left: 108%; }
+}
+@keyframes fx-trans-flash {
+  0%   { opacity: 0; }
+  25%  { opacity: 0.25; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   特效开关按钮（法术库标题右侧，紧邻“全收起”）
+============================================================ */
+#btn-fx-toggle {
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  margin-left: 6px;
+  cursor: pointer;
+  font-family: var(--font-title);
+  transition: color 0.15s, border-color 0.15s;
+}
+#btn-fx-toggle:hover { border-color: var(--border-bright); color: var(--silver); }
+#btn-fx-toggle.fx-off { color: var(--silver-dim); opacity: 0.5; text-decoration: line-through; }

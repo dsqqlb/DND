@@ -162,10 +162,26 @@ function castSpell(sp, castLevel) {
     logEvent('cast', '🪄', `施放 ${sp.name}${up}${sp.conc ? ' · 专注' : ''}`);
   }
 
+  if (typeof playCastFx === 'function') playCastFx(sp, false);   /* 全屏施法特效（按学派，可关闭）*/
   renderSpellPanel();   /* 刷新法术位宝石与整行状态 */
 }
 
-/* ──── 整行长按施法交互：按住约 0.70s 施法；轻触则展开详情 ──── */
+/* ──── 施放戏法：不消耗法术位，直接记录（专注类戏法同样处理专注）──── */
+function castCantrip(sp) {
+  if (sp.conc) {
+    state.concentration = sp.id;
+    save('concentration', state.concentration);
+    renderConcentration();
+    renderSpellPanel();   /* 刷新专注按钮高亮状态 */
+  }
+  if (typeof logEvent === 'function') {
+    logEvent('cast', '🪄', `施放 ${sp.name}（戏法）${sp.conc ? ' · 专注' : ''}`);
+  }
+  if (typeof playCastFx === 'function') playCastFx(sp, true);    /* 戏法用缩小版特效 */
+}
+
+/* ──── 整行长按施法交互：按住约 0.70s 施法；轻触则展开详情
+        戏法（sp.level === 0）不耗法术位，永远可按住施放 ──── */
 function attachRowCast(row, sp) {
   const HOLD_MS = 700;   /* 需与 CSS .srow-casting 的填充过渡时长一致 */
   let holdTimer = null;
@@ -177,26 +193,28 @@ function attachRowCast(row, sp) {
     e.preventDefault();                        /* 阻止浏览器长按默认行为（文字选择/系统菜单）*/
     pressed = true;
     didCast = false;
-    /* 有可用法术位才启动填充动画与施法计时；否则仅保留轻触展开 */
-    if (findCastableSlot(sp.level) != null) {
+    /* 戏法永远可按住施放；1 环及以上需有可用法术位才启动填充动画与施法计时 */
+    const castable = (sp.level === 0) || (findCastableSlot(sp.level) != null);
+    if (castable) {
       row.classList.add('srow-casting');
       holdTimer = setTimeout(() => {
         holdTimer = null;
         didCast = true;
         pressed = false;
         row.classList.remove('srow-casting');
-        promptCast(sp);           /* 带升环效应先询问环阶，否则直接施放 */
+        if (sp.level === 0) castCantrip(sp);
+        else promptCast(sp);      /* 带升环效应先询问环阶，否则直接施放 */
       }, HOLD_MS);
     }
   };
 
-  const onUp = e => {
+  const onUp = () => {
     if (!pressed) return;
     pressed = false;
     if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
     row.classList.remove('srow-casting');
-    if (didCast) { didCast = false; return; }                    /* 已施法，不再展开 */
-    if (!e.target.closest('button')) showInlineDetail(sp, row);  /* 轻触展开详情 */
+    didCast = false;
+    /* 轻触不再展开详情——详情改由独立的 ▾ 按钮触发，避免和按住施法用同一热区抢触发时机 */
   };
 
   const onCancel = () => {
@@ -217,12 +235,10 @@ function buildSpellRow(sp, isDomain, isCantrip) {
   const row = document.createElement('div');
   row.className = 'srow' + (isDomain ? ' srow-domain' : '');
 
-  /* 长按施法的金色填充层（仅消耗法术位的 1 环及以上法术）*/
-  if (!isCantrip) {
-    const fill = document.createElement('span');
-    fill.className = 'srow-cast-fill';
-    row.appendChild(fill);
-  }
+  /* 长按施法的金色填充层（戏法与 1 环以上法术都可按住施放）*/
+  const fill = document.createElement('span');
+  fill.className = 'srow-cast-fill';
+  row.appendChild(fill);
 
   /* 环阶徽章 */
   if (!isCantrip) {
@@ -232,55 +248,40 @@ function buildSpellRow(sp, isDomain, isCantrip) {
     row.appendChild(badge);
   }
 
-  /* 名称区域 */
-  const nameWrap = document.createElement('div');
-  nameWrap.className = 'srow-name';
-  nameWrap.innerHTML = `<span class="srow-cn cinzel">${sp.name}</span><span class="srow-en">${sp.nameEn}</span>`;
-  if (isCantrip) {
-    /* 戏法：不耗法术位，点击名称展开详情 */
-    nameWrap.title = '点击查看详情';
-    nameWrap.style.cursor = 'pointer';
-    nameWrap.addEventListener('click', () => showInlineDetail(sp, row));
-  } else {
-    /* 1 环及以上：轻触展开、按住施法（交互挂在整行）*/
-    nameWrap.title = '轻触展开详情 · 按住施法';
-  }
-  row.appendChild(nameWrap);
-
-  /* 专注徽章（可点击激活专注） */
-  if (sp.conc) {
-    const concBtn = document.createElement('button');
-    concBtn.className = 'srow-conc-btn' + (state.concentration === sp.id ? ' active' : '');
-    concBtn.textContent = '专注';
-    concBtn.title = '点击激活/取消专注';
-    concBtn.addEventListener('click', () => toggleConc(sp.id));
-    row.appendChild(concBtn);
-  }
-
-  /* 右侧操作 */
+  /* 领域旗标：纯提示（常驻备法、无法移除），放在环阶徽章与名称之间，不是可点按钮 */
   if (isDomain) {
     const lock = document.createElement('span');
     lock.className = 'srow-domain-lock';
     lock.textContent = '⚑';
     lock.title = '领域法术，常驻备法';
     row.appendChild(lock);
-  } else {
-    const rm = document.createElement('button');
-    rm.className = 'srow-remove-btn';
-    rm.textContent = '×';
-    rm.title = '移除';
-    rm.addEventListener('click', () => {
-      if (isCantrip) removeCantrip(sp.id);
-      else removeSpell(sp.id);
-    });
-    row.appendChild(rm);
   }
 
-  /* 1 环及以上：挂载整行长按施法交互 */
-  if (!isCantrip) {
-    row.style.cursor = 'pointer';
-    attachRowCast(row, sp);
-  }
+  /* 名称区域（移除法术改由“＋选择”法术选择器完成，行上不再放 × / 专注按钮）*/
+  const nameWrap = document.createElement('div');
+  nameWrap.className = 'srow-name';
+  nameWrap.innerHTML = `<span class="srow-cn cinzel">${sp.name}</span><span class="srow-en">${sp.nameEn}</span>`;
+  nameWrap.title = '按住施法';
+  row.appendChild(nameWrap);
+
+  /* 详情展开按钮：贴满行高的竖条，固定在最右侧，单击立即触发，不与“按住施法”争抢同一手势时机 */
+  const detailBtn = document.createElement('button');
+  detailBtn.className = 'srow-detail-btn';
+  detailBtn.title = '查看详情';
+  const detailArrow = document.createElement('span');
+  detailArrow.className = 'srow-detail-arrow';
+  detailArrow.textContent = '▾';
+  detailBtn.appendChild(detailArrow);
+  detailBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    showInlineDetail(sp, row);
+    detailBtn.classList.toggle('open');
+  });
+  row.appendChild(detailBtn);
+
+  /* 挂载整行长按施法交互（戏法与 1 环以上法术一致）*/
+  row.style.cursor = 'pointer';
+  attachRowCast(row, sp);
 
   return row;
 }

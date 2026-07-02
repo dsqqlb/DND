@@ -71,7 +71,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 document.getElementById('btn-collapse-all').addEventListener('click', () => {
   document.querySelectorAll('.srow-glow-wrap').forEach(w => {
     const innerRow = w.querySelector('.srow');
-    if (innerRow) w.parentNode.insertBefore(innerRow, w);
+    if (innerRow) {
+      w.parentNode.insertBefore(innerRow, w);
+      const btn = innerRow.querySelector('.srow-detail-btn');
+      if (btn) btn.classList.remove('open');   /* 同步复位箭头方向 */
+    }
     w.remove();
   });
 });

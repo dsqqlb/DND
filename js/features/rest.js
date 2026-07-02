@@ -219,9 +219,26 @@ function importBackup(file) {
 
     showDialog({
       icon: '⬆', title: '导入备份',
-      message: `将用备份中的 ${keys.length} 项数据<b>覆盖</b>当前全部数据，此操作不可撤销。<br>确定导入吗？`,
+      message: `将用备份中的 ${keys.length} 项数据<b>覆盖</b>当前全部数据。<br>` +
+                '为防止点错，导入前会先自动下载一份「当前数据」的安全快照，之后再覆盖。<br>确定导入吗？',
       confirmText: '覆盖导入', cancelText: '取消',
       onConfirm: () => {
+        /* 安全网：覆盖前先把当前数据自动导出一份快照，防止手滑导入错文件后无法找回 */
+        try {
+          const snapshot = { app: 'dnd-character-sheet', version: 1, exportedAt: new Date().toISOString(), autoSnapshot: true, data: collectBackup() };
+          const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          a.href     = url;
+          a.download = `dnd-backup-导入前快照-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error('[importBackup] 导入前快照失败：', err);
+        }
+
         /* 先清除现有 dnd_ 键（保留日志数据），再写入备份，最后重载页面让状态重新初始化 */
         const existing = [];
         for (let i = 0; i < localStorage.length; i++) {

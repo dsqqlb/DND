@@ -85,6 +85,8 @@
             <div class="exhaust-pip" data-idx="1"></div>
             <div class="exhaust-pip" data-idx="2"></div>
             <div class="exhaust-pip" data-idx="3"></div>
+            <div class="exhaust-pip" data-idx="4"></div>
+            <div class="exhaust-pip" data-idx="5"></div>
           </div>
         </div>
       </div>
@@ -244,7 +246,7 @@
   <div class="page" id="page-spells">
 
     <div id="panel-spell" class="panel">
-      <div class="panel-title">施法 · 法术库<button id="btn-collapse-all" title="收起全部详情">✕ 全收起</button></div>
+      <div class="panel-title">施法 · 法术库<button id="btn-collapse-all" title="收起全部详情">✕ 全收起</button><button id="btn-fx-toggle" title="施法全屏特效 开/关">✨ 特效</button></div>
 
       <div class="spell-sec-header">
         <span class="cinzel spell-sec-lbl">戏法</span>
@@ -364,6 +366,9 @@
 <button id="btn-undo" class="hidden" title="撤销上一步">↶ 撤销</button>
 <div id="undo-toast"></div>
 
+<!-- 施法全屏特效层：按法术学派切换动效，不拦截点击 -->
+<div id="cast-fx-layer" aria-hidden="true"></div>
+
 
 <!-- 底部翻页标签栏 -->
 <nav id="tab-bar">
@@ -469,6 +474,7 @@
 <script src="js/features/log.js"></script>          <!-- 日志页 + 跑团计时器 -->
 <script src="js/features/theme.js"></script>        <!-- 主题切换面板 -->
 <script src="js/features/undo.js"></script>         <!-- 撤销上一步 -->
+<script src="js/features/castfx.js"></script>       <!-- 施法全屏特效（按学派区分，可开关） -->
 <script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->
 </body>
 </html>

@@ -1,10 +1,40 @@
 /* ============================================================
    localStorage 工具
+   ------------------------------------------------------------
+   save() 包了 try/catch：隐私模式下 localStorage 被禁用，或存储
+   配额写满时，setItem 会抛异常——不处理的话会“静默丢数据”，你
+   毫无察觉。这里改成：失败就弹一次提示，告诉你去导出备份 + 清理。
 ============================================================ */
-function save(key, val) { localStorage.setItem('dnd_' + key, JSON.stringify(val)); }
+let _saveWarned = false;   /* 同一会话内只提示一次，避免连续操作时反复打断 */
+
+function save(key, val) {
+  try {
+    localStorage.setItem('dnd_' + key, JSON.stringify(val));
+  } catch (err) {
+    console.error('[save] 写入 localStorage 失败：', key, err);
+    if (!_saveWarned) {
+      _saveWarned = true;
+      if (typeof showDialog === 'function') {
+        showDialog({
+          icon: '⚠', title: '存储失败',
+          message: '数据未能保存到本地（可能是隐私模式，或存储空间已满）。<br>' +
+                    '本次改动很可能<b>没有落盘</b>，建议尽快去「背包」页导出备份，并清理不需要的旧跑团日志。',
+          confirmText: '知道了',
+        });
+      } else {
+        alert('数据保存失败：存储空间可能已满或不可用，请尽快导出备份。');
+      }
+    }
+  }
+}
 function load(key, def) {
-  const v = localStorage.getItem('dnd_' + key);
-  return v === null ? def : JSON.parse(v);
+  try {
+    const v = localStorage.getItem('dnd_' + key);
+    return v === null ? def : JSON.parse(v);
+  } catch (err) {
+    console.error('[load] 读取 localStorage 失败：', key, err);
+    return def;
+  }
 }
 
 /* ============================================================
@@ -18,13 +48,11 @@ let state = {
   cantripIds:    load('cantripIds',  []),   // 已知戏法 ID 列表
   preparedIds:   load('preparedIds', []),   // 自选备法 ID 列表（含环1-3，不超过 maxPrepared）
   deathSave:     load('deathSave', { success:[false,false,false], fail:[false,false,false] }),
-  exhaustion:    load('exhaustion', [false, false, false, false]),
+  exhaustion:    load('exhaustion', new Array(6).fill(false)),   // 力竭 6 级（5e 规则）
   channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
   buffs:         load('buffs', {}),
   buffDurations: load('buffDurations', {}),   // 状态剩余轮数：{ buffId: rounds }；战斗中每回合 −1，到 0 自动结束
   buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
-  concentration: load('concentration', null),  // 专注中的法术 ID，或 null
-  luckyDice:     load('luckyDice', 0),
   concentration: load('concentration', null),  // 专注中的法术 ID，或 null
   luckyDice:     load('luckyDice', 0),
   /* 冒险日志：以「一次跑团」为文件夹节点，可累积多次跑团。

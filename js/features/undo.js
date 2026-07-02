@@ -24,7 +24,7 @@
     hp: CHAR.maxHp, maxHp: CHAR.maxHp, tempHp: 0, slots: [],
     cantripIds: [], preparedIds: [],
     deathSave: { success: [false, false, false], fail: [false, false, false] },
-    exhaustion: [false, false, false, false],
+    exhaustion: new Array(6).fill(false),
     channel: [], buffs: {}, buffPicks: [], buffDurations: {},
     concentration: null, luckyDice: 0, sessions: [], currentSessionId: null,
   };
