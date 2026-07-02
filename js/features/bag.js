@@ -21,13 +21,23 @@
   const bagPresetList = $('equip-preset-list');
 
   /* 货币输入框 */
+  const CUR_LABEL = { cp: '铜', sp: '银', gp: '金', pp: '铂' };
   ['cp', 'sp', 'gp', 'pp'].forEach(key => {
     const el = document.getElementById('cur-' + key);
     if (!el) return;
     el.value = currency[key];
+    let before = currency[key];
+    el.addEventListener('focus', () => { before = currency[key]; });
     el.addEventListener('input', () => {
       currency[key] = parseInt(el.value) || 0;
       save('currency', currency);
+    });
+    el.addEventListener('change', () => {
+      const d = currency[key] - before;
+      if (d && typeof logEvent === 'function') {
+        logEvent('bag', '🪙', `${CUR_LABEL[key]}币 ${d > 0 ? '+' : ''}${d}（共 ${currency[key]}）`);
+      }
+      before = currency[key];
     });
   });
 
@@ -69,8 +79,20 @@
       const db = ITEM_DB.find(d => d.id === item.id);
       if (!db) return;
       bagPresetList.appendChild(makeQtyChip(db.name, item.qty,
-        delta => { item.qty = Math.max(1, item.qty + delta); save('bag_items', bagItems); renderBag(); },
-        ()    => { bagItems = bagItems.filter(e => e.id !== item.id); save('bag_items', bagItems); renderBag(); }
+        delta => {
+          const before = item.qty;
+          item.qty = Math.max(1, item.qty + delta);
+          save('bag_items', bagItems); renderBag();
+          if (item.qty !== before && typeof logEvent === 'function') {
+            const diff = item.qty - before;
+            logEvent('bag', '🎒', `${db.name} ×${item.qty}（${diff > 0 ? '+' : ''}${diff}）`);
+          }
+        },
+        ()    => {
+          bagItems = bagItems.filter(e => e.id !== item.id);
+          save('bag_items', bagItems); renderBag();
+          if (typeof logEvent === 'function') logEvent('bag', '🎒', `移除 ${db.name}`);
+        }
       ));
     });
     renderWeight();
@@ -171,6 +193,10 @@
     save('bag_items', bagItems);
     renderBag();
     renderModalList();
+    if (typeof logEvent === 'function') {
+      const db = ITEM_DB.find(d => d.id === id);
+      if (db) logEvent('bag', '🎒', `获得 ${db.name}${existing ? `（×${existing.qty}）` : ''}`);
+    }
   }
 
   document.querySelectorAll('.btn-item-add').forEach(btn => {

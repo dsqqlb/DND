@@ -315,13 +315,49 @@
 
   </div><!-- /#page-bag -->
 
+  <!-- ══ 第五页：日志 ══ -->
+  <div class="page" id="page-log">
+
+    <!-- 跑团计时器 -->
+    <div id="panel-timer" class="panel">
+      <div class="panel-title">跑团计时</div>
+      <div id="timer-display" class="cinzel">00:00:00</div>
+      <div id="timer-controls">
+        <button id="timer-toggle" class="timer-btn timer-btn-main">▶ 开始</button>
+        <button id="timer-end" class="timer-btn">■ 结束</button>
+      </div>
+    </div>
+
+    <!-- 事件日志 -->
+    <div id="panel-log" class="panel">
+      <div class="panel-title">冒险日志
+        <span id="log-tools">
+          <button id="btn-log-export" class="log-tool-btn" title="导出全部跑团日志">⬇ 导出</button>
+          <button id="btn-log-import" class="log-tool-btn" title="从文件导入跑团日志">⬆ 导入</button>
+          <button id="btn-log-clear"  class="log-tool-btn" title="清空全部日志">🗑 清空</button>
+          <input type="file" id="log-import-file" accept="application/json,.json" style="display:none;">
+        </span>
+      </div>
+
+      <div id="log-note-row">
+        <input type="text" id="log-note-input" placeholder="记点什么…（剧情 / NPC / 任务）" maxlength="200" autocomplete="off">
+        <button id="log-note-add" title="添加笔记">＋</button>
+      </div>
+
+      <div id="log-filter-tabs"></div>
+
+      <div id="log-list"></div>
+    </div>
+
+  </div><!-- /#page-log -->
+
 </div><!-- /#pages-container -->
 
 <!-- 底部翻页标签栏 -->
 <nav id="tab-bar">
   <button class="tab-btn active" data-page="page-combat">⚔ 战斗</button>
   <button class="tab-btn" data-page="page-class">☩ 职业</button>
-  <button class="tab-btn" data-page="page-spells">✦ 法术</button>  <button class="tab-btn" data-page="page-bag">⊛ 背包</button></nav>
+  <button class="tab-btn" data-page="page-spells">✦ 法术</button>  <button class="tab-btn" data-page="page-bag">⊛ 背包</button>  <button class="tab-btn" data-page="page-log">✒ 日志</button></nav>
 
 <div id="spell-modal" class="hidden">
   <div id="spell-modal-panel">
@@ -388,6 +424,7 @@
 <script src="js/features/rest.js"></script>         <!-- 长休/短休 + HP/死亡豁免/力竭交互 -->
 <script src="js/features/initiative.js"></script>   <!-- 先攻追踪器（独立IIFE） -->
 <script src="js/features/bag.js"></script>          <!-- 背包管理（独立IIFE） -->
+<script src="js/features/log.js"></script>          <!-- 日志页 + 跑团计时器 -->
 <script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->
 </body>
 </html>

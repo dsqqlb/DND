@@ -8,6 +8,11 @@ document.querySelectorAll('.save-circle').forEach(c => {
     state.deathSave[type][idx] = !state.deathSave[type][idx];
     save('deathSave', state.deathSave);
     renderDeathSaves();
+    if (typeof logEvent === 'function') {
+      const n = state.deathSave[type].filter(Boolean).length;
+      const lbl = type === 'success' ? '死亡豁免成功' : '死亡豁免失败';
+      logEvent('hp', '💀', (state.deathSave[type][idx] ? '' : '撤销') + `${lbl}（${n}/3）`);
+    }
   });
 });
 
@@ -27,10 +32,12 @@ document.querySelectorAll('.exhaust-pip').forEach(pip => {
    交互：断专注
 ============================================================ */
 $('conc-break').addEventListener('click', () => {
+  const nm = state.concentration && typeof getSpell === 'function' ? (getSpell(state.concentration) || {}).name : '';
   state.concentration = null;
   save('concentration', null);
   renderConcentration();
   renderSpellPanel();
+  if (typeof logEvent === 'function') logEvent('cast', '🎯', nm ? `断开专注（${nm}）` : '断开专注');
 });
 
 /* ============================================================
@@ -114,6 +121,7 @@ function doLongRest() {
   renderSpellPanel();
   renderBuffs();
   document.dispatchEvent(new CustomEvent('longrest'));
+  if (typeof logEvent === 'function') logEvent('rest', '⌛', '进行了长休 · 恢复生命与法术位，力竭 −1');
 }
 
 $('btn-long-rest').addEventListener('click', () => {
@@ -138,6 +146,7 @@ function doShortRest() {
   renderChannel();
   renderConcentration();
   renderSpellPanel();   /* 刷新法术面板里的专注按钮高亮 */
+  if (typeof logEvent === 'function') logEvent('rest', '☾', '进行了短休 · 恢复引导神力，断开专注');
 }
 
 $('btn-short-rest').addEventListener('click', () => {
@@ -154,12 +163,14 @@ $('btn-short-rest').addEventListener('click', () => {
 /* ============================================================
    数据备份：导出 / 导入（覆盖全部 dnd_ 开头的 localStorage 键）
 ============================================================ */
-/* 收集所有本卡数据（键值均为 save() 存入的 JSON 字符串，原样搬运） */
+/* 收集所有本卡数据（键值均为 save() 存入的 JSON 字符串，原样搬运）
+   注意：日志数据（dnd_sessions / dnd_currentSessionId）独立导入导出，不并入角色备份。 */
+const LOG_KEYS = ['dnd_sessions', 'dnd_currentSessionId'];
 function collectBackup() {
   const data = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && key.startsWith('dnd_')) data[key] = localStorage.getItem(key);
+    if (key && key.startsWith('dnd_') && !LOG_KEYS.includes(key)) data[key] = localStorage.getItem(key);
   }
   return data;
 }
@@ -211,14 +222,14 @@ function importBackup(file) {
       message: `将用备份中的 ${keys.length} 项数据<b>覆盖</b>当前全部数据，此操作不可撤销。<br>确定导入吗？`,
       confirmText: '覆盖导入', cancelText: '取消',
       onConfirm: () => {
-        /* 先清除现有 dnd_ 键，再写入备份，最后重载页面让状态重新初始化 */
+        /* 先清除现有 dnd_ 键（保留日志数据），再写入备份，最后重载页面让状态重新初始化 */
         const existing = [];
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
-          if (k && k.startsWith('dnd_')) existing.push(k);
+          if (k && k.startsWith('dnd_') && !LOG_KEYS.includes(k)) existing.push(k);
         }
         existing.forEach(k => localStorage.removeItem(k));
-        keys.forEach(k => localStorage.setItem(k, data[k]));
+        keys.filter(k => !LOG_KEYS.includes(k)).forEach(k => localStorage.setItem(k, data[k]));
         location.reload();
       },
     });

@@ -24,6 +24,13 @@ let state = {
   buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
   concentration: load('concentration', null),  // 专注中的法术 ID，或 null
   luckyDice:     load('luckyDice', 0),
+  concentration: load('concentration', null),  // 专注中的法术 ID，或 null
+  luckyDice:     load('luckyDice', 0),
+  /* 冒险日志：以「一次跑团」为文件夹节点，可累积多次跑团。
+     每个 session = { id, title, startedAt, endedAt, timer:{running,base,startedAt}, entries:[{id,t,cat,icon,text}] }
+     日志数据独立导入导出，不随角色备份走。 */
+  sessions:         load('sessions', []),
+  currentSessionId: load('currentSessionId', null),  // 进行中的跑团 id，或 null
 };
 
 /* ============================================================

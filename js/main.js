@@ -13,10 +13,14 @@ renderLuckyDice();
 
 /* 幸运骠子交互 */
 $('lucky-minus').addEventListener('click', () => {
-  if (state.luckyDice > 0) { state.luckyDice--; save('luckyDice', state.luckyDice); renderLuckyDice(); }
+  if (state.luckyDice > 0) {
+    state.luckyDice--; save('luckyDice', state.luckyDice); renderLuckyDice();
+    if (typeof logEvent === 'function') logEvent('combat', '🎲', `使用幸运骰（剩 ${state.luckyDice}）`);
+  }
 });
 $('lucky-plus').addEventListener('click', () => {
   state.luckyDice++; save('luckyDice', state.luckyDice); renderLuckyDice();
+  if (typeof logEvent === 'function') logEvent('combat', '🎲', `幸运骰 +1（共 ${state.luckyDice}）`);
 });
 $('lucky-val').addEventListener('click', () => {
   $('lucky-val').style.display = 'none';

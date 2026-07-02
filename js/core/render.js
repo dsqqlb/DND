@@ -156,6 +156,12 @@ function castSpell(sp, castLevel) {
     renderConcentration();
   }
 
+  /* 写入冒险日志（升环时标注实际环阶）*/
+  if (typeof logEvent === 'function') {
+    const up = slot.lv > sp.level ? `（升至 ${slot.lv} 环）` : (sp.level > 0 ? `（${slot.lv} 环）` : '');
+    logEvent('cast', '🪄', `施放 ${sp.name}${up}${sp.conc ? ' · 专注' : ''}`);
+  }
+
   renderSpellPanel();   /* 刷新法术位宝石与整行状态 */
 }
 
@@ -434,10 +440,15 @@ function renderConcentration() {
 }
 
 function toggleConc(spellId) {
-  state.concentration = (state.concentration === spellId) ? null : spellId;
+  const started = state.concentration !== spellId;
+  state.concentration = started ? spellId : null;
   save('concentration', state.concentration);
   renderConcentration();
   renderSpellPanel();  /* 刷新专注按钮高亮状态 */
+  if (typeof logEvent === 'function') {
+    const nm = (getSpell(spellId) || {}).name || spellId;
+    logEvent('cast', '🎯', started ? `开始专注 ${nm}` : `结束专注 ${nm}`);
+  }
 }
 
 /* ============================================================
@@ -470,6 +481,10 @@ function renderChannel() {
       state.channel[i] = !state.channel[i];
       save('channel', state.channel);
       renderChannel();
+      if (typeof logEvent === 'function') {
+        const left = CHAR.channelDivinity - state.channel.filter(Boolean).length;
+        logEvent('combat', '⚡', (state.channel[i] ? '消耗引导神力' : '恢复引导神力') + `（剩 ${left}/${CHAR.channelDivinity}）`);
+      }
     });
     container.appendChild(pip);
   }
@@ -493,6 +508,9 @@ function renderBuffs() {
       state.buffs[id] = !state.buffs[id];
       save('buffs', state.buffs);
       renderBuffs();
+      if (typeof logEvent === 'function') {
+        logEvent('buff', '🏷️', (state.buffs[id] ? '获得状态 ' : '解除状态 ') + b.name);
+      }
     });
     container.appendChild(chip);
   });

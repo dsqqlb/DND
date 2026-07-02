@@ -1611,6 +1611,16 @@ body {
   overflow: hidden;
 }
 
+/* 第五页：日志 —— 纵向排列，内容整体可滚动 */
+#page-log.active {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#page-log #panel-log { flex-shrink: 0; }
+
 .bag-section-div {
   border-top: 1px solid var(--border-dim);
   margin: 10px 0;
@@ -2890,3 +2900,250 @@ body {
   transition: color 0.15s, border-color 0.15s;
 }
 .backup-btn:hover { border-color: var(--border-bright); color: var(--silver); }
+
+/* ============================================================
+   日志页：跑团计时器 + 冒险日志
+============================================================ */
+
+/* ── 计时器 ── */
+#timer-display {
+  text-align: center;
+  font-size: 44px;
+  letter-spacing: 4px;
+  color: var(--silver);
+  padding: 6px 0 10px;
+  font-variant-numeric: tabular-nums;
+}
+#timer-display.timer-live { color: var(--accent-glow); text-shadow: 0 0 10px rgba(226,163,255,0.35); }
+
+#timer-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.timer-btn {
+  min-width: 96px;
+  padding: 9px 16px;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-dim);
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  color: var(--silver-dim);
+  letter-spacing: 2px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.timer-btn:hover { border-color: var(--border-bright); color: var(--silver); }
+.timer-btn-main.timer-running {
+  border-color: var(--accent-glow);
+  color: var(--accent-glow);
+  background: rgba(226,163,255,0.08);
+}
+
+/* ── 日志工具按钮（导出/导入/清空）── */
+#log-tools {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+/* 日志面板标题里 #log-tools 已用 auto 撑到右侧，折叠按钮紧随其后即可 */
+#panel-log > .panel-title .panel-collapse-btn { margin-left: 6px; }
+.log-tool-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  letter-spacing: 1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.log-tool-btn:hover { border-color: var(--border-bright); color: var(--silver); }
+
+/* ── 笔记输入行 ── */
+#log-note-row {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 12px;
+  transition: opacity 0.2s;
+}
+#log-note-row.log-disabled { opacity: 0.4; pointer-events: none; }
+#log-note-input {
+  flex: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dim);
+  color: var(--silver);
+  padding: 8px 10px;
+  outline: none;
+}
+#log-note-input:focus { border-color: var(--border-bright); }
+#log-note-input::placeholder { color: var(--silver-dim); }
+#log-note-add {
+  width: 40px;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  font-size: 18px;
+  transition: color 0.15s, border-color 0.15s;
+}
+#log-note-add:hover { border-color: var(--border-bright); color: var(--silver); }
+
+/* ── 筛选 tab（复用 sp-tab 视觉，加边框成条）── */
+#log-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--border-dim);
+  margin-bottom: 12px;
+}
+#log-filter-tabs .sp-tab {
+  flex: 1 0 auto;
+  min-width: 48px;
+  padding: 7px 4px;
+  border: none;
+  border-right: 1px solid var(--border-dim);
+  background: none;
+  color: var(--silver-dim);
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+#log-filter-tabs .sp-tab:last-child { border-right: none; }
+#log-filter-tabs .sp-tab:hover { color: var(--silver); }
+#log-filter-tabs .sp-tab.active { color: var(--silver); background: rgba(229,229,229,0.05); }
+
+/* ── 空状态 ── */
+.log-empty, .log-entry-none {
+  color: var(--silver-dim);
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 18px 8px;
+}
+.log-entry-none { padding: 10px 8px; }
+
+/* ── 跑团文件夹卡片 ── */
+.log-session {
+  border: 1px solid var(--border-dim);
+  background: var(--bg-card);
+  margin-bottom: 10px;
+}
+.log-session-active {
+  border-color: var(--accent-glow);
+  outline: 1px solid rgba(226,163,255,0.25);
+  outline-offset: -3px;
+}
+.log-session-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.log-session-caret { color: var(--silver-dim); width: 12px; }
+.log-session-title {
+  color: var(--silver);
+  letter-spacing: 1px;
+}
+.log-session-badge {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--accent-glow);
+  border: 1px solid var(--accent-glow);
+  padding: 1px 6px;
+}
+.log-session-meta {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--silver-dim);
+  font-variant-numeric: tabular-nums;
+}
+.log-session-del {
+  background: none;
+  border: none;
+  color: var(--silver-dim);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.log-session-del:hover { color: var(--red-dark); }
+
+.log-session-rename {
+  background: none;
+  border: none;
+  color: var(--silver-dim);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.log-session-rename:hover { color: var(--accent-glow); }
+
+/* 重命名对话框输入 */
+.rename-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dim);
+  color: var(--silver);
+  padding: 9px 10px;
+  outline: none;
+  text-align: center;
+}
+.rename-input:focus { border-color: var(--border-bright); }
+.rename-hint {
+  font-size: 12px;
+  color: var(--silver-dim);
+  margin-top: 8px;
+}
+
+/* ── 单条日志 ── */
+.log-session-body {
+  border-top: 1px solid var(--border-dim);
+  padding: 4px 0;
+}
+.log-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(58,58,58,0.4);
+}
+.log-entry:last-child { border-bottom: none; }
+.log-entry-icon { width: 18px; text-align: center; flex-shrink: 0; }
+.log-entry-text {
+  flex: 1;
+  color: var(--silver);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.log-entry-time {
+  font-size: 10px;
+  color: var(--silver-dim);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.log-entry-del {
+  background: none;
+  border: none;
+  color: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.log-entry:hover .log-entry-del { color: var(--silver-dim); }
+.log-entry-del:hover { color: var(--red-dark); }
+
+/* 分类左边色条提示 */
+.log-entry-cast { box-shadow: inset 3px 0 0 rgba(226,163,255,0.5); }
+.log-entry-hp   { box-shadow: inset 3px 0 0 rgba(160,60,60,0.6); }
+.log-entry-rest { box-shadow: inset 3px 0 0 rgba(120,150,200,0.5); }
+.log-entry-note { box-shadow: inset 3px 0 0 rgba(200,200,200,0.4); }
+.log-entry-timer{ box-shadow: inset 3px 0 0 rgba(120,200,150,0.5); }
+.log-entry-buff  { box-shadow: inset 3px 0 0 rgba(220,180,90,0.55); }
+.log-entry-combat{ box-shadow: inset 3px 0 0 rgba(200,120,60,0.55); }
+.log-entry-bag   { box-shadow: inset 3px 0 0 rgba(150,150,150,0.5); }

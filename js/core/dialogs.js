@@ -343,6 +343,7 @@ function startHpEdit() {
 }
 
 function commitHpEdit() {
+  const before = state.hp;
   let v = parseInt($('hp-input').value, 10);
   if (isNaN(v)) v = state.hp;
   state.hp = Math.max(0, Math.min(state.maxHp, v));
@@ -350,6 +351,7 @@ function commitHpEdit() {
   $('hp-current').style.display = '';
   $('hp-input').style.display = 'none';
   renderHp();
+  logHpDelta(before, state.hp);
 }
 
 function startMaxHpEdit() {
@@ -389,12 +391,27 @@ function applyDamage(dmg) {
   $('temp-hp-slider').value = state.tempHp;
   $('temp-hp-slider-val').textContent = state.tempHp;
   renderHp();
+  if (typeof logEvent === 'function') {
+    const tmp = absorbed > 0 ? `（临时HP吸收 ${absorbed}）` : '';
+    logEvent('hp', '💔', `受到 ${dmg} 点伤害${tmp} · 剩 ${state.hp}/${state.maxHp}`);
+  }
+}
+
+function applyHeal(amt) {
+  const before = state.hp;
+  state.hp = Math.min(state.maxHp, state.hp + amt);
+  save('hp', state.hp);
+  renderHp();
+  const healed = state.hp - before;
+  if (healed > 0 && typeof logEvent === 'function') {
+    logEvent('hp', '❤', `恢复 ${healed} 点生命 · ${state.hp}/${state.maxHp}`);
+  }
 }
 
 $('hp-minus').addEventListener('click',  () => applyDamage(1));
-$('hp-plus').addEventListener('click',   () => { state.hp = Math.min(state.maxHp, state.hp + 1); save('hp', state.hp); renderHp(); });
+$('hp-plus').addEventListener('click',   () => applyHeal(1));
 $('hp-minus5').addEventListener('click', () => applyDamage(5));
-$('hp-plus5').addEventListener('click',  () => { state.hp = Math.min(state.maxHp, state.hp + 5); save('hp', state.hp); renderHp(); });
+$('hp-plus5').addEventListener('click',  () => applyHeal(5));
 
 /* 血条拖拽 / 点击 */
 function setHpFromBarX(clientX) {
@@ -408,21 +425,33 @@ function setHpFromBarX(clientX) {
 }
 
 let _draggingHpBar = false;
+let _hpBeforeDrag = 0;
+
+/* 直接设定血量（拖拽血条 / 手输数值）后，把净变化记进日志（避免过程中刷屏）*/
+function logHpDelta(before, after) {
+  const d = after - before;
+  if (!d || typeof logEvent !== 'function') return;
+  if (d < 0) logEvent('hp', '💔', `失去 ${-d} 点生命 · 剩 ${after}/${state.maxHp}`);
+  else       logEvent('hp', '❤', `恢复 ${d} 点生命 · ${after}/${state.maxHp}`);
+}
+
 $('hp-bar-track').addEventListener('mousedown', e => {
   _draggingHpBar = true;
+  _hpBeforeDrag = state.hp;
   setHpFromBarX(e.clientX);
   e.preventDefault();
 });
 document.addEventListener('mousemove', e => { if (_draggingHpBar) setHpFromBarX(e.clientX); });
-document.addEventListener('mouseup',   () => { _draggingHpBar = false; });
+document.addEventListener('mouseup',   () => { if (_draggingHpBar) { _draggingHpBar = false; logHpDelta(_hpBeforeDrag, state.hp); } });
 
 $('hp-bar-track').addEventListener('touchstart', e => {
   _draggingHpBar = true;
+  _hpBeforeDrag = state.hp;
   setHpFromBarX(e.touches[0].clientX);
   e.preventDefault();
 }, { passive: false });
 document.addEventListener('touchmove', e => { if (_draggingHpBar) setHpFromBarX(e.touches[0].clientX); }, { passive: false });
-document.addEventListener('touchend',  () => { _draggingHpBar = false; });
+document.addEventListener('touchend',  () => { if (_draggingHpBar) { _draggingHpBar = false; logHpDelta(_hpBeforeDrag, state.hp); } });
 
 /* 临时HP滑块 */
 let _tempSliderOpen = false;

@@ -226,6 +226,7 @@
     if (state.currentIndex >= state.combatants.length - 1) {
       state.currentIndex = 0;
       state.round++;
+      if (typeof logEvent === 'function') logEvent('combat', '⚔', `进入第 ${state.round} 回合`);
     } else {
       state.currentIndex++;
     }
@@ -388,6 +389,7 @@
     updateToggleCard();
     saveState();
     renderAll();
+    if (typeof logEvent === 'function') logEvent('combat', '⚔', state.active ? '进入战斗' : '结束战斗');
   });
 
   /* ──── 长休清空 ──── */
