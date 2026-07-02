@@ -95,6 +95,7 @@ function doLongRest() {
   state.deathSave     = { success:[false,false,false], fail:[false,false,false] };
   state.concentration = null;
   state.buffs         = {};
+  state.buffDurations = {};
   /* 力竭每次长休减一级（从末尾往前找第一个激活的清除） */
   const lastActive = [...state.exhaustion].lastIndexOf(true);
   if (lastActive !== -1) state.exhaustion[lastActive] = false;
@@ -106,6 +107,7 @@ function doLongRest() {
   save('deathSave',    state.deathSave);
   save('concentration', state.concentration);
   save('buffs',        state.buffs);
+  save('buffDurations', state.buffDurations);
   save('exhaustion',   state.exhaustion);
   $('temp-hp-slider').value = 0;
   $('temp-hp-slider-val').textContent = 0;

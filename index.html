@@ -283,7 +283,9 @@
       <div id="weight-summary">
         <span class="cinzel weight-lbl">总重量</span>
         <span id="total-weight" class="cinzel">0</span>
+        <span id="weight-cap" class="cinzel">/ 90</span>
         <span class="weight-unit">lbs</span>
+        <span id="weight-warn">超重</span>
       </div>
 
       <div id="misc-currency">
@@ -366,6 +368,9 @@
       <button id="spell-modal-close">✕</button>
     </div>
     <div id="spell-modal-tabs"><!-- 环阶标签由 dialogs.js 依据 CHAR.spellSlots 动态生成 --></div>
+    <div id="spell-modal-search-wrap">
+      <input type="text" id="spell-modal-search" placeholder="搜索法术名（中 / 英）…" autocomplete="off">
+    </div>
     <div id="spell-modal-list"></div>
   </div>
 </div>
@@ -392,6 +397,27 @@
     </div>
     <div id="buff-modal-tabs"></div>
     <div id="buff-modal-list"></div>
+  </div>
+</div>
+
+<!-- 日志导出：先选跑团，再选导出格式 -->
+<div id="log-export-modal" class="hidden">
+  <div id="log-export-panel">
+    <div id="log-export-head">
+      <span class="cinzel">导出日志</span>
+      <button id="log-export-close">✕</button>
+    </div>
+    <label id="log-export-all-row">
+      <input type="checkbox" id="log-export-all"> <span>全选</span>
+      <span id="log-export-count"></span>
+    </label>
+    <div id="log-export-list"></div>
+    <div id="log-export-step2">选择导出内容：</div>
+    <div id="log-export-actions">
+      <button class="log-export-fmt" data-fmt="txt">仅战报 .txt</button>
+      <button class="log-export-fmt" data-fmt="json">仅存档 .json</button>
+      <button class="log-export-fmt log-export-both" data-fmt="both">两者都要</button>
+    </div>
   </div>
 </div>
 

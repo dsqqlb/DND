@@ -21,6 +21,7 @@ let state = {
   exhaustion:    load('exhaustion', [false, false, false, false]),
   channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
   buffs:         load('buffs', {}),
+  buffDurations: load('buffDurations', {}),   // 状态剩余轮数：{ buffId: rounds }；战斗中每回合 −1，到 0 自动结束
   buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
   concentration: load('concentration', null),  // 专注中的法术 ID，或 null
   luckyDice:     load('luckyDice', 0),

@@ -98,7 +98,7 @@
     renderWeight();
   }
 
-  /* ── 重量统计 ── */
+  /* ── 重量统计 + 搬运上限（5e：力量 × 15）── */
   function renderWeight() {
     const total = bagItems.reduce((sum, item) => {
       const db = ITEM_DB.find(d => d.id === item.id);
@@ -106,6 +106,12 @@
     }, 0);
     const rounded = Math.round(total * 10) / 10;
     document.getElementById('total-weight').textContent = rounded;
+
+    const cap = (CHAR.abilities.str || 0) * 15;   // 搬运上限 = 力量得分 × 15
+    const capEl = document.getElementById('weight-cap');
+    if (capEl) capEl.textContent = '/ ' + cap;
+    const summary = document.getElementById('weight-summary');
+    if (summary) summary.classList.toggle('weight-over', rounded > cap);
   }
 
   /* ── 记事本初始化 ── */

@@ -292,27 +292,151 @@
   /* ============================================================
      独立导入 / 导出（仅日志数据）
   ============================================================ */
-  function exportLog() {
+  /* 打开导出弹窗：先勾选要导出哪几次跑团 */
+  function openExportModal() {
     if (!state.sessions.length) {
       showDialog({ icon: '⚠', title: '暂无日志', message: '还没有任何跑团记录可以导出。', confirmText: '知道了' });
       return;
     }
-    const payload = {
-      app: 'dnd-adventure-log',
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      sessions: state.sessions,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    renderExportList();
+    $('log-export-modal').classList.remove('hidden');
+  }
+
+  function renderExportList() {
+    const list = $('log-export-list');
+    list.innerHTML = '';
+    /* 最新在上 */
+    const ordered = [...state.sessions].sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
+    ordered.forEach(sess => {
+      const dur = fmtDuration(sessionElapsed(sess));
+      const row = document.createElement('label');
+      row.className = 'log-export-item';
+      row.innerHTML = `
+        <input type="checkbox" class="log-export-cb" data-id="${sess.id}" checked>
+        <span class="log-export-item-title">${escapeHtml(sess.title)}</span>
+        <span class="log-export-item-meta">${fmtDate(sess.startedAt)} · ${dur} · ${sess.entries.length} 条</span>`;
+      row.querySelector('.log-export-cb').addEventListener('change', syncExportAll);
+      list.appendChild(row);
+    });
+    syncExportAll();
+  }
+
+  /* 同步“全选”复选框的勾选/半选状态 */
+  function syncExportAll() {
+    const cbs = Array.from($('log-export-list').querySelectorAll('.log-export-cb'));
+    const checked = cbs.filter(c => c.checked).length;
+    const all = $('log-export-all');
+    all.checked = checked === cbs.length && cbs.length > 0;
+    all.indeterminate = checked > 0 && checked < cbs.length;
+    $('log-export-count').textContent = `已选 ${checked} / ${cbs.length}`;
+  }
+
+  function getSelectedSessions() {
+    const ids = Array.from($('log-export-list').querySelectorAll('.log-export-cb'))
+      .filter(c => c.checked).map(c => c.dataset.id);
+    return state.sessions.filter(s => ids.includes(s.id));
+  }
+
+  /* 按所选跑团 + 格式导出 */
+  function doExport(fmt) {
+    const picked = getSelectedSessions();
+    if (!picked.length) {
+      showDialog({ icon: '⚠', title: '未选择', message: '请至少勾选一次跑团再导出。', confirmText: '知道了' });
+      return;
+    }
+    /* 按开始时间升序，保持战报可读顺序 */
+    const sessions = [...picked].sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+    const stamp = new Date().toISOString().slice(0, 10);
+    let files = 0;
+
+    if (fmt === 'json' || fmt === 'both') {
+      const payload = {
+        app: 'dnd-adventure-log',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        summary: buildSummaryText(sessions),
+        sessions,
+      };
+      downloadFile(`dnd-log-${stamp}.json`, JSON.stringify(payload, null, 2), 'application/json');
+      files++;
+    }
+    if (fmt === 'txt' || fmt === 'both') {
+      downloadFile(`dnd-战报-${stamp}.txt`, buildSummaryText(sessions), 'text/plain;charset=utf-8');
+      files++;
+    }
+
+    $('log-export-modal').classList.add('hidden');
+    const what = fmt === 'json' ? '存档 .json' : fmt === 'txt' ? '战报 .txt' : '存档 .json + 战报 .txt';
+    showDialog({ icon: '⬇', title: '已导出', message: `已导出 ${sessions.length} 次跑团的${what}${files > 1 ? `（共 ${files} 个文件）` : ''}。`, confirmText: '好' });
+  }
+
+  /* 触发一次文件下载 */
+  function downloadFile(filename, text, mime) {
+    const blob = new Blob([text], { type: mime });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `dnd-log-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showDialog({ icon: '⬇', title: '已导出日志', message: `已保存 ${state.sessions.length} 次跑团记录到文件。`, confirmText: '好' });
+  }
+
+  /* 从某次跑团的日志条目里统计出各项数据 */
+  function summarizeEntries(entries) {
+    const s = { cast: 0, dmg: 0, dmgCount: 0, heal: 0, healCount: 0, long: 0, short: 0, maxRound: 0, buff: 0, notes: [] };
+    const amt = txt => { const m = String(txt).match(/(\d+)\s*点/); return m ? parseInt(m[1], 10) : 0; };
+    (entries || []).forEach(e => {
+      switch (e.cat) {
+        case 'cast': s.cast++; break;
+        case 'hp':
+          if (e.icon === '💔')      { const n = amt(e.text); if (n) { s.dmg += n;  s.dmgCount++;  } }
+          else if (e.icon === '❤') { const n = amt(e.text); if (n) { s.heal += n; s.healCount++; } }
+          break;
+        case 'rest':
+          if (e.icon === '⌛') s.long++; else if (e.icon === '☾') s.short++; break;
+        case 'combat': {
+          const m = String(e.text).match(/第\s*(\d+)\s*回合/);
+          if (m) s.maxRound = Math.max(s.maxRound, parseInt(m[1], 10));
+          break;
+        }
+        case 'buff': s.buff++; break;
+        case 'note': s.notes.push({ time: fmtClock(e.t), text: e.text }); break;
+      }
+    });
+    return s;
+  }
+
+  /* 生成可读的“战报小结”文本（传入要汇总的跑团列表）*/
+  function buildSummaryText(sessions) {
+    const list = sessions || state.sessions;
+    const lines = [];
+    lines.push('════════ 冒险战报 ════════');
+    lines.push(`生成时间：${fmtTitle(Date.now())}`);
+    lines.push(`共 ${list.length} 次跑团`);
+    lines.push('');
+
+    let totalMs = 0;
+    const ordered = [...list].sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+    ordered.forEach((sess, idx) => {
+      const ms = sessionElapsed(sess);
+      totalMs += ms;
+      const st = summarizeEntries(sess.entries);
+      lines.push(`【${idx + 1}. ${sess.title}】`);
+      lines.push(`  开始：${fmtDate(sess.startedAt)}    时长：${fmtDuration(ms)}`);
+      lines.push(`  施法 ${st.cast} 次 ｜ 受伤 ${st.dmgCount} 次共 ${st.dmg} 点 ｜ 治疗 ${st.healCount} 次共 ${st.heal} 点`);
+      lines.push(`  长休 ${st.long} 次 ｜ 短休 ${st.short} 次 ｜ 战斗回合 ${st.maxRound} ｜ 状态变化 ${st.buff} 次 ｜ 记录 ${sess.entries.length} 条`);
+      if (st.notes.length) {
+        lines.push('  笔记：');
+        st.notes.forEach(n => lines.push(`    · [${n.time}] ${n.text}`));
+      }
+      lines.push('');
+    });
+
+    lines.push('──────────────────────');
+    lines.push(`累计游戏时长：${fmtDuration(totalMs)}`);
+    return lines.join('\n');
   }
 
   function importLog(file) {
@@ -518,8 +642,21 @@
   $('log-note-input').addEventListener('keydown', e => { if (e.key === 'Enter') addNote(); });
 
   $('btn-log-clear').addEventListener('click', clearAll);
-  $('btn-log-export').addEventListener('click', exportLog);
+  $('btn-log-export').addEventListener('click', openExportModal);
   $('btn-log-import').addEventListener('click', () => $('log-import-file').click());
+
+  /* 导出弹窗控件 */
+  $('log-export-close').addEventListener('click', () => $('log-export-modal').classList.add('hidden'));
+  $('log-export-modal').addEventListener('click', e => {
+    if (e.target === $('log-export-modal')) $('log-export-modal').classList.add('hidden');
+  });
+  $('log-export-all').addEventListener('change', e => {
+    $('log-export-list').querySelectorAll('.log-export-cb').forEach(cb => { cb.checked = e.target.checked; });
+    syncExportAll();
+  });
+  document.querySelectorAll('.log-export-fmt').forEach(btn => {
+    btn.addEventListener('click', () => doExport(btn.dataset.fmt));
+  });
   $('log-import-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (file) importLog(file);

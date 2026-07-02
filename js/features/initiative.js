@@ -227,6 +227,7 @@
       state.currentIndex = 0;
       state.round++;
       if (typeof logEvent === 'function') logEvent('combat', '⚔', `进入第 ${state.round} 回合`);
+      document.dispatchEvent(new CustomEvent('roundadvance', { detail: { round: state.round } }));
     } else {
       state.currentIndex++;
     }

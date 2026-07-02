@@ -502,18 +502,41 @@ function renderBuffs() {
   state.buffPicks.forEach(id => {
     const b = BUFF_DB.find(x => x.id === id);
     if (!b) return;   /* 跳过库中已不存在的遗留 id */
-    const chip = document.createElement('button');
-    chip.className = 'buff-chip' + (state.buffs[id] ? ' lit' : '');
-    chip.textContent = b.name;
+    const lit = !!state.buffs[id];
+    const chip = document.createElement('div');
+    chip.className = 'buff-chip' + (lit ? ' lit' : '');
     chip.title = b.effect;   /* 悬停显示效果说明 */
-    chip.addEventListener('click', () => {
+
+    /* 名称：点击切换点亮/熄灭 */
+    const label = document.createElement('span');
+    label.className = 'buff-chip-label';
+    label.textContent = b.name;
+    label.addEventListener('click', () => {
       state.buffs[id] = !state.buffs[id];
+      if (!state.buffs[id]) delete state.buffDurations[id];   /* 熄灭时清除计时 */
       save('buffs', state.buffs);
+      save('buffDurations', state.buffDurations);
       renderBuffs();
       if (typeof logEvent === 'function') {
         logEvent('buff', '🏷️', (state.buffs[id] ? '获得状态 ' : '解除状态 ') + b.name);
       }
     });
+    chip.appendChild(label);
+
+    /* 已点亮的状态：显示可编辑的“剩余轮数”徽标（战斗中每回合 −1）*/
+    if (lit) {
+      const rounds = state.buffDurations[id];
+      const timer = document.createElement('span');
+      timer.className = 'buff-chip-timer' + (rounds > 0 ? ' active' : '');
+      timer.textContent = rounds > 0 ? `⏱${rounds}` : '⏱';
+      timer.title = '设置持续轮数：战斗中每推进一回合 −1，到 0 自动结束（留空=不计时）';
+      timer.addEventListener('click', e => {
+        e.stopPropagation();
+        editBuffRounds(id, timer);
+      });
+      chip.appendChild(timer);
+    }
+
     container.appendChild(chip);
   });
   /* 末尾“＋ 选择”芯片：打开状态选择器 */
@@ -524,3 +547,59 @@ function renderBuffs() {
   add.addEventListener('click', openBuffPicker);
   container.appendChild(add);
 }
+
+/* ──── 编辑某个状态的剩余轮数（内联输入，回车/失焦提交）──── */
+function editBuffRounds(id, timerEl) {
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = 0;
+  input.max = 999;
+  input.className = 'buff-chip-timer-input';
+  input.value = state.buffDurations[id] || '';
+  timerEl.replaceWith(input);
+  input.focus();
+  input.select();
+  const commit = () => {
+    const v = parseInt(input.value, 10);
+    if (isNaN(v) || v <= 0) delete state.buffDurations[id];   /* 留空/0 = 不计时 */
+    else state.buffDurations[id] = v;
+    save('buffDurations', state.buffDurations);
+    renderBuffs();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  commit();
+    if (e.key === 'Escape') renderBuffs();
+  });
+}
+
+/* ──── 回合推进：所有带计时的状态 −1 轮，到 0 自动结束 ──── */
+function tickBuffDurations() {
+  const dur = state.buffDurations || {};
+  const expired = [];
+  let changed = false;
+  Object.keys(dur).forEach(id => {
+    if (!state.buffs[id]) { delete dur[id]; changed = true; return; }   /* 已熄灭的清理掉 */
+    if (dur[id] > 0) {
+      dur[id]--;
+      changed = true;
+      if (dur[id] <= 0) {
+        delete dur[id];
+        state.buffs[id] = false;   /* 到时自动熄灭 */
+        expired.push(id);
+      }
+    }
+  });
+  if (changed) {
+    save('buffDurations', state.buffDurations);
+    save('buffs', state.buffs);
+    renderBuffs();
+  }
+  expired.forEach(id => {
+    const b = BUFF_DB.find(x => x.id === id);
+    if (b && typeof logEvent === 'function') logEvent('buff', '⌛', `${b.name} 到时结束`);
+  });
+}
+
+/* 先攻推进到新回合时触发（事件由 initiative.js 派发）*/
+document.addEventListener('roundadvance', tickBuffDurations);

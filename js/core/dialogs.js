@@ -105,6 +105,7 @@ function renderLuckyDice() {
 ============================================================ */
 let pickerMode  = 'prepared';  /* 'cantrip' | 'prepared' */
 let pickerLevel = 1;
+let pickerSearch = '';         /* 法术搜索关键词（中/英模糊）*/
 
 /* 动态生成法术选择器的环阶标签：戏法 + 1环…最高环（最高环由 CHAR.spellSlots 决定）。
    这样以后在配置里解锁更高环，标签会自动出现，无需改 index.html。 */
@@ -120,6 +121,9 @@ function buildSpellTabs() {
     btn.textContent = (lv === 0) ? '戏法' : `${lv}环`;
     btn.addEventListener('click', () => {
       pickerLevel = lv;
+      pickerSearch = '';                       /* 切环阶时清空搜索 */
+      const box = $('spell-modal-search');
+      if (box) box.value = '';
       wrap.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       renderPickerList();
@@ -131,6 +135,9 @@ function buildSpellTabs() {
 function openPicker(mode) {
   pickerMode = mode;
   pickerLevel = (mode === 'cantrip') ? 0 : 1;
+  pickerSearch = '';
+  const box = $('spell-modal-search');
+  if (box) box.value = '';
   $('spell-modal-title').textContent = (mode === 'cantrip') ? '选择戏法' : '选择备法';
 
   /* 控制 tab 可见性（仅作用于法术选择器自身的标签）*/
@@ -160,7 +167,27 @@ function renderPickerList() {
   container.appendChild(colR);
 
   const domainIds = allDomainIds();
-  const spells    = SPELL_DB.filter(sp => sp.level === pickerLevel);
+  const query = pickerSearch.trim().toLowerCase();
+  let spells;
+  if (query) {
+    /* 搜索模式：忽略环阶标签，在当前模式的整个法术池内按中/英名模糊匹配 */
+    spells = SPELL_DB.filter(sp => {
+      const inMode = (pickerMode === 'cantrip') ? sp.level === 0 : sp.level >= 1;
+      if (!inMode) return false;
+      return (sp.name && sp.name.toLowerCase().includes(query)) ||
+             (sp.nameEn && sp.nameEn.toLowerCase().includes(query));
+    });
+  } else {
+    spells = SPELL_DB.filter(sp => sp.level === pickerLevel);
+  }
+
+  if (!spells.length) {
+    const empty = document.createElement('div');
+    empty.className = 'picker-empty';
+    empty.textContent = query ? '没有匹配的法术。' : '该环阶暂无法术。';
+    container.appendChild(empty);
+    return;
+  }
 
   spells.forEach((sp, i) => {
     const isDomain  = domainIds.includes(sp.id);
@@ -178,10 +205,11 @@ function renderPickerList() {
 
     const nameArea = document.createElement('div');
     nameArea.className = 'picker-name-area';
+    const lvTag = query ? `${sp.level === 0 ? '戏法' : sp.level + '环'} · ` : '';
     nameArea.innerHTML = `
       <span class="picker-spell-cn cinzel">${sp.name}</span>
       <span class="picker-spell-en">${sp.nameEn}</span>
-      <span class="picker-spell-meta">${sp.school}${sp.conc ? ' · 专注' : ''} · ${sp.castTime}</span>
+      <span class="picker-spell-meta">${lvTag}${sp.school}${sp.conc ? ' · 专注' : ''} · ${sp.castTime}</span>
     `;
 
     /* 添加按钮 */
@@ -290,6 +318,10 @@ function removeCantrip(id) {
 /* ──── Modal 事件绑定 ──── */
 buildSpellTabs();   /* 依据 CHAR.spellSlots 生成法术选择器环阶标签（含点击绑定）*/
 
+$('spell-modal-search').addEventListener('input', e => {
+  pickerSearch = e.target.value;
+  renderPickerList();
+});
 $('spell-modal-close').addEventListener('click', () => $('spell-modal').classList.add('hidden'));
 $('spell-modal').addEventListener('click', e => {
   if (e.target === $('spell-modal')) $('spell-modal').classList.add('hidden');
