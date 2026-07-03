@@ -455,12 +455,20 @@ body {
 }
 
 .save-circle {
+  position: relative;                 /* 承载放大的透明点击热区 */
+  touch-action: manipulation;         /* iPad：去掉双击缩放延迟 */
   width: 18px;
   height: 18px;
   border-radius: 50%;
   border: 1px solid var(--border-dim);
   background: none;
   cursor: pointer;
+}
+/* 透明点击热区：视觉仍 18px，可点范围约 24×30（横向不超过 6px 间距）*/
+.save-circle::before {
+  content: '';
+  position: absolute;
+  inset: -6px -3px;
 }
 
 .save-circle.success { background: var(--green); border-color: var(--green); }
@@ -524,6 +532,8 @@ body {
 
 /* 法术位标记：可用 = 点亮的奥术宝珠（跟随主题强调色）；已用 = 熄灭的空环 */
 .slot-gem {
+  position: relative;                 /* 承载放大的透明点击热区（::before）*/
+  touch-action: manipulation;         /* iPad：去掉双击缩放延迟，避免连点误缩放 */
   width: 13px;
   height: 13px;
   border-radius: 50%;
@@ -539,10 +549,19 @@ body {
   box-shadow: 0 0 6px var(--accent-glow), inset 0 0 2px rgba(255,255,255,0.35);
 }
 
+/* 透明点击热区：视觉仍是 13px，手指可点范围放大到约 21×29（横向不超过 8px 间距）*/
+.slot-gem::before {
+  content: '';
+  position: absolute;
+  inset: -8px -4px;
+}
+
 .slot-gem:hover {
   transform: scale(1.18);
   box-shadow: 0 0 11px var(--accent-glow), inset 0 0 3px rgba(255,255,255,0.55);
 }
+/* 触屏按压反馈（iPad 无 hover，用 :active 给即时回应）*/
+.slot-gem:active { transform: scale(1.18); }
 
 .slot-gem.used {
   background: transparent;
@@ -1255,12 +1274,26 @@ body {
 }
 
 .resource-pip {
+  position: relative;                 /* 承载放大的透明点击热区 */
+  touch-action: manipulation;         /* iPad：去掉双击缩放延迟 */
   width: 18px;
   height: 18px;
   border: 1px solid #8a6a1a;
   background: #7a5010;
   cursor: pointer;
 }
+/* 透明点击热区：视觉仍 18px，可点范围约 20×30（间距未知，横向保守放大）*/
+.resource-pip::before {
+  content: '';
+  position: absolute;
+  inset: -6px -1px;
+}
+
+/* iPad/触屏：点按这些小控件时不显示灰色高亮方块 */
+.slot-gem,
+.exhaust-pip,
+.save-circle,
+.resource-pip { -webkit-tap-highlight-color: transparent; }
 
 .resource-pip.spent { background: #1e1e1e; border-color: var(--border-dim); }
 
@@ -2633,6 +2666,8 @@ body {
    力竭计数（5e 规则：6 级，格子略缩小以容纳）
 ============================================================ */
 .exhaust-pip {
+  position: relative;                 /* 承载放大的透明点击热区 */
+  touch-action: manipulation;         /* iPad：去掉双击缩放延迟 */
   width: 15px;
   height: 15px;
   border-radius: 3px;
@@ -2641,6 +2676,12 @@ body {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
   flex-shrink: 0;
+}
+/* 透明点击热区：视觉仍 15px，可点范围约 19×29（横向不超过 4px 间距）*/
+.exhaust-pip::before {
+  content: '';
+  position: absolute;
+  inset: -7px -2px;
 }
 #exhaustion-pips { gap: 4px; }
 
