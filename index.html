@@ -380,13 +380,18 @@
   <div id="spell-modal-panel">
     <div id="spell-modal-head">
       <span class="cinzel" id="spell-modal-title">选择法术</span>
-      <button id="spell-modal-close">✕</button>
+      <div class="spell-modal-head-ctrls">
+        <button id="spell-view-toggle">▦ 卡片视图</button>
+        <button id="spell-modal-close">✕</button>
+      </div>
     </div>
     <div id="spell-modal-tabs"><!-- 环阶标签由 dialogs.js 依据 CHAR.spellSlots 动态生成 --></div>
     <div id="spell-modal-search-wrap">
       <input type="text" id="spell-modal-search" placeholder="搜索法术名（中 / 英）…" autocomplete="off">
     </div>
     <div id="spell-modal-list"></div>
+    <div id="spell-modal-detail" class="spm-hidden"></div>
+    <div id="spell-modal-cards" class="spm-hidden"></div>
   </div>
 </div>
 
