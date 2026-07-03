@@ -4095,5 +4095,14 @@ body {
   font-family: var(--font-title);
   transition: color 0.15s, border-color 0.15s;
 }
-#btn-fx-toggle:hover { border-color: var(--border-bright); color: var(--silver); }
-#btn-fx-toggle.fx-off { color: var(--silver-dim); opacity: 0.5; text-decoration: line-through; }
+
+#btn-fx-toggle:hover {
+  border-color: var(--border-bright); 
+  color: var(--silver); 
+}
+
+#btn-fx-toggle.fx-off {
+  color: var(--silver-dim);
+  opacity: 0.5;
+  text-decoration: line-through;
+}
