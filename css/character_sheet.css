@@ -1862,6 +1862,7 @@ body {
 #class-left #panel-class {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 /* 右列末位面板拉伸填满，与左列对齐 */
@@ -3337,6 +3338,18 @@ body {
 .upcast-opt-base {
   border-color: var(--border-bright);
   color: var(--silver);
+}
+
+/* 仪式施法按钮：琥珀色调区分 */
+.upcast-opt-ritual {
+  border-color: #8a6a1a;
+  color: #e0c080;
+}
+.upcast-opt-ritual:hover {
+  border-color: #e8b84b;
+  color: #f0d080;
+  background: rgba(232,184,75,0.12);
+  outline-color: rgba(232,184,75,0.35);
 }
 
 .upcast-opt-lv {

@@ -586,16 +586,17 @@ document.querySelectorAll('.btn-spell-add').forEach(btn => {
 
 /* ============================================================
    升环施法环阶选择对话框
-   holdCast 触发后，若法术带“升环施法效应”且有多档可用法术位，
+   holdCast 触发后，若法术带"升环施法效应"且有多档可用法术位，
    弹出本对话框询问：用本环，还是升环（升到几环），
    随后消耗对应环阶的法术位。
+   若法术可仪式施法则追加「📖 仪式」按钮，不消耗法术位。
 ============================================================ */
-function showUpcastDialog(sp, levels) {
+function showUpcastDialog(sp, levels, isRitual) {
   $('dialog-icon').textContent = '🪄';
   $('dialog-icon').style.display = '';
-  $('dialog-title').textContent = '选择施法环阶';
+  $('dialog-title').textContent = '选择施法方式';
 
-  const opts = levels.map(lv => {
+  let opts = levels.map(lv => {
     const isBase = lv === sp.level;
     const tag = isBase ? '本环' : `升 ${lv - sp.level} 环`;
     const free = slotsFreeAt(lv);
@@ -607,8 +608,18 @@ function showUpcastDialog(sp, levels) {
       </button>`;
   }).join('');
 
+  /* 可仪式施法时追加仪式按钮 */
+  if (isRitual) {
+    opts += `
+      <button class="upcast-opt upcast-opt-ritual" data-lv="ritual">
+        <span class="upcast-opt-lv cinzel">📖 仪式</span>
+        <span class="upcast-opt-tag">不消耗法术位</span>
+        <span class="upcast-opt-free">+10 分钟</span>
+      </button>`;
+  }
+
   $('dialog-message').innerHTML = `
-    <div class="upcast-hint">${sp.name}（本环 ${sp.level} 环）<br>选择要消耗的法术位环阶</div>
+    <div class="upcast-hint">${sp.name}（本环 ${sp.level} 环）<br>选择施法方式</div>
     <div class="upcast-opts">${opts}</div>`;
 
   /* 只保留取消按钮，隐藏确定按钮 */
@@ -620,12 +631,16 @@ function showUpcastDialog(sp, levels) {
 
   $('dialog-modal').classList.remove('hidden');
 
-  /* 绑定环阶按钮：点击后关闭对话框并按所选环阶施放 */
+  /* 绑定按钮：环阶按钮 → castSpell，仪式按钮 → castRitual */
   $('dialog-message').querySelectorAll('.upcast-opt').forEach(btn => {
     btn.addEventListener('click', () => {
-      const lv = parseInt(btn.dataset.lv, 10);
+      const lv = btn.dataset.lv;
       closeDialog();
-      castSpell(sp, lv);
+      if (lv === 'ritual') {
+        castRitual(sp);
+      } else {
+        castSpell(sp, parseInt(lv, 10));
+      }
     });
   });
 }

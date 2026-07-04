@@ -112,24 +112,46 @@ function availableSlotLevels(minLevel) {
   return levels;
 }
 
-/* ──── 该法术是否带有“升环施法效应” ──── */
+/* ──── 该法术是否带有"升环施法效应" ──── */
 function hasUpcast(sp) {
   return sp.level > 0 && /升环施法效应/.test(sp.description || '');
 }
 
-/* ──── 长按触发入口：带升环效应且有多档可用环阶时先询问，否则直接施放 ──── */
+/* ──── 该法术是否可仪式施法 ──── */
+function hasRitual(sp) {
+  return sp.level > 0 && Array.isArray(sp.classes) && sp.classes.includes('仪式');
+}
+
+/* ──── 仪式施法：不消耗法术位，照常处理专注 + 日志 + 特效 ──── */
+function castRitual(sp) {
+  if (sp.conc) {
+    state.concentration = sp.id;
+    save('concentration', state.concentration);
+    renderConcentration();
+  }
+  if (typeof logEvent === 'function') {
+    logEvent('cast', '📖', `仪式施放 ${sp.name}（${sp.level} 环，不耗法术位）${sp.conc ? ' · 专注' : ''}`);
+  }
+  if (typeof playCastFx === 'function') playCastFx(sp, false);
+  renderSpellPanel();
+}
+
+/* ──── 长按触发入口：有升环/仪式选项时弹窗询问，否则直接施放 ──── */
 function promptCast(sp) {
   const levels = availableSlotLevels(sp.level);
-  if (!levels.length) return;   /* 无可用法术位（长按此时不会启动，双保险）*/
+  const isRitual = hasRitual(sp);
 
-  /* 无升环效应，或只有一档可用环阶 → 直接按最低可用环阶施放（保留原自动升环行为）*/
-  if (!hasUpcast(sp) || levels.length === 1) {
+  /* 无可用法术位，也不能仪式施法 → 无法施放 */
+  if (!levels.length && !isRitual) return;
+
+  /* 没有升环效应、也没有仪式、且仅有一档环阶 → 直接施放 */
+  if (!hasUpcast(sp) && !isRitual && levels.length === 1) {
     castSpell(sp, levels[0]);
     return;
   }
 
-  /* 带升环效应且有多档环阶可选 → 询问用本环还是升环（升到几环）*/
-  showUpcastDialog(sp, levels);
+  /* 有升环多档可选，或可仪式施法 → 弹窗让用户选 */
+  showUpcastDialog(sp, levels, isRitual);
 }
 
 /* ──── 施放法术：扣除指定环阶（或自动最低可用）法术位 + 记录专注 ──── */
@@ -187,8 +209,8 @@ function attachRowCast(row, sp) {
     e.preventDefault();                        /* 阻止浏览器长按默认行为（文字选择/系统菜单）*/
     pressed = true;
     didCast = false;
-    /* 戏法永远可按住施放；1 环及以上需有可用法术位才启动填充动画与施法计时 */
-    const castable = (sp.level === 0) || (findCastableSlot(sp.level) != null);
+    /* 戏法永远可按住施放；1 环及以上需有可用法术位（或可仪式施法）才启动填充动画与施法计时 */
+    const castable = (sp.level === 0) || (findCastableSlot(sp.level) != null) || hasRitual(sp);
     if (castable) {
       row.classList.add('srow-casting');
       holdTimer = setTimeout(() => {
