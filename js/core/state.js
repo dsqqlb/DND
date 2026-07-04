@@ -55,6 +55,9 @@ let state = {
   buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
   concentration: load('concentration', null),  // 专注中的法术 ID，或 null
   luckyDice:     load('luckyDice', 0),
+  xp:            load('xp', CHAR.xp || 0),
+  xpToNextManual: load('xpToNextManual', null),
+  skillProfs:    load('skillProfs', CHAR.skills.slice()),
   /* 冒险日志：以「一次跑团」为文件夹节点，可累积多次跑团。
      每个 session = { id, title, startedAt, endedAt, timer:{running,base,startedAt}, entries:[{id,t,cat,icon,text}] }
      日志数据独立导入导出，不随角色备份走。 */
@@ -136,6 +139,17 @@ const ABILITY_META = [
 const ABILITY_LABEL = { str: '力量', dex: '敏捷', con: '体质', int: '智力', wis: '感知', cha: '魅力' };
 
 /* 统一派生值：页面上所有“算出来的数字”都从这里取 */
+/* D&D 5e 标准经验值进度表（从 1 级起，累计经验门槛）*/
+const XP_THRESHOLDS = [0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000,
+  64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000
+];
+
+/* 查询第 N 级的累计经验门槛 */
+function xpForLevel(lv) {
+  if (lv >= XP_THRESHOLDS.length) return Infinity;
+  return XP_THRESHOLDS[lv] || 0;
+}
+
 const DERIVED = {
   get prof()     { return profBonus(CHAR.level); },                          // 熟练加值
   get spellMod() { return abilityMod(CHAR.abilities[CHAR.spellAbility]); },  // 施法属性调整值
@@ -146,5 +160,8 @@ const DERIVED = {
   },
   get spellAttack() { return this.prof + this.spellMod; },                   // 法术攻击加成 = 熟练加值 + 施法属性调整值
   get channelHeal() { return CHAR.channelHealPerLevel * CHAR.level; },       // 生命维持治疗量 = 每级系数 × 等级
+  get xpToNext()  {
+    return state.xpToNextManual != null ? state.xpToNextManual : xpForLevel(CHAR.level + 1);
+  },
 };
 

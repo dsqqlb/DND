@@ -19,6 +19,8 @@
     { key: 'combat', label: '战斗' },
     { key: 'bag',    label: '物品' },
     { key: 'rest',   label: '休整' },
+    { key: 'skill',  label: '技能' },
+    { key: 'xp',    label: '经验' },
     { key: 'note',   label: '笔记' },
   ];
 

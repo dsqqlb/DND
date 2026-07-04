@@ -35,15 +35,9 @@ function renderCharSheet() {
   const turnDc = $('cd-turn-dc');     if (turnDc)   turnDc.textContent   = DERIVED.spellSaveDC;
   const lifeHeal = $('cd-life-heal'); if (lifeHeal) lifeHeal.textContent = DERIVED.channelHeal;
 
-  /* 角色信息：阵营 / 语言 / 技能熟练 */
+  /* 角色信息：阵营 / 语言 */
   $('info-alignment').textContent = CHAR.alignment;
   $('info-languages').textContent = CHAR.languages;
-  $('skill-prof-list').innerHTML = CHAR.skills.map(s => `
-    <div class="skill-prof-item">
-      <span class="skill-prof-mark">◆</span>
-      <span class="skill-prof-name">${s.name}</span>
-      <span class="skill-prof-attr">${s.attr}</span>
-    </div>`).join('');
 
   /* 临时HP滑条上限 */
   const slider = $('temp-hp-slider');
@@ -604,3 +598,160 @@ function tickBuffDurations() {
 
 /* 先攻推进到新回合时触发（事件由 initiative.js 派发）*/
 document.addEventListener('roundadvance', tickBuffDurations);
+
+/* ============================================================
+   渲染：经验值进度条
+============================================================ */
+function renderXp() {
+  const cur = state.xp || 0;
+  const next = DERIVED.xpToNext;
+  const pct = next > 0 ? Math.min(100, Math.round((cur / next) * 100)) : 0;
+
+  $('xp-current').textContent = cur.toLocaleString();
+  $('xp-next').textContent   = next === Infinity ? '—' : next.toLocaleString();
+  $('xp-bar-fill').style.width = pct + '%';
+  $('xp-bar-pct').textContent  = pct + '%';
+}
+
+/* ──── 编辑当前经验值 ──── */
+function editXpCurrent() {
+  const span = $('xp-current');
+  const inp  = $('xp-input');
+  span.style.display = 'none';
+  inp.style.display  = '';
+  inp.value = state.xp;
+  inp.focus();
+  inp.select();
+}
+
+function commitXpCurrent() {
+  const span = $('xp-current');
+  const inp  = $('xp-input');
+  const before = state.xp;
+  const val = parseInt(inp.value, 10);
+  const after = isNaN(val) || val < 0 ? before : Math.floor(val);
+  inp.style.display = 'none';
+  span.style.display = '';
+  if (after === before) return;
+  state.xp = after;
+  save('xp', state.xp);
+  renderXp();
+  const d = after - before;
+  if (typeof logEvent === 'function') {
+    logEvent('xp', '⭐', d > 0
+      ? `获得 ${d} 经验值 · ${after.toLocaleString()} / ${DERIVED.xpToNext.toLocaleString()}`
+      : `失去 ${-d} 经验值 · ${after.toLocaleString()} / ${DERIVED.xpToNext.toLocaleString()}`);
+  }
+}
+
+/* ──── 编辑升级所需经验值 ──── */
+function editXpNext() {
+  const span = $('xp-next');
+  const inp  = $('xp-next-input');
+  span.style.display = 'none';
+  inp.style.display  = '';
+  inp.value = state.xpToNextManual != null ? state.xpToNextManual : DERIVED.xpToNext;
+  inp.focus();
+  inp.select();
+}
+
+function commitXpNext() {
+  const span = $('xp-next');
+  const inp  = $('xp-next-input');
+  const val = parseInt(inp.value, 10);
+  inp.style.display = 'none';
+  span.style.display = '';
+  /* 清空或无效 → 恢复为自动值 */
+  const after = (isNaN(val) || val <= 0) ? null : Math.floor(val);
+  state.xpToNextManual = after;
+  save('xpToNextManual', state.xpToNextManual);
+  renderXp();
+  if (typeof logEvent === 'function') {
+    const display = after != null ? after.toLocaleString() : xpForLevel(CHAR.level + 1).toLocaleString();
+    logEvent('xp', '✎', `升级所需经验值设为 ${display}`);
+  }
+}
+
+/* ──── 绑定 XP 交互 ──── */
+$('xp-current').addEventListener('click', editXpCurrent);
+$('xp-input').addEventListener('blur', commitXpCurrent);
+$('xp-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitXpCurrent(); });
+$('xp-next').addEventListener('click', editXpNext);
+$('xp-next-input').addEventListener('blur', commitXpNext);
+$('xp-next-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitXpNext(); });
+
+/* ============================================================
+   渲染：熟练技能面板
+============================================================ */
+function renderSkills() {
+  const container = $('skills-list');
+  if (!container) return;
+  const groups = skillsByAbility();
+  container.innerHTML = '';
+
+  groups.forEach(g => {
+    const mod = abilityMod(CHAR.abilities[g.abilityKey]);
+
+    const groupEl = document.createElement('div');
+    groupEl.className = 'skills-ability-group';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'skills-ability-hdr';
+    hdr.innerHTML = `
+      <span class="skills-ability-lbl">${g.abilityLabel}</span>
+      <span class="skills-ability-mod">[${signed(mod)}]</span>`;
+    groupEl.appendChild(hdr);
+
+    const row = document.createElement('div');
+    row.className = 'skills-row';
+
+    g.skills.forEach(sk => {
+      const prof = state.skillProfs.includes(sk.id);
+      const total = mod + (prof ? DERIVED.prof : 0);
+
+      const item = document.createElement('span');
+      item.className = 'skill-item';
+      item.dataset.id = sk.id;
+      item.title = prof ? '点击取消熟练' : '点击获得熟练';
+
+      const dot = document.createElement('span');
+      dot.className = 'skill-dot' + (prof ? ' prof' : '');
+      item.appendChild(dot);
+
+      const name = document.createElement('span');
+      name.className = 'skill-name';
+      name.textContent = sk.name;
+      item.appendChild(name);
+
+      const bonus = document.createElement('span');
+      bonus.className = 'skill-bonus';
+      bonus.textContent = signed(total);
+      item.appendChild(bonus);
+
+      item.addEventListener('click', () => toggleSkill(sk.id));
+
+      row.appendChild(item);
+    });
+
+    groupEl.appendChild(row);
+    container.appendChild(groupEl);
+  });
+}
+
+function toggleSkill(id) {
+  const idx = state.skillProfs.indexOf(id);
+  const sk = getSkill(id);
+  if (!sk) return;
+  if (idx >= 0) {
+    state.skillProfs.splice(idx, 1);
+  } else {
+    state.skillProfs.push(id);
+  }
+  save('skillProfs', state.skillProfs);
+  renderSkills();
+  if (typeof logEvent === 'function') {
+    logEvent('skill', '🎓', idx >= 0
+      ? `取消「${sk.name}」熟练（${sk.abilityLabel}）`
+      : `获得「${sk.name}」熟练（${sk.abilityLabel}）`);
+  }
+}

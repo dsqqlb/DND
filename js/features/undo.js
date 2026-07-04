@@ -17,7 +17,7 @@
   const STATE_KEYS = [
     'hp', 'maxHp', 'tempHp', 'slots', 'cantripIds', 'preparedIds',
     'deathSave', 'exhaustion', 'channel', 'buffs', 'buffPicks',
-    'buffDurations', 'concentration', 'luckyDice', 'sessions', 'currentSessionId',
+    'buffDurations', 'concentration', 'luckyDice', 'xp', 'xpToNextManual', 'skillProfs', 'sessions', 'currentSessionId',
   ];
   /* 键为空(从未存过)时的兜底默认，避免还原成 undefined 导致渲染崩溃 */
   const DEFAULTS = {
@@ -26,7 +26,7 @@
     deathSave: { success: [false, false, false], fail: [false, false, false] },
     exhaustion: new Array(6).fill(false),
     channel: [], buffs: {}, buffPicks: [], buffDurations: {},
-    concentration: null, luckyDice: 0, sessions: [], currentSessionId: null,
+    concentration: null, luckyDice: 0, xp: 0, xpToNextManual: null, skillProfs: [], sessions: [], currentSessionId: null,
   };
 
   const undoStack = [];
@@ -119,6 +119,8 @@
       typeof renderBuffs === 'function' && renderBuffs,
       typeof renderConcentration === 'function' && renderConcentration,
       typeof renderLuckyDice === 'function' && renderLuckyDice,
+      typeof renderXp === 'function' && renderXp,
+      typeof renderSkills === 'function' && renderSkills,
       typeof window.renderTimer === 'function' && window.renderTimer,
       typeof window.renderLog === 'function' && window.renderLog,
     ];

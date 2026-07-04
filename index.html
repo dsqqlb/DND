@@ -161,83 +161,112 @@
   <!-- ══ 第二页：职业 ══ -->
   <div class="page" id="page-class">
 
-    <div id="panel-class" class="panel">
-      <div class="panel-title">职业 · 专属资源</div>
+    <!-- 上部：左右两个区域 -->
+    <div id="class-top">
 
-      <div class="resource-row">
-        <span class="resource-lbl">引导神力</span>
-        <span class="resource-restore">短休恢复</span>
-        <div class="resource-pips" id="channel-pips"></div>
-      </div>
+      <!-- 左：职业 · 专属资源 -->
+      <div id="panel-class" class="panel">
+        <div class="panel-title">职业 · 专属资源</div>
 
-      <div class="channel-ability">
-        <div class="channel-ability-name cinzel">摧毁不死生物</div>
-        <div class="channel-ability-desc">
-          消耗引导神力，展示圣徽。30尺内所有不死生物须通过
-          <b>感知豁免（DC <span id="cd-turn-dc">13</span>）</b>，失败则被<b>摧毁</b> 1分钟；
-          每轮结束时可重新豁免，成功则摧毁终止。
-          被摧毁的不死生物必须在其回合内远离你，且不能主动靠近。
+        <div class="resource-row">
+          <span class="resource-lbl">引导神力</span>
+          <span class="resource-restore">短休恢复</span>
+          <div class="resource-pips" id="channel-pips"></div>
+        </div>
+
+        <div class="channel-ability">
+          <div class="channel-ability-name cinzel">摧毁不死生物</div>
+          <div class="channel-ability-desc">
+            消耗引导神力，展示圣徽。30尺内所有不死生物须通过
+            <b>感知豁免（DC <span id="cd-turn-dc">13</span>）</b>，失败则被<b>摧毁</b> 1分钟；
+            每轮结束时可重新豁免，成功则摧毁终止。
+            被摧毁的不死生物必须在其回合内远离你，且不能主动靠近。
+          </div>
+        </div>
+
+        <div class="channel-ability">
+          <div class="channel-ability-name cinzel">
+            生命维持
+            <span class="channel-domain-tag">生命领域</span>
+          </div>
+          <div class="channel-ability-desc">
+            消耗引导神力，对30尺内<b>感知调整值</b>数量的当前生命值低于其上限一半的生物
+            每个目标恢复到生命值其上限的一半。
+            对亡灵生物和构装体无效。
+          </div>
+        </div>
+
+        <div class="channel-ability">
+          <div class="channel-ability-name cinzel">
+            生命门徒
+            <span class="channel-domain-tag">生命领域</span>
+          </div>
+          <div class="channel-ability-desc">
+            你消耗法术位施展法术的回合中，当该法术恢复生物的生
+            命值时，额外恢复 <b>牧师等级 + 消耗法术位环阶</b> 生命值。
+          </div>
         </div>
       </div>
 
-      <div class="channel-ability">
-        <div class="channel-ability-name cinzel">
-          生命维持
-          <span class="channel-domain-tag">生命领域</span>
-        </div>
-        <div class="channel-ability-desc">
-          消耗引导神力，对30尺内任意数量当前生命值低于其上限一半的生物
-          分配最多 <b><span id="cd-life-heal">25</span>点</b>（5 × 牧师等级）治愈量，每个目标最少分配1点。
-          对亡灵生物和构装体无效。
-        </div>
-      </div>
+      <!-- 右：专长、角色信息、熟练技能 纵向排列 -->
+      <div id="class-right">
 
-      <div class="channel-ability">
-        <div class="channel-ability-name cinzel">
-          生命门徒
-          <span class="channel-domain-tag">生命领域</span>
+        <div id="panel-feat-shieldmaster" class="panel">
+          <div class="panel-title">专长 · 盾牌大师</div>
+          <ul class="feat-list">
+            <li>
+              你的盾牌不只可以用于防御，还可以用来攻击。你在持用盾牌时获得下列增益：
+            </li>
+            <li>
+              <span class="feat-trigger cinzel">附赠攻击</span>
+              若你在自己的回合内执行过攻击动作，你就可以以附赠动作，用盾牌去推撞一个处于你周围<b>5</b>尺范围内的生物。
+            </li>
+            <li>
+              <span class="feat-trigger cinzel">AC附加</span>
+              如果你不处于失能状态，则你为抵抗以你为唯一目标的法术或其他伤害性效应而进行敏捷豁免时，可以将你<b>盾牌的AC</b>添加到相应的敏捷豁免中。
+            </li>
+            <li>
+              <span class="feat-trigger cinzel">反应</span>
+              当某个效应使让你进行豁免成功可以伤害减半的敏捷豁免检定时，你可以用你的反应将盾牌挡在你与效应原点之间，此时豁免成功则不受任何伤害。
+            </li>
+          </ul>
         </div>
-        <div class="channel-ability-desc">
-          你消耗法术位施展法术的回合中，当该法术恢复生物的生
-          命值时，额外恢复 <b>2 + 消耗法术位环阶</b> 生命值。
+
+        <div id="panel-charinfo" class="panel">
+          <div class="panel-title">角色信息</div>
+          <div class="charinfo-row">
+            <span class="charinfo-lbl">阵营</span>
+            <span class="charinfo-val" id="info-alignment">守序中立</span>
+          </div>
+          <div class="charinfo-row">
+            <span class="charinfo-lbl">语言</span>
+            <span class="charinfo-val" id="info-languages">龙语、矮人语</span>
+          </div>
+          </div>
+
+        <div id="panel-skills" class="panel">
+          <div class="panel-title">熟练技能</div>
+          <div id="skills-list"></div>
         </div>
-      </div>
-    </div>
 
-    <div id="panel-feat-shieldmaster" class="panel">
-      <div class="panel-title">专长 · 盾牌大师</div>
-      <ul class="feat-list">
-        <li>
-          你的盾牌不只可以用于防御，还可以用来攻击。你在持用盾牌时获得下列增益：
-        </li>
-        <li>
-          <span class="feat-trigger cinzel">附赠攻击</span>
-          若你在自己的回合内执行过攻击动作，你就可以以附赠动作，用盾牌去推撞一个处于你周围<b>5</b>尺范围内的生物。
-        </li>
-        <li>
-          <span class="feat-trigger cinzel">AC附加</span>
-          如果你不处于失能状态，则你为抵抗以你为唯一目标的法术或其他伤害性效应而进行敏捷豁免时，可以将你<b>盾牌的AC</b>添加到相应的敏捷豁免中。
-        </li>
-        <li>
-          <span class="feat-trigger cinzel">反应</span>
-          当某个效应使让你进行豁免成功可以伤害减半的敏捷豁免检定时，你可以用你的反应将盾牌挡在你与效应原点之间，此时豁免成功则不受任何伤害。
-        </li>
-      </ul>
-    </div>
+      </div><!-- /#class-right -->
 
-    <div id="panel-charinfo" class="panel">
-      <div class="panel-title">角色信息</div>
-      <div class="charinfo-row">
-        <span class="charinfo-lbl">阵营</span>
-        <span class="charinfo-val" id="info-alignment">守序中立</span>
+    </div><!-- /#class-top -->
+
+    <!-- 底部：经验值条 横跨全宽 -->
+    <div id="panel-xp" class="panel">
+      <div class="panel-title">经验值</div>
+      <div id="xp-bar">
+        <div id="xp-bar-fill"></div>
+        <div id="xp-bar-pct">0%</div>
       </div>
-      <div class="charinfo-row">
-        <span class="charinfo-lbl">语言</span>
-        <span class="charinfo-val" id="info-languages">龙语、矮人语</span>
+      <div id="xp-numbers">
+        <span id="xp-current" title="点击编辑当前经验值">0</span>
+        <span class="xp-sep">/</span>
+        <span id="xp-next" title="点击编辑升级所需经验值">0</span>
+        <input type="number" id="xp-input" style="display:none;" min="0">
+        <input type="number" id="xp-next-input" style="display:none;" min="1">
       </div>
-      <div class="charinfo-section-title">技能熟练</div>
-      <!-- 技能熟练由 JS 从 CHAR.skills 渲染 -->
-      <div class="skill-prof-list" id="skill-prof-list"></div>
     </div>
 
   </div><!-- /#page-class -->
@@ -469,6 +498,7 @@
 <script src="js/data/spells.js"></script>           <!-- 法术数据库 -->
 <script src="js/data/items.js"></script>            <!-- 物品数据库 -->
 <script src="js/data/buffs.js"></script>            <!-- 状态 / 增益库 BUFF_DB -->
+<script src="js/data/skills.js"></script>           <!-- 技能库 SKILL_DB -->
 <script src="js/config/character.js"></script>      <!-- 角色配置 CHAR -->
 <script src="js/core/state.js"></script>            <!-- localStorage工具 + state + 派生计算 -->
 <script src="js/core/render.js"></script>           <!-- 渲染函数：角色卡/血量/法术/状态等 -->

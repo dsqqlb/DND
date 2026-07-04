@@ -1241,7 +1241,6 @@ body {
 /* ============================================================
    板块三：职业专属资源
 ============================================================ */
-#panel-class { grid-column: 2; grid-row: 1; }
 
 .resource-row {
   display: flex;
@@ -1819,15 +1818,39 @@ body {
   text-align: center;
 }
 
-/* 第二页：职业 —— 2列网格 */
+/* 第二页：职业 —— flex列布局：上（左右分区） + 下（经验值条全宽） */
 #page-class.active {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-#page-class #panel-class       { grid-column: 1; grid-row: 1 / 3; overflow-y: auto; overscroll-behavior: contain; }
-#page-class #panel-feat-shieldmaster { grid-column: 2; grid-row: 1; }
-#page-class #panel-charinfo    { grid-column: 2; grid-row: 2; }
+
+/* 上部：左右两个区域，flex:1 撑满剩余空间，把XP推到底 */
+#class-top {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 6px;
+}
+
+/* 右列：专长、角色信息、熟练技能 纵向排列 */
+#class-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 右列末位面板拉伸填满，与左列对齐 */
+#class-right #panel-skills {
+  flex: 1;
+  min-height: 0;
+}
+
+/* XP条固定高度，不伸缩 */
+#page-class #panel-xp {
+  flex-shrink: 0;
+}
 
 /* 第三页：法术 —— 全屏，列表内部滚动 */
 #page-spells.active {
@@ -2560,6 +2583,159 @@ body {
 .channel-ability-desc b { color: var(--silver); }
 
 /* ============================================================
+   熟练技能面板
+============================================================ */
+#panel-skills {
+}
+
+.skills-ability-group {
+  margin-bottom: 10px;
+}
+.skills-ability-group:last-child {
+  margin-bottom: 0;
+}
+
+.skills-ability-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.skills-ability-lbl {
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--silver-dim);
+  min-width: 36px;
+}
+.skills-ability-mod {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: var(--silver);
+}
+
+.skills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.skill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 3px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.1s;
+}
+.skill-item:hover {
+  background: rgba(212,200,154,0.08);
+}
+
+.skill-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--silver-dim);
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s;
+}
+.skill-dot.prof {
+  background: var(--accent-glow);
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 4px rgba(212,200,154,0.35);
+}
+
+.skill-name {
+  font-size: 12px;
+  color: var(--silver);
+  white-space: nowrap;
+}
+
+.skill-bonus {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: var(--silver-dim);
+  min-width: 18px;
+  text-align: right;
+}
+
+/* ============================================================
+   经验值面板
+============================================================ */
+#panel-xp {
+}
+
+#xp-bar {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  background: var(--border-dim);
+  margin-bottom: 6px;
+  user-select: none;
+}
+
+#xp-bar-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6a4400, #b8901f 55%, #e8b84b);
+  transition: width 0.2s ease;
+}
+
+#xp-bar-pct {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-title);
+  font-size: 9px;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8);
+  pointer-events: none;
+  line-height: 1;
+}
+
+#xp-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-family: var(--font-title);
+  color: var(--silver);
+}
+
+#xp-current, #xp-next {
+  cursor: pointer;
+  padding: 0 2px;
+}
+#xp-current:hover, #xp-next:hover {
+  color: #fff;
+  background: rgba(212,200,154,0.12);
+  border-radius: 2px;
+}
+
+.xp-sep {
+  color: var(--silver-dim);
+  font-size: 13px;
+}
+
+#xp-input, #xp-next-input {
+  width: 100px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  color: var(--silver);
+  font-family: var(--font-title);
+  font-size: 14px;
+  padding: 2px 6px;
+  outline: none;
+  text-align: right;
+}
+
+/* ============================================================
    专长面板
 ============================================================ */
 #panel-feat-shieldmaster {
@@ -2656,10 +2832,7 @@ body {
 ============================================================ */
 @media (max-width: 900px) {
   #panel-survival        { grid-column: 1; grid-row: 1; }
-  #panel-class           { grid-column: 1; grid-row: 2; }
-  #panel-feat-shieldmaster { grid-column: 1; grid-row: 3; }
   #panel-spell           { grid-column: 1; grid-row: 4; }
-  #panel-charinfo        { grid-column: 1; grid-row: 5; }
 }
 
 /* ============================================================
@@ -2769,7 +2942,7 @@ body {
   }
 
   /* 职业页：两列缩小 */
-  #page-class.active {
+  #class-top {
     grid-template-columns: 1.2fr 1fr;
   }
 
@@ -2808,13 +2981,9 @@ body {
   #page-combat #panel-survival { grid-column: 1; grid-row: 4; }
 
   /* ── 职业页：单列 ── */
-  #page-class.active {
+  #class-top {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
   }
-  #page-class #panel-class            { grid-column: 1; grid-row: 1; }
-  #page-class #panel-feat-shieldmaster { grid-column: 1; grid-row: 2; }
-  #page-class #panel-charinfo         { grid-column: 1; grid-row: 3; }
 
   /* ── 背包页：单列 ── */
   .bag-columns { flex-direction: column; }

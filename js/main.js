@@ -10,6 +10,8 @@ renderExhaustion();
 renderChannel();
 renderBuffs();
 renderLuckyDice();
+renderXp();
+renderSkills();
 
 /* 幸运骠子交互 */
 $('lucky-minus').addEventListener('click', () => {
