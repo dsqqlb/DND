@@ -344,11 +344,14 @@
   /* Touch */
   list.addEventListener('touchstart', e => {
     if (state.combatants.length <= 1) return;
+    /* 点击可交互元素时不开始拖拽，让 click 事件正常触发 */
+    if (e.target.closest('.init-card-value, .init-card-remove, .init-card-input')) return;
     dragState = { startX: e.touches[0].clientX, startOffset: getTranslateX(list) };
     list.classList.add('dragging');
     list.style.transition = 'none';
-  }, { passive: true });
-
+    e.preventDefault();   /* 阻止 iOS 把触摸当滚动，确保 click 能触发 */
+  }, { passive: false });
+  
   document.addEventListener('touchmove', e => {
     if (!dragState) return;
     const deltaX = e.touches[0].clientX - dragState.startX;
