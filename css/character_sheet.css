@@ -1446,8 +1446,8 @@ body {
 
 /* ── 内层：卡片主体 ── */
 .init-card-inner {
-  padding: 22px 14px;
-  min-height: 72px;
+  padding: 28px 18px;
+  min-height: 90px;
   display: flex;
   align-items: center;
 }
@@ -1461,7 +1461,7 @@ body {
 }
 
 .init-card-cur-marker {
-  font-size: 14px;
+  font-size: 18px;
   color: #e8b84b;
   flex-shrink: 0;
   line-height: 1;
@@ -1475,7 +1475,7 @@ body {
 
 .init-card-name {
   flex: 1;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--silver);
   letter-spacing: 1px;
@@ -1493,8 +1493,8 @@ body {
 .init-card-value-row {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
+  gap: 6px;
+  padding: 4px 12px;
   background: var(--bg-deep);
   border: 1px solid var(--border-dim);
   margin-left: auto;
@@ -1504,7 +1504,7 @@ body {
 
 .init-card-value-lbl {
   font-family: var(--font-title);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 2px;
   color: var(--silver-dim);
   text-transform: uppercase;
@@ -1513,11 +1513,11 @@ body {
 
 .init-card-value {
   font-family: var(--font-title);
-  font-size: 28px;
+  font-size: 40px;
   color: var(--silver);
   cursor: pointer;
   text-align: center;
-  min-width: 28px;
+  min-width: 40px;
   transition: color 0.15s;
 }
 
@@ -1530,9 +1530,9 @@ body {
 }
 
 .init-card-input {
-  width: 56px;
+  width: 72px;
   font-family: var(--font-title);
-  font-size: 28px;
+  font-size: 40px;
   background: none;
   border: none;
   border-bottom: 2px solid var(--border-bright);
@@ -1644,13 +1644,13 @@ body {
 /* ── 移除按钮（绝对定位右上角） ── */
 .init-card-remove {
   position: absolute;
-  top: 3px;
-  right: 5px;
+  top: 6px;
+  right: 8px;
   background: none;
   border: none;
   color: var(--silver-dim);
-  font-size: 11px;
-  padding: 2px 4px;
+  font-size: 16px;
+  padding: 4px 8px;
   cursor: pointer;
   line-height: 1;
   z-index: 2;
@@ -1788,8 +1788,7 @@ body {
   gap: 8px;
 }
 #page-combat #header         { grid-column: 1; grid-row: 1; margin-bottom: 0; }
-#page-combat #header-stats   { grid-column: 1; grid-row: 2; }
-#page-combat #panel-buff     { grid-column: 1; grid-row: 3; overflow-y: auto; }
+#page-combat #panel-buff     { grid-column: 1; grid-row: 2 / -1; overflow-y: auto; }
 #page-combat #panel-survival { grid-column: 2; grid-row: 1 / -1; overflow-y: auto; }
 
 #header-stats {
@@ -1839,12 +1838,37 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: 0;
+}
+
+/* 左列：角色名 → 六维 → 职业面板 纵向排列 */
+#class-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+/* 职业页角色名头部 */
+#class-char-header {
+  padding: 10px 14px;
+  border: 1px solid var(--border-dim);
+  outline: 1px solid var(--border-dim);
+  outline-offset: 3px;
+  background: var(--bg-panel);
+}
+
+/* 左列末位面板（职业·专属资源）拉伸填满，与右列对齐 */
+#class-left #panel-class {
+  flex: 1;
+  min-height: 0;
 }
 
 /* 右列末位面板拉伸填满，与左列对齐 */
 #class-right #panel-skills {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 /* XP条固定高度，不伸缩 */
@@ -2972,13 +2996,12 @@ body {
   /* ── 战斗页：单列 ── */
   #page-combat.active {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto;
     gap: 6px;
   }
   #page-combat #header         { grid-column: 1; grid-row: 1; }
-  #page-combat #header-stats   { grid-column: 1; grid-row: 2; }
-  #page-combat #panel-buff     { grid-column: 1; grid-row: 3; }
-  #page-combat #panel-survival { grid-column: 1; grid-row: 4; }
+  #page-combat #panel-buff     { grid-column: 1; grid-row: 2 / -1; }
+  #page-combat #panel-survival { grid-column: 1; grid-row: 3; }
 
   /* ── 职业页：单列 ── */
   #class-top {
@@ -3023,10 +3046,10 @@ body {
   .init-toggle-btn { font-size: 10px; padding: 6px 14px; }
 
   /* 先攻卡片：适应小屏 */
-  .init-card-inner { padding: 14px 10px; min-height: 52px; }
-  .init-card-value { font-size: 22px; min-width: 24px; }
-  .init-card-input { width: 44px; font-size: 22px; }
-  .init-card-value-lbl { font-size: 9px; letter-spacing: 1px; }
+  .init-card-inner { padding: 20px 14px; min-height: 72px; }
+  .init-card-value { font-size: 32px; min-width: 32px; }
+  .init-card-input { width: 60px; font-size: 32px; }
+  .init-card-value-lbl { font-size: 12px; letter-spacing: 1px; }
   .init-card-head { gap: 5px; }
 
   /* 添加战斗员 */
@@ -3087,9 +3110,9 @@ body {
   .panel { padding: 6px; }
   #header { padding: 4px 8px; }
   #char-name { font-size: 15px; }
-  .init-card-inner { padding: 10px 8px; min-height: 46px; }
-  .init-card-value { font-size: 18px; }
-  .init-card-input { width: 36px; font-size: 18px; }
+  .init-card-inner { padding: 16px 10px; min-height: 64px; }
+  .init-card-value { font-size: 26px; }
+  .init-card-input { width: 52px; font-size: 26px; }
 }
 
 /* ============================================================

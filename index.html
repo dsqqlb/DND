@@ -31,19 +31,12 @@
   <div class="page active" id="page-combat">
 
     <div id="header">
-      <div>
-        <div id="char-name">金雳</div>
-        <div id="char-subtitle">生命领域 · 牧师 · 5级 · 丘陵矮人</div>
-      </div>
       <div class="rest-btns">
         <button id="btn-theme" title="切换主题">◐ 主题</button>
         <button id="btn-short-rest">☾ 短休</button>
         <button id="btn-long-rest">⌛ 长休</button>
       </div>
     </div>
-
-    <!-- 六维属性由 JS 从 CHAR.abilities 渲染，见 renderCharSheet() -->
-    <div id="header-stats"></div>
 
     <div id="panel-buff" class="panel">
       <div class="panel-title">局势 · 状态</div>
@@ -164,49 +157,61 @@
     <!-- 上部：左右两个区域 -->
     <div id="class-top">
 
-      <!-- 左：职业 · 专属资源 -->
-      <div id="panel-class" class="panel">
-        <div class="panel-title">职业 · 专属资源</div>
+      <!-- 左：角色名 → 六维 → 职业 · 专属资源 -->
+      <div id="class-left">
 
-        <div class="resource-row">
-          <span class="resource-lbl">引导神力</span>
-          <span class="resource-restore">短休恢复</span>
-          <div class="resource-pips" id="channel-pips"></div>
+        <div id="class-char-header">
+          <div id="char-name">金雳</div>
+          <div id="char-subtitle">生命领域 · 牧师 · 5级 · 丘陵矮人</div>
         </div>
 
-        <div class="channel-ability">
-          <div class="channel-ability-name cinzel">摧毁不死生物</div>
-          <div class="channel-ability-desc">
-            消耗引导神力，展示圣徽。30尺内所有不死生物须通过
-            <b>感知豁免（DC <span id="cd-turn-dc">13</span>）</b>，失败则被<b>摧毁</b> 1分钟；
-            每轮结束时可重新豁免，成功则摧毁终止。
-            被摧毁的不死生物必须在其回合内远离你，且不能主动靠近。
+        <!-- 六维属性由 JS 从 CHAR.abilities 渲染，见 renderCharSheet() -->
+        <div id="header-stats"></div>
+
+        <div id="panel-class" class="panel">
+          <div class="panel-title">职业 · 专属资源</div>
+
+          <div class="resource-row">
+            <span class="resource-lbl">引导神力</span>
+            <span class="resource-restore">短休恢复</span>
+            <div class="resource-pips" id="channel-pips"></div>
+          </div>
+
+          <div class="channel-ability">
+            <div class="channel-ability-name cinzel">摧毁不死生物</div>
+            <div class="channel-ability-desc">
+              消耗引导神力，展示圣徽。30尺内所有不死生物须通过
+              <b>感知豁免（DC <span id="cd-turn-dc">13</span>）</b>，失败则被<b>摧毁</b> 1分钟；
+              每轮结束时可重新豁免，成功则摧毁终止。
+              被摧毁的不死生物必须在其回合内远离你，且不能主动靠近。
+            </div>
+          </div>
+
+          <div class="channel-ability">
+            <div class="channel-ability-name cinzel">
+              生命维持
+              <span class="channel-domain-tag">生命领域</span>
+            </div>
+            <div class="channel-ability-desc">
+              消耗引导神力，对30尺内<b>感知调整值</b>数量的当前生命值低于其上限一半的生物
+              每个目标恢复到生命值其上限的一半。
+              对亡灵生物和构装体无效。
+            </div>
+          </div>
+
+          <div class="channel-ability">
+            <div class="channel-ability-name cinzel">
+              生命门徒
+              <span class="channel-domain-tag">生命领域</span>
+            </div>
+            <div class="channel-ability-desc">
+              你消耗法术位施展法术的回合中，当该法术恢复生物的生
+              命值时，额外恢复 <b>牧师等级 + 消耗法术位环阶</b> 生命值。
+            </div>
           </div>
         </div>
 
-        <div class="channel-ability">
-          <div class="channel-ability-name cinzel">
-            生命维持
-            <span class="channel-domain-tag">生命领域</span>
-          </div>
-          <div class="channel-ability-desc">
-            消耗引导神力，对30尺内<b>感知调整值</b>数量的当前生命值低于其上限一半的生物
-            每个目标恢复到生命值其上限的一半。
-            对亡灵生物和构装体无效。
-          </div>
-        </div>
-
-        <div class="channel-ability">
-          <div class="channel-ability-name cinzel">
-            生命门徒
-            <span class="channel-domain-tag">生命领域</span>
-          </div>
-          <div class="channel-ability-desc">
-            你消耗法术位施展法术的回合中，当该法术恢复生物的生
-            命值时，额外恢复 <b>牧师等级 + 消耗法术位环阶</b> 生命值。
-          </div>
-        </div>
-      </div>
+      </div><!-- /#class-left -->
 
       <!-- 右：专长、角色信息、熟练技能 纵向排列 -->
       <div id="class-right">
