@@ -273,14 +273,48 @@ function buildSpellRow(sp, isDomain, isCantrip) {
     row.appendChild(lock);
   }
 
-  /* 名称区域（移除法术改由“＋选择”法术选择器完成，行上不再放 × / 专注按钮）*/
+  /* 名称区域 */
   const nameWrap = document.createElement('div');
   nameWrap.className = 'srow-name';
   nameWrap.innerHTML = `<span class="srow-cn cinzel">${sp.name}</span><span class="srow-en">${sp.nameEn}</span>`;
   nameWrap.title = '按住施法';
   row.appendChild(nameWrap);
-
-  /* 详情展开按钮：贴满行高的竖条，固定在最右侧，单击立即触发，不与“按住施法”争抢同一手势时机 */
+  
+  /* 施法时间图标 + 专注标识，放在名称右侧 */
+  const indicators = document.createElement('span');
+  indicators.className = 'srow-indicators';
+  
+  const ct = sp.castTime || '';
+  if (ct.includes('附赠动作')) {
+    const ti = document.createElement('span');
+    ti.className = 'cast-icon cast-icon-bonus';
+    ti.title = '附赠动作';
+    indicators.appendChild(ti);
+  } else if (ct.includes('动作')) {
+    const ti = document.createElement('span');
+    ti.className = 'cast-icon cast-icon-action';
+    ti.title = '动作';
+    indicators.appendChild(ti);
+  } else if (ct) {
+    /* 非动作/附赠的施法时间直接显示文字（如 1分钟、10分钟）*/
+    const ti = document.createElement('span');
+    ti.className = 'srow-time-text';
+    ti.textContent = ct;
+    ti.title = ct;
+    indicators.appendChild(ti);
+  }
+  
+  if (sp.conc) {
+    const ci = document.createElement('span');
+    ci.className = 'srow-conc-badge';
+    ci.textContent = '专';
+    ci.title = '专注';
+    indicators.appendChild(ci);
+  }
+  
+  if (indicators.children.length) row.appendChild(indicators);
+  
+  /* 详情展开按钮：贴满行高的竖条，固定在最右侧 */
   const detailBtn = document.createElement('button');
   detailBtn.className = 'srow-detail-btn';
   detailBtn.title = '查看详情';

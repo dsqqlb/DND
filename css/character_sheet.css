@@ -738,6 +738,39 @@ body {
   flex-shrink: 0;
 }
 
+/* 施法时间图标 + 专注标识 */
+.srow-indicators {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+/* 与详情页共用 cast-icon 的蓝方块 / 橙三角，微调对齐 */
+.srow-indicators .cast-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+/* 长时间施法直接显示文字 */
+.srow-time-text {
+  font-family: var(--font-title);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--silver-dim);
+  line-height: 1;
+}
+/* 专注徽章：白底深色字 */
+.srow-conc-badge {
+  font-family: var(--font-title);
+  font-size: 9px;
+  color: var(--bg-deep);
+  background: #ffffff;
+  padding: 1px 4px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
 /* 环阶分组标题（1环/2环/3环） */
 .srow-lv-group-hdr {
   font-family: var(--font-title);
