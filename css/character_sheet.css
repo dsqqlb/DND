@@ -60,6 +60,21 @@
   --accent-glow:   #6aa8e0;
 }
 
+/* ── 明亮模式：羊皮纸 ── */
+[data-theme="ivory"] {
+  --bg-deep:       #f5f0eb;
+  --bg-panel:      #ffffff;
+  --bg-card:       #faf7f2;
+  --border-dim:    #d0ccc4;
+  --border-bright: #444444;
+  --silver:        #1a1a1a;
+  --silver-dim:    #777777;
+  --silver-ghost:  rgba(0,0,0,0.06);
+  --red-dark:      #c0392b;
+  --green:         #27ae60;
+  --accent-glow:   #6c3eb8;
+}
+
 body {
   background: var(--bg-deep);
   color: var(--silver);
@@ -760,12 +775,12 @@ body {
   color: var(--silver-dim);
   line-height: 1;
 }
-/* 专注徽章：白底深色字 */
+/* 专注徽章：逆向配色，亮暗主题自动适配 */
 .srow-conc-badge {
   font-family: var(--font-title);
   font-size: 9px;
   color: var(--bg-deep);
-  background: #ffffff;
+  background: var(--silver);
   padding: 1px 4px;
   letter-spacing: 1px;
   line-height: 1;
@@ -3650,7 +3665,7 @@ body {
   align-items: baseline;
   gap: 8px;
   padding: 6px 12px;
-  border-bottom: 1px solid rgba(58,58,58,0.4);
+  border-bottom: 1px solid var(--border-dim);
 }
 .log-entry:last-child { border-bottom: none; }
 .log-entry-icon { width: 18px; text-align: center; flex-shrink: 0; }
@@ -3792,7 +3807,7 @@ body {
   gap: 8px;
   padding: 8px 14px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(58, 58, 58, 0.4);
+  border-bottom: 1px solid var(--border-dim);
 }
 .log-export-item:last-child { border-bottom: none; }
 .log-export-item:hover { background: rgba(229, 229, 229, 0.04); }

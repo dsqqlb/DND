@@ -15,6 +15,7 @@
     { id: 'blood',   name: '赤红',   dots: ['#1a1212', '#e06a6a', '#d0a0a0'] },
     { id: 'emerald', name: '翡翠',   dots: ['#121a16', '#5ac08a', '#9fcbb2'] },
     { id: 'azure',   name: '霜蓝',   dots: ['#12171a', '#6aa8e0', '#a6c4e0'] },
+    { id: 'ivory',   name: '羊皮纸', dots: ['#f5f0eb', '#6c3eb8', '#444444'] },
   ];
   const DEFAULT_THEME = 'violet';
 
