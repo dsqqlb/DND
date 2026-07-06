@@ -873,7 +873,7 @@ body {
 
 /* 行内详情展开块 */
 .srow-inline-detail {
-  background: #111;
+  background: var(--bg-deep);
   border: 1px solid var(--border-dim);
   border-top: none;
   padding: 8px 10px;
@@ -2201,7 +2201,7 @@ body {
   -webkit-appearance: none;
   appearance: none;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.22);
+  border-bottom: 1px solid var(--border-dim);
   box-shadow: none;
   color: var(--silver);
   font-family: inherit;
@@ -2211,7 +2211,7 @@ body {
   flex-shrink: 0;
   caret-color: var(--accent-glow);
 }
-.notepad-line:focus { border-bottom-color: rgba(255,255,255,0.5); }
+.notepad-line:focus { border-bottom-color: var(--border-bright); }
 
 /* 模态框分类标题 */
 .item-cat-header {
