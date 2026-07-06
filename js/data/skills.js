@@ -43,5 +43,5 @@ function skillsByAbility() {
     const list = SKILL_DB.filter(s => s.ability === key);
     if (list.length) groups.push({ abilityKey: key, abilityLabel: meta[key], skills: list });
   });
-  return groups;
+  return groups; 
 }
