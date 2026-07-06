@@ -90,6 +90,7 @@
 
     </div>
 
+    <div id="combat-right">
     <div id="panel-survival" class="panel">
       <div class="panel-title">生存 · 核心状态</div>
 
@@ -116,25 +117,26 @@
         <button class="hp-btn" id="hp-plus">＋ 1</button>
         <button class="hp-btn" id="hp-plus5">＋ 5</button>
       </div>
+    </div><!-- /#panel-survival -->
 
-      <!-- 先攻顺序 -->
+    <!-- 战斗 · 先攻（独立模块）-->
+    <div id="panel-combat" class="panel">
+      <div class="panel-title">战斗 · 先攻</div>
       <div id="initiative-block">
         <button id="initiative-toggle-card" class="init-toggle-btn">
           <span id="init-toggle-status">⚔ 开始战斗</span>
         </button>
         <div id="initiative-tracker" class="hidden">
-          <div id="init-round-row">
+          <div id="init-bar">
             <span id="init-round-num" class="cinzel">回合 1</span>
             <span id="init-turn-indicator" class="cinzel">0 / 0</span>
           </div>
-          <div id="init-carousel">
-            <div id="init-carousel-track">
-              <div id="init-combatant-list"></div>
-            </div>
-            <div id="init-carousel-nav">
-              <button id="init-prev-turn" class="init-nav-btn">◀</button>
-              <div id="init-carousel-dots"></div>
-              <button id="init-next-turn" class="init-nav-btn">▶</button>
+          <div id="init-main">
+            <div id="init-list"></div>
+            <div id="init-side">
+              <button id="init-next-turn" class="init-turn-btn init-turn-btn-next">下一个 ▼</button>
+              <button id="init-prev-turn" class="init-turn-btn">▲ 上一个</button>
+              <button id="init-add-btn" class="init-add-btn">＋ 战斗员</button>
             </div>
           </div>
           <div id="init-add-row" class="hidden">
@@ -143,11 +145,10 @@
             <button id="init-add-confirm" class="init-add-icon" title="确认">✔</button>
             <button id="init-add-cancel" class="init-add-icon" title="取消">✕</button>
           </div>
-          <button id="init-add-btn" class="init-add-btn">＋ 添加战斗员</button>
         </div>
       </div>
-
-    </div>
+    </div><!-- /#panel-combat -->
+    </div><!-- /#combat-right -->
 
   </div><!-- /#page-combat -->
 

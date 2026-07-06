@@ -1363,10 +1363,7 @@ body {
 /* ============================================================
    先攻记录
 ============================================================ */
-#panel-survival #initiative-block {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-dim);
+#panel-combat #initiative-block {
   text-align: center;
 }
 
@@ -1406,274 +1403,127 @@ body {
 ============================================================ */
 #initiative-tracker.hidden { display: none; }
 
-/* 回合 & 计数行 */
-#init-round-row {
+/* 顶部：回合数 + 进度指示 */
+#init-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0 8px;
+  padding: 6px 2px 8px;
   margin-top: 6px;
   border-bottom: 1px solid var(--border-dim);
 }
-
 #init-round-num {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 2px;
-  color: var(--silver-dim);
+  color: var(--silver);
 }
-
 #init-turn-indicator {
   font-size: 10px;
-  color: var(--silver-dim);
   letter-spacing: 1px;
-  min-width: 42px;
+  color: var(--silver-dim);
+}
+
+/* ── 主区：左侧平铺列表 + 右侧控制列 ── */
+#init-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+/* 左侧：全部战斗员纵向平铺 */
+#init-list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.init-empty {
+  color: var(--silver-dim);
+  font-size: 11px;
   text-align: center;
+  padding: 24px 6px;
+  border: 1px dashed var(--border-dim);
 }
 
-/* ── 轮播容器 ── */
-#init-carousel {
-  position: relative;
-  margin: 6px 0;
-}
-
-#init-carousel-track {
-  overflow: hidden;
-  border-radius: 2px;
-}
-
-#init-combatant-list {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: grab;
-  will-change: transform;
-  user-select: none;
-}
-
-#init-combatant-list.dragging {
-  cursor: grabbing;
-  transition: none !important;
-}
-
-/* ── 卡片容器 ── */
-.init-card {
-  position: relative;
-  flex: 0 0 auto;
-  width: 55%;
-  border: 1px solid var(--border-dim);
-  outline: 1px solid var(--border-dim);
-  outline-offset: 3px;
-  background: var(--bg-card);
-  opacity: 0.55;
-  filter: grayscale(0.5);
-  transition: border-color 0.25s, outline-color 0.25s, box-shadow 0.25s, opacity 0.35s, filter 0.35s;
-}
-
-/* ── 当前行动者卡片的金色光环 + 脉动动效 ── */
-@keyframes card-current-glow {
-  0%, 100% {
-    box-shadow: 0 0 12px rgba(232,184,75,0.12), 0 0 24px rgba(232,184,75,0.06), inset 0 0 10px rgba(232,184,75,0.04);
-    border-color: #e8b84b;
-    outline-color: #8a6a1a;
-  }
-  50% {
-    box-shadow: 0 0 22px rgba(232,184,75,0.28), 0 0 44px rgba(232,184,75,0.14), 0 0 66px rgba(232,184,75,0.06), inset 0 0 20px rgba(232,184,75,0.09);
-    border-color: #f0d050;
-    outline-color: #b8860b;
-  }
-}
-
-.init-card-current {
-  border-color: #e8b84b;
-  outline-color: #8a6a1a;
-  box-shadow: 0 0 12px rgba(232,184,75,0.12), inset 0 0 10px rgba(232,184,75,0.04);
-  opacity: 1;
-  filter: none;
-  animation: card-current-glow 2s ease-in-out infinite;
-}
-
-/* ── 内层：卡片主体 ── */
-.init-card-inner {
-  padding: 28px 18px;
-  min-height: 90px;
-  display: flex;
-  align-items: center;
-}
-
-/* ── 头部行：当前标记 + 名称 ── */
-.init-card-head {
+/* 单行：标记 + 名称 + 先攻值 + 移除。行够高，方便 iPad 点按 */
+.init-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  min-height: 50px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-card);
+  opacity: 0.62;
+  transition: opacity 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
-.init-card-cur-marker {
-  font-size: 18px;
-  color: #e8b84b;
+/* 当前行动者：金色高亮 + 左侧粗描边（安静不闪）*/
+.init-row-current {
+  opacity: 1;
+  border-color: #e8b84b;
+  background: rgba(232,184,75,0.07);
+  box-shadow: inset 4px 0 0 #e8b84b, 0 0 12px rgba(232,184,75,0.12);
+}
+
+.init-row-marker {
   flex-shrink: 0;
+  width: 12px;
+  font-size: 12px;
   line-height: 1;
-  animation: marker-blink 1.2s ease-in-out infinite;
+  color: #e8b84b;
+  visibility: hidden;
 }
+.init-row-current .init-row-marker { visibility: visible; }
 
-@keyframes marker-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.init-card-name {
+.init-row-name {
   flex: 1;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--silver);
-  letter-spacing: 1px;
   min-width: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--silver);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.init-card-current .init-card-name {
-  color: #f0d78c;
-}
-
-/* ── 数值行：先攻标签 + 数值 ── */
-.init-card-value-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  background: var(--bg-deep);
-  border: 1px solid var(--border-dim);
-  margin-left: auto;
-  flex-shrink: 0;
   cursor: pointer;
+  padding: 8px 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
+.init-row-current .init-row-name { color: #f0d78c; }
 
-.init-card-value-lbl {
-  font-family: var(--font-title);
-  font-size: 14px;
-  letter-spacing: 2px;
-  color: var(--silver-dim);
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.init-card-value {
-  font-family: var(--font-title);
-  font-size: 40px;
-  color: var(--silver);
-  cursor: pointer;
-  text-align: center;
-  min-width: 40px;
-  transition: color 0.15s;
-}
-
-.init-card-value:hover {
-  color: var(--accent-glow);
-}
-
-.init-card-current .init-card-value {
-  color: #f0d78c;
-}
-
-.init-card-input {
-  width: 72px;
-  font-family: var(--font-title);
-  font-size: 40px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid var(--border-bright);
-  color: var(--silver);
-  text-align: center;
-  outline: none;
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.init-card-input::-webkit-inner-spin-button,
-.init-card-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-}
-
-/* ── 移除按钮（绝对定位右上角） ── */
-.init-card-remove {
-  position: absolute;
-  top: 3px;
-  right: 5px;
-  background: none;
-  border: none;
-  color: var(--silver-dim);
-  font-size: 11px;
-  padding: 2px 4px;
-  cursor: pointer;
-  line-height: 1;
-  z-index: 2;
-  transition: color 0.15s;
-}
-
-.init-card-remove:hover {
-  color: #e07070;
-}
-
-/* ── 轮播导航 ── */
-#init-carousel-nav {
+/* 先攻值：标签 + 大数字，整块可点进入编辑 */
+.init-row-val-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 6px 0 4px;
-}
-
-#init-carousel-nav .init-nav-btn {
-  background: none;
+  flex-shrink: 0;
+  min-width: 44px;
+  padding: 6px 9px;
+  background: var(--bg-deep);
   border: 1px solid var(--border-dim);
-  color: var(--silver-dim);
-  font-size: 13px;
-  padding: 4px 12px;
   cursor: pointer;
-  line-height: 1;
-  transition: color 0.15s, border-color 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
-
-#init-carousel-nav .init-nav-btn:hover {
-  border-color: var(--border-bright);
-  color: var(--silver);
-}
-
-#init-carousel-nav .init-nav-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-#init-carousel-dots {
-  display: flex;
-  gap: 5px;
-}
-
-.carousel-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 1px solid var(--border-dim);
-  background: none;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.carousel-dot:hover {
-  border-color: var(--silver-dim);
-}
-
-.carousel-dot.active {
-  background: #e8b84b;
-  border-color: #e8b84b;
-}
-
-.init-card-input {
-  width: 54px;
+.init-row-val {
   font-family: var(--font-title);
-  font-size: 28px;
+  font-size: 21px;
+  line-height: 1;
+  color: var(--silver);
+  min-width: 22px;
+  text-align: center;
+}
+.init-row-current .init-row-val { color: #f0d78c; }
+
+.init-row-input {
+  width: 46px;
+  font-family: var(--font-title);
+  font-size: 21px;
   background: none;
   border: none;
   border-bottom: 2px solid var(--border-bright);
@@ -1683,30 +1533,68 @@ body {
   appearance: textfield;
   -moz-appearance: textfield;
 }
+.init-row-input::-webkit-inner-spin-button,
+.init-row-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
-.init-card-input::-webkit-inner-spin-button,
-.init-card-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-}
-
-/* ── 移除按钮（绝对定位右上角） ── */
-.init-card-remove {
-  position: absolute;
-  top: 6px;
-  right: 8px;
+/* 移除按钮：34px 方块热区，触屏易点 */
+.init-row-remove {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
   background: none;
-  border: none;
+  border: 1px solid var(--border-dim);
   color: var(--silver-dim);
-  font-size: 16px;
-  padding: 4px 8px;
-  cursor: pointer;
+  font-size: 14px;
   line-height: 1;
-  z-index: 2;
-  transition: color 0.15s;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.init-row-remove:hover { color: #e07070; border-color: #e07070; }
+
+/* 右侧控制列：下一个 / 上一个 / ＋战斗员 竖排 */
+#init-side {
+  flex-shrink: 0;
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.init-card-remove:hover {
-  color: #e07070;
+.init-turn-btn {
+  width: 100%;
+  min-height: 48px;
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  font-family: var(--font-title);
+  font-size: 12px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.init-turn-btn:not(:disabled):hover { border-color: var(--border-bright); color: var(--silver); }
+.init-turn-btn:disabled { opacity: 0.3; cursor: default; }
+.init-turn-btn-next {
+  border-color: #8a6a1a;
+  color: #f0d78c;
+  background: rgba(232,184,75,0.06);
+}
+.init-turn-btn-next:not(:disabled):hover {
+  border-color: #e8b84b;
+  color: #f0d78c;
+  background: rgba(232,184,75,0.12);
+}
+
+/* ＋战斗员：控制列内与翻页按钮同宽，略作间隔区分 */
+#init-side .init-add-btn {
+  margin-top: 6px;
+  min-height: 44px;
+  font-size: 11px;
+  letter-spacing: 1px;
 }
 
 /* 添加按钮 */
@@ -1837,7 +1725,17 @@ body {
 }
 #page-combat #header         { grid-column: 1; grid-row: 1; margin-bottom: 0; }
 #page-combat #panel-buff     { grid-column: 1; grid-row: 2 / -1; overflow-y: auto; }
-#page-combat #panel-survival { grid-column: 2; grid-row: 1 / -1; overflow-y: auto; }
+/* 右列：生存·核心状态（固定不动）+ 战斗·先攻（内部自行滚动）竖排 */
+#page-combat #combat-right {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+#page-combat #panel-survival { flex: 0 0 auto; }               /* 固定高度，不随翻页移动 */
+#page-combat #panel-combat   { flex: 1 1 auto; min-height: 0; overflow-y: auto; }  /* 仅此面板可翻页/滚动 */
 
 #header-stats {
   display: grid;
@@ -3088,18 +2986,17 @@ body {
   .hp-btn { font-size: 9px; padding: 5px 10px; }
 
   /* ── 先攻 ── */
-  #init-round-num { font-size: 9px; }
+  #init-round-num { font-size: 10px; }
   #init-turn-indicator { font-size: 9px; }
-  #init-carousel-nav { gap: 8px; }
-  #init-carousel-nav .init-nav-btn { font-size: 11px; padding: 3px 10px; }
   .init-toggle-btn { font-size: 10px; padding: 6px 14px; }
 
-  /* 先攻卡片：适应小屏 */
-  .init-card-inner { padding: 20px 14px; min-height: 72px; }
-  .init-card-value { font-size: 32px; min-width: 32px; }
-  .init-card-input { width: 60px; font-size: 32px; }
-  .init-card-value-lbl { font-size: 12px; letter-spacing: 1px; }
-  .init-card-head { gap: 5px; }
+  /* 先攻平铺列表：小屏收紧 */
+  .init-row { min-height: 46px; padding: 5px 8px; }
+  .init-row-name { font-size: 15px; }
+  .init-row-val { font-size: 19px; }
+  .init-row-input { width: 42px; font-size: 19px; }
+  #init-side { width: 90px; }
+  .init-turn-btn { min-height: 44px; font-size: 11px; letter-spacing: 1px; }
 
   /* 添加战斗员 */
   .init-add-btn { font-size: 9px; letter-spacing: 1px; padding: 6px 10px; }
@@ -3159,9 +3056,11 @@ body {
   .panel { padding: 6px; }
   #header { padding: 4px 8px; }
   #char-name { font-size: 15px; }
-  .init-card-inner { padding: 16px 10px; min-height: 64px; }
-  .init-card-value { font-size: 26px; }
-  .init-card-input { width: 52px; font-size: 26px; }
+  .init-row-name { font-size: 14px; }
+  .init-row-val { font-size: 17px; }
+  .init-row-input { width: 38px; font-size: 17px; }
+  #init-side { width: 82px; }
+  .init-turn-btn { font-size: 10px; }
 }
 
 /* ============================================================
