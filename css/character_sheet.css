@@ -1423,21 +1423,16 @@ body {
   color: var(--silver-dim);
 }
 
-/* ── 主区：左侧平铺列表 + 右侧控制列 ── */
-#init-main {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 8px 0;
-}
-
-/* 左侧：全部战斗员纵向平铺 */
+/* 先攻列表：面板内唯一滚动区，自动聚焦当前行动者 */
 #init-list {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin: 8px 0;
 }
 
 .init-empty {
@@ -1553,24 +1548,23 @@ body {
 }
 .init-row-remove:hover { color: #e07070; border-color: #e07070; }
 
-/* 右侧控制列：下一个 / 上一个 / ＋战斗员 竖排 */
-#init-side {
-  flex-shrink: 0;
-  width: 104px;
+/* 固定控制区：上一个 / 下一个 / ＋战斗员，横排一行，不随列表滚动 */
+#init-controls {
+  flex: 0 0 auto;
   display: flex;
-  flex-direction: column;
   gap: 8px;
+  margin-top: 4px;
 }
 
 .init-turn-btn {
-  width: 100%;
+  flex: 1;
   min-height: 48px;
   background: none;
   border: 1px solid var(--border-dim);
   color: var(--silver-dim);
   font-family: var(--font-title);
   font-size: 12px;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -1589,12 +1583,15 @@ body {
   background: rgba(232,184,75,0.12);
 }
 
-/* ＋战斗员：控制列内与翻页按钮同宽，略作间隔区分 */
-#init-side .init-add-btn {
-  margin-top: 6px;
-  min-height: 44px;
+/* ＋战斗员：与翻页按钮同排同高 */
+#init-controls .init-add-btn {
+  flex: 1;
+  width: auto;
+  min-height: 48px;
   font-size: 11px;
   letter-spacing: 1px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 添加按钮 */
@@ -1724,18 +1721,39 @@ body {
   gap: 8px;
 }
 #page-combat #header         { grid-column: 1; grid-row: 1; margin-bottom: 0; }
-#page-combat #panel-buff     { grid-column: 1; grid-row: 2 / -1; overflow-y: auto; }
-/* 右列：生存·核心状态（固定不动）+ 战斗·先攻（内部自行滚动）竖排 */
-#page-combat #combat-right {
-  grid-column: 2;
-  grid-row: 1 / -1;
+/* 左栏：局势·状态 + 生存·核心状态 竖排（可滚动兜底）*/
+#page-combat #combat-left {
+  grid-column: 1;
+  grid-row: 2 / -1;
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-height: 0;
+  overflow-y: auto;
 }
-#page-combat #panel-survival { flex: 0 0 auto; }               /* 固定高度，不随翻页移动 */
-#page-combat #panel-combat   { flex: 1 1 auto; min-height: 0; overflow-y: auto; }  /* 仅此面板可翻页/滚动 */
+#page-combat #combat-left #panel-buff     { flex: 0 0 auto; margin-bottom: 0; }
+#page-combat #combat-left #panel-survival { flex: 0 0 auto; }
+
+/* 右栏：整栏都是战斗·先攻。面板本身不滚动，由内部先攻列表滚动、控制区固定 */
+#page-combat #panel-combat {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#page-combat #panel-combat #initiative-block {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;   /* 未开战时让“开始战斗”按钮居中 */
+}
+#page-combat #panel-combat .init-toggle-btn { align-self: center; flex: 0 0 auto; }
+#page-combat #initiative-tracker { flex: 1; min-height: 0; display: flex; flex-direction: column; text-align: left; }
+#page-combat #initiative-tracker.hidden { display: none; }   /* 修复：开始/结束战斗能正确收起轮盘 */
 
 #header-stats {
   display: grid;
@@ -2995,8 +3013,7 @@ body {
   .init-row-name { font-size: 15px; }
   .init-row-val { font-size: 19px; }
   .init-row-input { width: 42px; font-size: 19px; }
-  #init-side { width: 90px; }
-  .init-turn-btn { min-height: 44px; font-size: 11px; letter-spacing: 1px; }
+  .init-turn-btn, #init-controls .init-add-btn { min-height: 44px; font-size: 11px; letter-spacing: 1px; }
 
   /* 添加战斗员 */
   .init-add-btn { font-size: 9px; letter-spacing: 1px; padding: 6px 10px; }
@@ -3059,8 +3076,7 @@ body {
   .init-row-name { font-size: 14px; }
   .init-row-val { font-size: 17px; }
   .init-row-input { width: 38px; font-size: 17px; }
-  #init-side { width: 82px; }
-  .init-turn-btn { font-size: 10px; }
+  .init-turn-btn, #init-controls .init-add-btn { font-size: 10px; letter-spacing: 0.5px; }
 }
 
 /* ============================================================

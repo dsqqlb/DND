@@ -38,6 +38,21 @@
     turnInd.textContent = total > 0 ? (state.currentIndex + 1) + ' / ' + total : '0 / 0';
     prevBtn.disabled = total === 0;
     nextBtn.disabled = total === 0;
+    focusCurrent();
+  }
+
+  /* ──── 把当前行动者那一条滚动到列表可视区中央（仅滚动列表本身）──── */
+  function focusCurrent(smooth) {
+    const rows = list.querySelectorAll('.init-row');
+    const el = rows[state.currentIndex];
+    if (!el) return;
+    requestAnimationFrame(() => {
+      const listRect = list.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const delta = (elRect.top - listRect.top) - (list.clientHeight - el.clientHeight) / 2;
+      const top = Math.max(0, list.scrollTop + delta);
+      list.scrollTo({ top, behavior: smooth === false ? 'auto' : 'smooth' });
+    });
   }
 
   /* ──── 纵向平铺列表 ──── */

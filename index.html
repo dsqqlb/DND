@@ -38,6 +38,7 @@
       </div>
     </div>
 
+    <div id="combat-left">
     <div id="panel-buff" class="panel">
       <div class="panel-title">局势 · 状态</div>
       <div id="lucky-dice-row">
@@ -88,9 +89,8 @@
       <!-- 法术豁免DC / 法术攻击加成 / 施法属性调整值 由 JS 渲染 -->
       <div class="cast-stats" id="cast-core-stats"></div>
 
-    </div>
+    </div><!-- /#panel-buff -->
 
-    <div id="combat-right">
     <div id="panel-survival" class="panel">
       <div class="panel-title">生存 · 核心状态</div>
 
@@ -118,8 +118,9 @@
         <button class="hp-btn" id="hp-plus5">＋ 5</button>
       </div>
     </div><!-- /#panel-survival -->
+    </div><!-- /#combat-left -->
 
-    <!-- 战斗 · 先攻（独立模块）-->
+    <!-- 战斗 · 先攻（整个右栏）-->
     <div id="panel-combat" class="panel">
       <div class="panel-title">战斗 · 先攻</div>
       <div id="initiative-block">
@@ -131,13 +132,11 @@
             <span id="init-round-num" class="cinzel">回合 1</span>
             <span id="init-turn-indicator" class="cinzel">0 / 0</span>
           </div>
-          <div id="init-main">
-            <div id="init-list"></div>
-            <div id="init-side">
-              <button id="init-next-turn" class="init-turn-btn init-turn-btn-next">下一个 ▼</button>
-              <button id="init-prev-turn" class="init-turn-btn">▲ 上一个</button>
-              <button id="init-add-btn" class="init-add-btn">＋ 战斗员</button>
-            </div>
+          <div id="init-list"></div>
+          <div id="init-controls">
+            <button id="init-prev-turn" class="init-turn-btn">▲ 上一个</button>
+            <button id="init-next-turn" class="init-turn-btn init-turn-btn-next">下一个 ▼</button>
+            <button id="init-add-btn" class="init-add-btn">＋ 战斗员</button>
           </div>
           <div id="init-add-row" class="hidden">
             <input type="text" id="init-add-name" placeholder="名称" maxlength="16">
@@ -148,7 +147,6 @@
         </div>
       </div>
     </div><!-- /#panel-combat -->
-    </div><!-- /#combat-right -->
 
   </div><!-- /#page-combat -->
 
