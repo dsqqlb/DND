@@ -43,6 +43,14 @@ function commitLuckyEdit() {
 $('lucky-input').addEventListener('blur', commitLuckyEdit);
 $('lucky-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitLuckyEdit(); });
 
+/* 经验值编辑（点数字就地编辑 → 保存到 dnd_xp / dnd_xpToNextManual）*/
+$('xp-current').addEventListener('click', editXpCurrent);
+$('xp-input').addEventListener('blur', commitXpCurrent);
+$('xp-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitXpCurrent(); });
+$('xp-next').addEventListener('click', editXpNext);
+$('xp-next-input').addEventListener('blur', commitXpNext);
+$('xp-next-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitXpNext(); });
+
 /* 面板折叠按鈕 */
 document.querySelectorAll('.panel').forEach(panel => {
   const title = panel.querySelector(':scope > .panel-title');

@@ -32,7 +32,6 @@
 
     <div id="header">
       <div class="rest-btns">
-        <button id="btn-theme" title="切换主题">◐ 主题</button>
         <button id="btn-short-rest">☾ 短休</button>
         <button id="btn-long-rest">⌛ 长休</button>
       </div>
@@ -347,12 +346,6 @@
         </div>
       </div>
 
-      <div id="backup-row">
-        <span class="cinzel backup-lbl">数据备份</span>
-        <button id="btn-export" class="backup-btn">⬇ 导出</button>
-        <button id="btn-import" class="backup-btn">⬆ 导入</button>
-        <input type="file" id="import-file" accept="application/json,.json" style="display:none;">
-      </div>
     </div>
 
   </div><!-- /#page-bag -->
@@ -368,6 +361,7 @@
         <button id="timer-toggle" class="timer-btn timer-btn-main">▶ 开始</button>
         <button id="timer-end" class="timer-btn">■ 结束</button>
       </div>
+      <button id="btn-settings" class="timer-btn" title="设置">⚙</button>
     </div>
 
     <!-- 事件日志 -->
@@ -474,14 +468,28 @@
   </div>
 </div>
 
-<!-- 主题选择面板 -->
-<div id="theme-modal" class="hidden">
-  <div id="theme-panel">
-    <div id="theme-head">
-      <span class="cinzel">选择主题</span>
-      <button id="theme-close">✕</button>
+<!-- 设置弹窗：全数据备份 + 主题（日志页齿轮打开）-->
+<div id="settings-modal" class="hidden">
+  <div id="settings-panel">
+    <div id="settings-head">
+      <span class="cinzel">设置</span>
+      <button id="settings-close">✕</button>
     </div>
-    <div id="theme-grid"><!-- 主题卡片由 theme.js 生成 --></div>
+
+    <div class="settings-section">
+      <div class="settings-section-title cinzel">全数据备份</div>
+      <div class="settings-hint">导出/导入包含角色数据与冒险日志在内的<b>全部</b>数据；导入为整体覆盖还原（导入前会自动下载一份当前快照）。</div>
+      <div class="settings-btn-row">
+        <button id="settings-export" class="settings-btn">⬇ 导出全部</button>
+        <button id="settings-import" class="settings-btn">⬆ 导入全部</button>
+        <input type="file" id="settings-import-file" accept="application/json,.json" style="display:none;">
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title cinzel">主题</div>
+      <select id="theme-select" class="settings-select"></select>
+    </div>
   </div>
 </div>
 

@@ -161,16 +161,17 @@ $('btn-short-rest').addEventListener('click', () => {
 });
 
 /* ============================================================
-   数据备份：导出 / 导入（覆盖全部 dnd_ 开头的 localStorage 键）
+   全数据备份：导出 / 导入（覆盖全部 dnd_ 开头的 localStorage 键，含冒险日志）
+   —— 入口在「设置」弹窗（日志页右上角齿轮），背包页不再放备份按钮。
+   与日志页自带的「日志导入导出」是两套：这里是整卡快照/灾备（整体覆盖还原），
+   日志页那套是日志专用（合并追加）。
 ============================================================ */
-/* 收集所有本卡数据（键值均为 save() 存入的 JSON 字符串，原样搬运）
-   注意：日志数据（dnd_sessions / dnd_currentSessionId）独立导入导出，不并入角色备份。 */
-const LOG_KEYS = ['dnd_sessions', 'dnd_currentSessionId'];
+/* 收集所有本卡数据（含冒险日志 dnd_sessions / dnd_currentSessionId），键值原样搬运 */
 function collectBackup() {
   const data = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && key.startsWith('dnd_') && !LOG_KEYS.includes(key)) data[key] = localStorage.getItem(key);
+    if (key && key.startsWith('dnd_')) data[key] = localStorage.getItem(key);
   }
   return data;
 }
@@ -178,7 +179,7 @@ function collectBackup() {
 function exportBackup() {
   const payload = {
     app: 'dnd-character-sheet',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     data: collectBackup(),
   };
@@ -193,7 +194,7 @@ function exportBackup() {
   URL.revokeObjectURL(url);
   showDialog({
     icon: '⬇', title: '已导出',
-    message: `已保存 ${Object.keys(payload.data).length} 项数据到备份文件。<br>妥善保管这个 .json 文件。`,
+    message: `已保存 ${Object.keys(payload.data).length} 项数据（含冒险日志）到备份文件。<br>妥善保管这个 .json 文件。`,
     confirmText: '好',
   });
 }
@@ -218,14 +219,14 @@ function importBackup(file) {
     }
 
     showDialog({
-      icon: '⬆', title: '导入备份',
-      message: `将用备份中的 ${keys.length} 项数据<b>覆盖</b>当前全部数据。<br>` +
+      icon: '⬆', title: '导入全部数据',
+      message: `将用备份中的 ${keys.length} 项数据<b>整体覆盖</b>当前全部数据（含冒险日志）。<br>` +
                 '为防止点错，导入前会先自动下载一份「当前数据」的安全快照，之后再覆盖。<br>确定导入吗？',
       confirmText: '覆盖导入', cancelText: '取消',
       onConfirm: () => {
-        /* 安全网：覆盖前先把当前数据自动导出一份快照，防止手滑导入错文件后无法找回 */
+        /* 安全网：覆盖前先把当前数据（含日志）自动导出一份全量快照 */
         try {
-          const snapshot = { app: 'dnd-character-sheet', version: 1, exportedAt: new Date().toISOString(), autoSnapshot: true, data: collectBackup() };
+          const snapshot = { app: 'dnd-character-sheet', version: 2, exportedAt: new Date().toISOString(), autoSnapshot: true, data: collectBackup() };
           const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
           const url  = URL.createObjectURL(blob);
           const a    = document.createElement('a');
@@ -239,14 +240,14 @@ function importBackup(file) {
           console.error('[importBackup] 导入前快照失败：', err);
         }
 
-        /* 先清除现有 dnd_ 键（保留日志数据），再写入备份，最后重载页面让状态重新初始化 */
+        /* 清除现有全部 dnd_ 键（含日志），再写入备份，最后重载页面让状态重新初始化 */
         const existing = [];
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
-          if (k && k.startsWith('dnd_') && !LOG_KEYS.includes(k)) existing.push(k);
+          if (k && k.startsWith('dnd_')) existing.push(k);
         }
         existing.forEach(k => localStorage.removeItem(k));
-        keys.filter(k => !LOG_KEYS.includes(k)).forEach(k => localStorage.setItem(k, data[k]));
+        keys.forEach(k => localStorage.setItem(k, data[k]));
         location.reload();
       },
     });
@@ -254,9 +255,9 @@ function importBackup(file) {
   reader.readAsText(file);
 }
 
-$('btn-export').addEventListener('click', exportBackup);
-$('btn-import').addEventListener('click', () => $('import-file').click());
-$('import-file').addEventListener('change', e => {
+$('settings-export').addEventListener('click', exportBackup);
+$('settings-import').addEventListener('click', () => $('settings-import-file').click());
+$('settings-import-file').addEventListener('change', e => {
   const file = e.target.files[0];
   if (file) importBackup(file);
   e.target.value = '';   /* 清空以便重复选择同一文件 */
