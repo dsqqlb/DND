@@ -16,7 +16,7 @@
   /* state 对象里的键：还原后同步内存 state 并集中重渲染 */
   const STATE_KEYS = [
     'hp', 'maxHp', 'tempHp', 'slots', 'cantripIds', 'preparedIds',
-    'deathSave', 'exhaustion', 'channel', 'buffs', 'buffPicks',
+    'deathSave', 'exhaustion', 'channel', 'hitDice', 'buffs', 'buffPicks',
     'buffDurations', 'concentration', 'luckyDice', 'xp', 'xpToNextManual', 'skillProfs', 'sessions', 'currentSessionId',
   ];
   /* 键为空(从未存过)时的兜底默认，避免还原成 undefined 导致渲染崩溃 */
@@ -25,7 +25,7 @@
     cantripIds: [], preparedIds: [],
     deathSave: { success: [false, false, false], fail: [false, false, false] },
     exhaustion: new Array(6).fill(false),
-    channel: [], buffs: {}, buffPicks: [], buffDurations: {},
+    channel: [], hitDice: [], buffs: {}, buffPicks: [], buffDurations: {},
     concentration: null, luckyDice: 0, xp: 0, xpToNextManual: null, skillProfs: [], sessions: [], currentSessionId: null,
   };
 
@@ -116,6 +116,7 @@
       typeof renderDeathSaves === 'function' && renderDeathSaves,
       typeof renderExhaustion === 'function' && renderExhaustion,
       typeof renderChannel === 'function' && renderChannel,
+      typeof renderHitDice === 'function' && renderHitDice,
       typeof renderBuffs === 'function' && renderBuffs,
       typeof renderConcentration === 'function' && renderConcentration,
       typeof renderLuckyDice === 'function' && renderLuckyDice,

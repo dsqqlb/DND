@@ -99,6 +99,16 @@ function doLongRest() {
   /* 力竭每次长休减一级（从末尾往前找第一个激活的清除） */
   const lastActive = [...state.exhaustion].lastIndexOf(true);
   if (lastActive !== -1) state.exhaustion[lastActive] = false;
+  /* 生命骰：长休恢复「上限的一半，向下取整，至少 1」个 */
+  const hdMax = CHAR.hitDiceMax || 0;
+  let hdRecovered = 0;
+  if (hdMax > 0) {
+    const spent = (state.hitDice || []).filter(Boolean).length;
+    const recover = Math.max(1, Math.floor(hdMax / 2));
+    const newSpent = Math.max(0, spent - recover);
+    hdRecovered = spent - newSpent;
+    state.hitDice = new Array(hdMax).fill(false).map((_, i) => i < newSpent);
+  }
   save('maxHp',        state.maxHp);
   save('hp',           state.hp);
   save('tempHp',       state.tempHp);
@@ -109,6 +119,7 @@ function doLongRest() {
   save('buffs',        state.buffs);
   save('buffDurations', state.buffDurations);
   save('exhaustion',   state.exhaustion);
+  save('hitDice',      state.hitDice);
   $('temp-hp-slider').value = 0;
   $('temp-hp-slider-val').textContent = 0;
   $('temp-hp-slider-wrap').classList.add('hidden');
@@ -117,11 +128,18 @@ function doLongRest() {
   renderDeathSaves();
   renderExhaustion();
   renderChannel();
+  renderHitDice();
   renderConcentration();
   renderSpellPanel();
   renderBuffs();
   document.dispatchEvent(new CustomEvent('longrest'));
-  if (typeof logEvent === 'function') logEvent('rest', '⌛', '进行了长休 · 恢复生命与法术位，力竭 −1');
+  if (typeof logEvent === 'function') {
+    logEvent('rest', '⌛', '进行了长休 · 恢复生命与法术位，力竭 −1');
+    if (hdRecovered > 0) {
+      const hdLeft = hdMax - state.hitDice.filter(Boolean).length;
+      logEvent('rest', '🎲', `长休恢复 ${hdRecovered} 个生命骰（剩 ${hdLeft}/${hdMax}）`);
+    }
+  }
 }
 
 $('btn-long-rest').addEventListener('click', () => {

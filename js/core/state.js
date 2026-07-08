@@ -38,6 +38,20 @@ function load(key, def) {
 }
 
 /* ============================================================
+   角色配置覆盖层 (Character Config Overlay)
+   ------------------------------------------------------------
+   character.js 里的 CHAR 只是「出厂默认值」。在 app 内的「编辑角色」
+   里改过的配置存进 dnd_charConfig，这里在初始化状态之前把它合并到
+   CHAR 上——于是后续 state 初始化、reconcileState、DERIVED、所有渲染
+   都会用上你编辑后的值。iPad 上也能改，无需再动代码。
+   （overlay 走 dnd_ 前缀，自动进「全数据备份」。）
+============================================================ */
+(function applyCharOverlay() {
+  const ov = load('charConfig', null);
+  if (ov && typeof ov === 'object') Object.assign(CHAR, ov);
+})();
+
+/* ============================================================
    初始化状态
 ============================================================ */
 let state = {
@@ -50,6 +64,7 @@ let state = {
   deathSave:     load('deathSave', { success:[false,false,false], fail:[false,false,false] }),
   exhaustion:    load('exhaustion', new Array(6).fill(false)),   // 力竭 6 级（5e 规则）
   channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
+  hitDice:       load('hitDice', new Array(CHAR.hitDiceMax || 0).fill(false)),  // 生命骰：true=已用；长休按上限一半恢复
   buffs:         load('buffs', {}),
   buffDurations: load('buffDurations', {}),   // 状态剩余轮数：{ buffId: rounds }；战斗中每回合 −1，到 0 自动结束
   buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
@@ -92,6 +107,12 @@ function reconcileState() {
   state.channel = new Array(CHAR.channelDivinity).fill(false)
     .map((_, i) => !!prevChannel[i]);
   save('channel', state.channel);
+
+  /* 生命骰：按 CHAR.hitDiceMax 对齐（改配置解锁更多生命骰时自动跟随）*/
+  const prevHitDice = Array.isArray(state.hitDice) ? state.hitDice : [];
+  state.hitDice = new Array(CHAR.hitDiceMax || 0).fill(false)
+    .map((_, i) => !!prevHitDice[i]);
+  save('hitDice', state.hitDice);
 }
 reconcileState();
 

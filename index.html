@@ -116,6 +116,12 @@
         <button class="hp-btn" id="hp-plus">＋ 1</button>
         <button class="hp-btn" id="hp-plus5">＋ 5</button>
       </div>
+
+      <div id="hitdice-row">
+        <span class="hitdice-lbl">生命骰</span>
+        <span id="hitdice-count" class="hitdice-count"></span>
+        <div class="hitdice-pips" id="hitdice-pips"></div>
+      </div>
     </div><!-- /#panel-survival -->
     </div><!-- /#combat-left -->
 
@@ -487,8 +493,31 @@
     </div>
 
     <div class="settings-section">
+      <div class="settings-section-title cinzel">角色</div>
+      <div class="settings-hint">编辑等级 / 六维 / AC / 法术位等配置，保存即生效（存入备份，无需改代码）。当前生命值、经验值请直接点卡面上的数字修改。</div>
+      <button id="btn-open-charcfg" class="settings-btn settings-btn-wide">✎ 编辑角色配置</button>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-section-title cinzel">主题</div>
       <select id="theme-select" class="settings-select"></select>
+    </div>
+  </div>
+</div>
+
+<!-- 角色编辑器（字段由 charconfig.js 生成）-->
+<div id="charcfg-modal" class="hidden">
+  <div id="charcfg-panel">
+    <div id="charcfg-head">
+      <span class="cinzel">编辑角色配置</span>
+      <button id="charcfg-close">✕</button>
+    </div>
+    <div id="charcfg-body"></div>
+    <div id="charcfg-foot">
+      <button id="charcfg-reset" class="charcfg-btn charcfg-btn-danger">恢复默认</button>
+      <span style="flex:1"></span>
+      <button id="charcfg-cancel" class="charcfg-btn">取消</button>
+      <button id="charcfg-save" class="charcfg-btn charcfg-btn-primary">保存</button>
     </div>
   </div>
 </div>
@@ -520,6 +549,7 @@
 <script src="js/features/bag.js"></script>          <!-- 背包管理（独立IIFE） -->
 <script src="js/features/log.js"></script>          <!-- 日志页 + 跑团计时器 -->
 <script src="js/features/theme.js"></script>        <!-- 主题切换面板 -->
+<script src="js/features/charconfig.js"></script>   <!-- 角色配置在线编辑器（覆盖层 dnd_charConfig） -->
 <script src="js/features/undo.js"></script>         <!-- 撤销上一步 -->
 <script src="js/features/castfx.js"></script>       <!-- 施法全屏特效（按学派区分，可开关） -->
 <script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->

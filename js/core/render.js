@@ -544,6 +544,39 @@ function renderChannel() {
 }
 
 /* ============================================================
+   渲染：生命骰（点击切换 已用/可用，只记个数不模拟投骰；长休自动恢复）
+============================================================ */
+function renderHitDice() {
+  const container = $('hitdice-pips');
+  if (!container) return;
+  const max = CHAR.hitDiceMax || 0;
+  if (!Array.isArray(state.hitDice)) state.hitDice = new Array(max).fill(false);
+  container.innerHTML = '';
+
+  for (let i = 0; i < max; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'hitdice-pip' + (state.hitDice[i] ? ' spent' : '');
+    pip.title = '生命骰 ' + (i + 1) + (state.hitDice[i] ? '（已用）' : '（可用）');
+    pip.addEventListener('click', () => {
+      state.hitDice[i] = !state.hitDice[i];
+      save('hitDice', state.hitDice);
+      renderHitDice();
+      if (typeof logEvent === 'function') {
+        const left = max - state.hitDice.filter(Boolean).length;
+        logEvent('rest', '🎲', (state.hitDice[i] ? '消耗生命骰' : '恢复生命骰') + `（剩 ${left}/${max}）`);
+      }
+    });
+    container.appendChild(pip);
+  }
+
+  const cnt = $('hitdice-count');
+  if (cnt) {
+    const left = max - state.hitDice.filter(Boolean).length;
+    cnt.textContent = max ? `剩 ${left} / ${max}` : '—';
+  }
+}
+
+/* ============================================================
    渲染：增益状态
 ============================================================ */
 function renderBuffs() {

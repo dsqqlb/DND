@@ -8,6 +8,7 @@ renderConcentration();
 renderDeathSaves();
 renderExhaustion();
 renderChannel();
+renderHitDice();
 renderBuffs();
 renderLuckyDice();
 renderXp();
