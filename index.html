@@ -220,26 +220,8 @@
       <!-- 右：专长、角色信息、熟练技能 纵向排列 -->
       <div id="class-right">
 
-        <div id="panel-feat-shieldmaster" class="panel">
-          <div class="panel-title">专长 · 盾牌大师</div>
-          <ul class="feat-list">
-            <li>
-              你的盾牌不只可以用于防御，还可以用来攻击。你在持用盾牌时获得下列增益：
-            </li>
-            <li>
-              <span class="feat-trigger cinzel">附赠攻击</span>
-              若你在自己的回合内执行过攻击动作，你就可以以附赠动作，用盾牌去推撞一个处于你周围<b>5</b>尺范围内的生物。
-            </li>
-            <li>
-              <span class="feat-trigger cinzel">AC附加</span>
-              如果你不处于失能状态，则你为抵抗以你为唯一目标的法术或其他伤害性效应而进行敏捷豁免时，可以将你<b>盾牌的AC</b>添加到相应的敏捷豁免中。
-            </li>
-            <li>
-              <span class="feat-trigger cinzel">反应</span>
-              当某个效应使让你进行豁免成功可以伤害减半的敏捷豁免检定时，你可以用你的反应将盾牌挡在你与效应原点之间，此时豁免成功则不受任何伤害。
-            </li>
-          </ul>
-        </div>
+        <!-- 专长面板由 render.js 依据 CHAR.feats + FEAT_DB 动态生成 -->
+        <div id="feats-container"></div>
 
         <div id="panel-charinfo" class="panel">
           <div class="panel-title">角色信息</div>
@@ -540,6 +522,7 @@
 <script src="js/data/items.js"></script>            <!-- 物品数据库 -->
 <script src="js/data/buffs.js"></script>            <!-- 状态 / 增益库 BUFF_DB -->
 <script src="js/data/skills.js"></script>           <!-- 技能库 SKILL_DB -->
+<script src="js/data/feats.js"></script>            <!-- 专长库 FEAT_DB -->
 <script src="js/config/character.js"></script>      <!-- 角色配置 CHAR -->
 <script src="js/core/state.js"></script>            <!-- localStorage工具 + state + 派生计算 -->
 <script src="js/core/render.js"></script>           <!-- 渲染函数：角色卡/血量/法术/状态等 -->

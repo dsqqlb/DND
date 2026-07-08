@@ -94,6 +94,10 @@ const CHAR = {
 
   /* 初始熟练技能 ID 列表（按 D&D 5e 全技能库中的 id 填写）*/
   skills: ['history', 'insight', 'medicine', 'persuasion'],
+
+  /* 已获得的专长 ID 列表（id 见 js/data/feats.js 的 FEAT_DB）。
+     也可在「设置 → 编辑角色配置 → 专长」里勾选。*/
+  feats: ['shield_master'],
 };
 
 /* ============================================================

@@ -4079,6 +4079,35 @@ body {
 .charcfg-input:focus { outline: none; border-color: var(--border-bright); }
 select.charcfg-input { cursor: pointer; }
 
+/* 整块字段（如专长勾选）：标签一行、内容整行铺开 */
+.charcfg-row.charcfg-row-block {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.charcfg-feats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--silver-dim);
+}
+.charcfg-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--silver);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.charcfg-check input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 #charcfg-foot {
   display: flex;
   align-items: center;

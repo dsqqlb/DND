@@ -63,6 +63,12 @@
         { key: 'hitDiceMax', label: '生命骰个数', type: 'int', min: 0, max: 30 },
       ],
     },
+    {
+      title: '专长',
+      items: [
+        { key: 'feats', label: '拥有专长', type: 'feats' },
+      ],
+    },
   ];
 
   const fieldId = key => 'cfg_' + key.replace('.', '_');
@@ -130,6 +136,26 @@
           input.type = 'text';
           input.value = Array.isArray(cur) ? cur.join(', ') : '';
           input.placeholder = '0, 4, 3, 2';
+        } else if (f.type === 'feats') {
+          input = document.createElement('div');
+          const have = Array.isArray(cur) ? cur : [];
+          const db = (typeof FEAT_DB !== 'undefined') ? FEAT_DB : [];
+          if (!db.length) {
+            input.textContent = '（暂无可选专长，去 js/data/feats.js 添加）';
+          }
+          db.forEach(ft => {
+            const lab = document.createElement('label');
+            lab.className = 'charcfg-check';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = ft.id;
+            cb.checked = have.includes(ft.id);
+            lab.appendChild(cb);
+            const sp = document.createElement('span');
+            sp.textContent = ft.name;
+            lab.appendChild(sp);
+            input.appendChild(lab);
+          });
         } else {
           input = document.createElement('input');
           input.type = (f.type === 'int') ? 'number' : 'text';
@@ -138,7 +164,8 @@
         }
 
         input.id = fieldId(f.key);
-        input.className = 'charcfg-input';
+        input.className = (f.type === 'feats') ? 'charcfg-feats' : 'charcfg-input';
+        if (f.type === 'feats') row.classList.add('charcfg-row-block');
         row.appendChild(input);
         sec.appendChild(row);
       });
@@ -169,6 +196,8 @@
         v = arr;
       } else if (f.type === 'select') {
         v = el.value;
+      } else if (f.type === 'feats') {
+        v = Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value);
       } else {
         v = el.value.trim();
         if (!v) v = getCharVal(f.key);   /* 文本留空则回退默认，避免空名字 */

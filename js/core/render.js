@@ -844,3 +844,39 @@ function toggleSkill(id) {
       : `获得「${sk.name}」熟练（${sk.abilityLabel}）`);
   }
 }
+
+/* ============================================================
+   渲染：专长面板（依据 CHAR.feats + FEAT_DB 动态生成，每个专长一块）
+============================================================ */
+function renderFeats() {
+  const container = $('feats-container');
+  if (!container) return;
+  container.innerHTML = '';
+  const ids = Array.isArray(CHAR.feats) ? CHAR.feats : [];
+  const db = (typeof FEAT_DB !== 'undefined') ? FEAT_DB : [];
+
+  ids.forEach(id => {
+    const ft = db.find(f => f.id === id);
+    if (!ft) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+
+    const title = document.createElement('div');
+    title.className = 'panel-title';
+    title.textContent = '专长 · ' + ft.name;
+    panel.appendChild(title);
+
+    const ul = document.createElement('ul');
+    ul.className = 'feat-list';
+    (ft.entries || []).forEach(e => {
+      const li = document.createElement('li');
+      /* 文本可能含 <b> 加粗，用 innerHTML；数据来自本地 FEAT_DB，可信 */
+      li.innerHTML = (e.trigger ? `<span class="feat-trigger cinzel">${e.trigger}</span>` : '') + (e.text || '');
+      ul.appendChild(li);
+    });
+    panel.appendChild(ul);
+
+    container.appendChild(panel);
+  });
+}
