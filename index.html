@@ -352,6 +352,17 @@
       <button id="btn-settings" class="timer-btn" title="设置">⚙</button>
     </div>
 
+    <!-- 台词 · 灵感（即兴表演台词，随机 + 分类筛选 + 搜索）-->
+    <div id="panel-lines" class="panel">
+      <div class="panel-title">台词 · 灵感</div>
+      <div id="lines-tabs"></div>
+      <div id="lines-toolbar">
+        <input type="text" id="lines-search" placeholder="搜索台词…" autocomplete="off">
+        <button id="lines-reroll" class="lines-reroll-btn">🎲 换一批</button>
+      </div>
+      <div id="lines-list"></div>
+    </div>
+
     <!-- 事件日志 -->
     <div id="panel-log" class="panel">
       <div class="panel-title">冒险日志
@@ -523,6 +534,7 @@
 <script src="js/data/buffs.js"></script>            <!-- 状态 / 增益库 BUFF_DB -->
 <script src="js/data/skills.js"></script>           <!-- 技能库 SKILL_DB -->
 <script src="js/data/feats.js"></script>            <!-- 专长库 FEAT_DB -->
+<script src="js/data/lines.js"></script>            <!-- 台词库 LINES_DB -->
 <script src="js/config/character.js"></script>      <!-- 角色配置 CHAR -->
 <script src="js/core/state.js"></script>            <!-- localStorage工具 + state + 派生计算 -->
 <script src="js/core/render.js"></script>           <!-- 渲染函数：角色卡/血量/法术/状态等 -->
@@ -531,6 +543,7 @@
 <script src="js/features/initiative.js"></script>   <!-- 先攻追踪器（独立IIFE） -->
 <script src="js/features/bag.js"></script>          <!-- 背包管理（独立IIFE） -->
 <script src="js/features/log.js"></script>          <!-- 日志页 + 跑团计时器 -->
+<script src="js/features/lines.js"></script>        <!-- 台词模块（随机/分类/搜索） -->
 <script src="js/features/theme.js"></script>        <!-- 主题切换面板 -->
 <script src="js/features/charconfig.js"></script>   <!-- 角色配置在线编辑器（覆盖层 dnd_charConfig） -->
 <script src="js/features/undo.js"></script>         <!-- 撤销上一步 -->
