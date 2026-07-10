@@ -1815,6 +1815,8 @@ body {
   grid-template-rows: auto auto 1fr;
   gap: 8px;
 }
+/* 右栏（战斗·先攻）整个隐藏时，塌成单栏，左栏铺满整宽（模块系统加 .combat-solo）*/
+#page-combat.active.combat-solo { grid-template-columns: 1fr; }
 #page-combat #header         { grid-column: 1; grid-row: 1; margin-bottom: 0; }
 /* 左栏：局势·状态 + 生存·核心状态 竖排（可滚动兜底）*/
 #page-combat #combat-left {
@@ -1891,6 +1893,8 @@ body {
   grid-template-columns: 1.4fr 1fr;
   gap: 6px;
 }
+/* 左右任一栏的模块全隐藏时，塌成单栏铺满（模块系统加 .solo）*/
+#class-top.solo { grid-template-columns: 1fr; }
 
 /* 右列：专长、角色信息、熟练技能 纵向排列 */
 #class-right {
@@ -4117,6 +4121,89 @@ body {
 }
 .settings-select:focus { outline: none; border-color: var(--border-bright); }
 .settings-btn-wide { width: 100%; }
+
+/* 模块显示大弹窗 */
+#modules-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 66;
+  padding: 20px;
+}
+#modules-modal.hidden { display: none; }
+#modules-panel {
+  width: 100%;
+  max-width: 880px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-bright);
+  outline: 1px solid var(--border-dim);
+  outline-offset: 3px;
+}
+#modules-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-dim);
+  color: var(--silver);
+  letter-spacing: 2px;
+  flex-shrink: 0;
+}
+#modules-close {
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  cursor: pointer;
+  padding: 2px 8px;
+}
+#modules-close:hover { border-color: var(--border-bright); color: var(--silver); }
+#modules-hint { padding: 10px 14px 0; margin: 0; }
+
+/* 按页分列平铺（宽屏最多约 5 列，窄屏自动换行）*/
+#module-toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  padding: 14px;
+  overflow-y: auto;
+}
+.module-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.module-group-hdr {
+  font-family: var(--font-title);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent-glow);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-dim);
+}
+.module-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--silver);
+  cursor: pointer;
+  padding: 4px 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.module-check input {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
 
 /* ── 角色配置编辑器 ── */
 #charcfg-modal {

@@ -55,10 +55,10 @@
       <div style="height:4px"></div>
 
       <!-- AC / 速度 / 先攻 / 熟练加值 由 JS 渲染，见 renderCharSheet() -->
-      <div class="stat-row" id="core-stats-row"></div>
+      <div class="stat-row" id="core-stats-row" data-module="corestats"></div>
 
       <div class="death-saves-row">
-        <div class="death-saves">
+        <div class="death-saves" data-module="deathsaves">
           <span class="death-saves-lbl">死亡豁免</span>
           <div class="save-circles" id="death-success">
             <div class="save-circle" data-type="success" data-idx="0"></div>
@@ -71,7 +71,7 @@
             <div class="save-circle" data-type="fail" data-idx="2"></div>
           </div>
         </div>
-        <div class="death-saves">
+        <div class="death-saves" data-module="exhaustion">
           <span class="death-saves-lbl">力竭计数</span>
           <div class="save-circles" id="exhaustion-pips">
             <div class="exhaust-pip" data-idx="0"></div>
@@ -84,9 +84,9 @@
         </div>
       </div>
 
-      <span class="death-saves-lbl">施法核心属性</span>
+      <span class="death-saves-lbl" data-module="castcore">施法核心属性</span>
       <!-- 法术豁免DC / 法术攻击加成 / 施法属性调整值 由 JS 渲染 -->
-      <div class="cast-stats" id="cast-core-stats"></div>
+      <div class="cast-stats" id="cast-core-stats" data-module="castcore"></div>
 
     </div><!-- /#panel-buff -->
 
@@ -164,13 +164,13 @@
       <!-- 左：角色名 → 六维 → 职业 · 专属资源 -->
       <div id="class-left">
 
-        <div id="class-char-header">
+        <div id="class-char-header" data-module="identity">
           <div id="char-name">金雳</div>
           <div id="char-subtitle">生命领域 · 牧师 · 5级 · 丘陵矮人</div>
         </div>
 
         <!-- 六维属性由 JS 从 CHAR.abilities 渲染，见 renderCharSheet() -->
-        <div id="header-stats"></div>
+        <div id="header-stats" data-module="abilities"></div>
 
         <!-- 属性豁免（熟练项自动 +熟练加值），由 renderCharSheet() 渲染 -->
         <div id="saves-section">
@@ -274,19 +274,19 @@
     <div id="panel-spell" class="panel">
       <div class="panel-title">施法 · 法术库<button id="btn-collapse-all" title="收起全部详情">✕ 全收起</button><button id="btn-fx-toggle" title="施法全屏特效 开/关">✨ 特效</button></div>
 
-      <div class="spell-sec-header">
+      <div class="spell-sec-header" data-module="cantrips">
         <span class="cinzel spell-sec-lbl">戏法</span>
         <span id="cantrip-count" class="spell-counter">0 / 5</span>
         <button class="btn-spell-add" data-mode="cantrip">＋ 选择</button>
       </div>
-      <div id="cantrips-list"></div>
+      <div id="cantrips-list" data-module="cantrips"></div>
 
-      <div class="spell-sec-header">
+      <div class="spell-sec-header" data-module="prepared">
         <span class="cinzel spell-sec-lbl">已备法术</span>
         <span id="prepared-count" class="spell-counter">0 / 8</span>
         <button class="btn-spell-add" data-mode="prepared">＋ 选择</button>
       </div>
-      <div id="prepared-list"></div>
+      <div id="prepared-list" data-module="prepared"></div>
     </div>
 
   </div><!-- /#page-spells -->
@@ -297,7 +297,7 @@
     <div id="panel-equip" class="panel">
       <div class="panel-title">装备 · 杂项</div>
 
-      <div class="bag-columns">
+      <div class="bag-columns" data-module="equip">
         <div class="bag-col">
           <div class="bag-col-head">
             <span class="cinzel bag-col-lbl">预设</span>
@@ -313,7 +313,7 @@
         </div>
       </div>
 
-      <div id="weight-summary">
+      <div id="weight-summary" data-module="weight">
         <span class="cinzel weight-lbl">总重量</span>
         <span id="total-weight" class="cinzel">0</span>
         <span id="weight-cap" class="cinzel">/ 90</span>
@@ -321,7 +321,7 @@
         <span id="weight-warn">超重</span>
       </div>
 
-      <div id="misc-currency">
+      <div id="misc-currency" data-module="currency">
         <div class="currency-box">
           <span class="cinzel currency-label">铂</span>
           <input type="number" id="cur-pp" min="0" value="0">
@@ -498,9 +498,27 @@
     </div>
 
     <div class="settings-section">
+      <div class="settings-section-title cinzel">模块显示</div>
+      <div class="settings-hint">按页分类勾选要显示的模块，不勾就隐藏；不同职业按需开关。</div>
+      <button id="btn-open-modules" class="settings-btn settings-btn-wide">▦ 模块显示设置</button>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-section-title cinzel">主题</div>
       <select id="theme-select" class="settings-select"></select>
     </div>
+  </div>
+</div>
+
+<!-- 模块显示大弹窗：所有模块按页分列平铺 -->
+<div id="modules-modal" class="hidden">
+  <div id="modules-panel">
+    <div id="modules-head">
+      <span class="cinzel">模块显示</span>
+      <button id="modules-close">✕</button>
+    </div>
+    <div class="settings-hint" id="modules-hint">按页勾选要显示的模块，不勾就隐藏（底部标签始终保留）。<br>模块布局会随「全数据备份」一起导出/导入。</div>
+    <div id="module-toggles"></div>
   </div>
 </div>
 
@@ -555,5 +573,6 @@
 <script src="js/features/undo.js"></script>         <!-- 撤销上一步 -->
 <script src="js/features/castfx.js"></script>       <!-- 施法全屏特效（按学派区分，可开关） -->
 <script src="js/main.js"></script>                  <!-- 首次渲染 + 标签页 + 货币 + 备份 -->
+<script src="js/features/modules.js"></script>      <!-- 模块显示开关（插件式，dnd_modules） -->
 </body>
 </html>
