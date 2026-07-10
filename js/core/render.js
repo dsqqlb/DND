@@ -42,6 +42,27 @@ function renderCharSheet() {
   /* 临时HP滑条上限 */
   const slider = $('temp-hp-slider');
   if (slider) slider.max = CHAR.tempHpMax;
+
+  renderSaves();
+}
+
+/* ============================================================
+   渲染：属性豁免（熟练项 = 属性调整值 + 熟练加值）
+============================================================ */
+function renderSaves() {
+  const container = $('saving-throws');
+  if (!container) return;
+  const profs = Array.isArray(CHAR.saveProfs) ? CHAR.saveProfs : [];
+  container.innerHTML = ABILITY_META.map(a => {
+    const prof = profs.includes(a.key);
+    const mod = abilityMod(CHAR.abilities[a.key]) + (prof ? DERIVED.prof : 0);
+    return `
+      <div class="save-box${prof ? ' save-prof' : ''}" title="${a.label}豁免${prof ? '（熟练）' : ''}">
+        <span class="save-dot"></span>
+        <span class="save-lbl">${a.label}</span>
+        <span class="save-mod cinzel">${signed(mod)}</span>
+      </div>`;
+  }).join('');
 }
 
 /* ============================================================

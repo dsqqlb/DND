@@ -41,6 +41,12 @@
       ],
     },
     {
+      title: '豁免熟练',
+      items: [
+        { key: 'saveProfs', label: '熟练的豁免', type: 'saves' },
+      ],
+    },
+    {
       title: '施法 & 资源',
       items: [
         { key: 'spellAbility',        label: '施法关键属性', type: 'select',
@@ -156,6 +162,22 @@
             lab.appendChild(sp);
             input.appendChild(lab);
           });
+        } else if (f.type === 'saves') {
+          input = document.createElement('div');
+          const have = Array.isArray(cur) ? cur : [];
+          Object.keys(ABI).forEach(k => {
+            const lab = document.createElement('label');
+            lab.className = 'charcfg-check';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = k;
+            cb.checked = have.includes(k);
+            lab.appendChild(cb);
+            const sp = document.createElement('span');
+            sp.textContent = ABI[k];
+            lab.appendChild(sp);
+            input.appendChild(lab);
+          });
         } else {
           input = document.createElement('input');
           input.type = (f.type === 'int') ? 'number' : 'text';
@@ -163,9 +185,10 @@
           input.value = cur != null ? cur : '';
         }
 
+        const blockType = (f.type === 'feats' || f.type === 'saves');
         input.id = fieldId(f.key);
-        input.className = (f.type === 'feats') ? 'charcfg-feats' : 'charcfg-input';
-        if (f.type === 'feats') row.classList.add('charcfg-row-block');
+        input.className = blockType ? 'charcfg-feats' : 'charcfg-input';
+        if (blockType) row.classList.add('charcfg-row-block');
         row.appendChild(input);
         sec.appendChild(row);
       });
@@ -196,7 +219,7 @@
         v = arr;
       } else if (f.type === 'select') {
         v = el.value;
-      } else if (f.type === 'feats') {
+      } else if (f.type === 'feats' || f.type === 'saves') {
         v = Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value);
       } else {
         v = el.value.trim();

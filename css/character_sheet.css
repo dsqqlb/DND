@@ -1287,6 +1287,57 @@ body {
 }
 
 /* ============================================================
+   属性豁免（职业页，六项；熟练项高亮 + 自动加熟练加值）
+============================================================ */
+#saves-section { margin: 8px 0 4px; }
+.saves-title {
+  display: block;
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--silver-dim);
+  margin-bottom: 6px;
+}
+.saves-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.save-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-panel);
+}
+.save-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+.save-box.save-prof {
+  border-color: var(--accent-glow);
+}
+.save-box.save-prof .save-dot {
+  background: var(--accent-glow);
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 5px var(--accent-glow);
+}
+.save-lbl {
+  font-size: 11px;
+  color: var(--silver-dim);
+}
+.save-mod {
+  margin-left: auto;
+  font-size: 15px;
+  color: var(--silver);
+}
+.save-box.save-prof .save-mod { color: var(--accent-glow); }
+
+/* ============================================================
    板块三：职业专属资源
 ============================================================ */
 
