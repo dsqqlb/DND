@@ -9,6 +9,7 @@ renderDeathSaves();
 renderExhaustion();
 renderChannel();
 renderHitDice();
+renderTempSpells();
 renderBuffs();
 renderLuckyDice();
 renderXp();

@@ -108,8 +108,9 @@ function renderLuckyDice() {
      · 卡片视图：法术详情以扑克牌形式堆叠，左右拨动切换
    视图选择记入 localStorage，下次打开保持。翻到当前环阶/搜索结果的头尾即停住。
 ============================================================ */
-let pickerMode  = 'prepared';  /* 'cantrip' | 'prepared' */
-let pickerLevel = 1;
+let pickerClass = null;        /* 当前选择器过滤到的法表职业（＋选择 从哪个职业分区打开）*/
+let pickerTempAdd = false;     /* true = 选择器处于"添加临时法术"模式（不限职业，加为临时法术）*/
+let pickerLevel = 0;
 let pickerSearch = '';         /* 法术搜索关键词（中/英模糊）*/
 let pickerView  = load('pickerView', 'list');  /* 'list' | 'card' —— 记忆上次选择 */
 let pickerSpells = [];         /* 当前翻阅序列（按环阶或搜索结果顺序）*/
@@ -126,7 +127,7 @@ function buildSpellTabs() {
   const maxLv = CHAR.spellSlots.length - 1;
   for (let lv = 0; lv <= maxLv; lv++) {
     const btn = document.createElement('button');
-    btn.className = 'sp-tab' + (lv === 1 ? ' active' : '');
+    btn.className = 'sp-tab' + (lv === 0 ? ' active' : '');
     btn.dataset.lv = lv;
     btn.textContent = (lv === 0) ? '戏法' : `${lv}环`;
     btn.addEventListener('click', () => {
@@ -144,44 +145,82 @@ function buildSpellTabs() {
   }
 }
 
-function openPicker(mode) {
-  pickerMode = mode;
-  pickerLevel = (mode === 'cantrip') ? 0 : 1;
+/* 从某个职业分区的「＋选择」打开：过滤到该职业，标签含 戏法 + 各环，戏法与环阶合并 */
+function openPicker(cls) {
+  pickerClass = cls;
+  pickerTempAdd = false;
+  pickerLevel = 0;               /* 默认落在「戏法」标签 */
   pickerSearch = '';
   pickerIndex = 0;
   pickerListDetailOpen = false;
   const box = $('spell-modal-search');
   if (box) box.value = '';
-  $('spell-modal-title').textContent = (mode === 'cantrip') ? '选择戏法' : '选择备法';
+  $('spell-modal-title').textContent = '选择法术 · ' + cls;
 
-  /* 控制 tab 可见性（仅作用于法术选择器自身的标签）*/
+  /* 全部标签都显示（戏法 + 1环…最高环），选中戏法 */
   $('spell-modal-tabs').querySelectorAll('.sp-tab').forEach(tab => {
-    const lv = parseInt(tab.dataset.lv);
-    if (mode === 'cantrip') {
-      tab.style.display = (lv === 0) ? '' : 'none';
-    } else {
-      tab.style.display = (lv === 0) ? 'none' : '';
-    }
-    tab.classList.toggle('active', lv === pickerLevel);
+    tab.style.display = '';
+    tab.classList.toggle('active', parseInt(tab.dataset.lv) === pickerLevel);
   });
 
   renderPicker();
   $('spell-modal').classList.remove('hidden');
 }
 
+/* 添加临时法术：选择器进入"临时"模式——不限职业，列出全部法术；
+   点某条 → 弹窗设次数/恢复方式 → 加入临时法术模块（不进已备/戏法）。*/
+function openTempPicker() {
+  pickerTempAdd = true;
+  pickerClass = null;
+  pickerLevel = 0;
+  pickerSearch = '';
+  pickerIndex = 0;
+  pickerListDetailOpen = false;
+  const box = $('spell-modal-search');
+  if (box) box.value = '';
+  $('spell-modal-title').textContent = '添加临时法术';
+  $('spell-modal-tabs').querySelectorAll('.sp-tab').forEach(tab => {
+    tab.style.display = '';
+    tab.classList.toggle('active', parseInt(tab.dataset.lv) === pickerLevel);
+  });
+  renderPicker();
+  $('spell-modal').classList.remove('hidden');
+}
+
+/* 选一条法术做临时法术时，弹窗设「次数 + 恢复方式」*/
+function promptTempSpell(sp) {
+  showDialog({
+    icon: '✦', title: '添加临时法术',
+    message:
+      `<div class="temp-dialog-name cinzel">${sp.name}</div>` +
+      `<div class="temp-dialog-row"><span>使用次数</span>` +
+      `<input id="temp-uses-input" type="number" min="1" max="20" value="1"></div>` +
+      `<div class="temp-dialog-row"><span>恢复方式</span>` +
+      `<select id="temp-recharge-input"><option value="long">长休恢复</option><option value="short">短休恢复</option></select></div>`,
+    confirmText: '添加', cancelText: '取消',
+    onConfirm: () => {
+      const usesEl = $('temp-uses-input');
+      const rcEl = $('temp-recharge-input');
+      const uses = Math.max(1, Math.min(20, parseInt(usesEl ? usesEl.value : '1', 10) || 1));
+      const recharge = (rcEl && rcEl.value === 'short') ? 'short' : 'long';
+      addTempSpell(sp.id, uses, recharge);
+    },
+  });
+}
+
 /* 计算当前翻阅序列：搜索时忽略环阶在整池匹配，否则取当前环阶。 */
 function computePickerSpells() {
   const query = pickerSearch.trim().toLowerCase();
   pickerSearchActive = !!query;
+  /* 临时法术模式不限职业（列出全部）；否则只在当前分区职业的法表内匹配 */
+  const inClass = sp => pickerTempAdd ? true : (Array.isArray(sp.classes) && sp.classes.includes(pickerClass));
   if (query) {
-    return SPELL_DB.filter(sp => {
-      const inMode = (pickerMode === 'cantrip') ? sp.level === 0 : sp.level >= 1;
-      if (!inMode) return false;
-      return (sp.name && sp.name.toLowerCase().includes(query)) ||
-             (sp.nameEn && sp.nameEn.toLowerCase().includes(query));
-    });
+    /* 搜索时忽略环阶，在该职业整份法表里按中/英名匹配（含戏法）*/
+    return SPELL_DB.filter(sp => inClass(sp) &&
+      ((sp.name && sp.name.toLowerCase().includes(query)) ||
+       (sp.nameEn && sp.nameEn.toLowerCase().includes(query))));
   }
-  return SPELL_DB.filter(sp => sp.level === pickerLevel);
+  return SPELL_DB.filter(sp => sp.level === pickerLevel && inClass(sp));
 }
 
 /* 主渲染：依据当前视图与详情开关，切换显示对应面板并渲染。 */
@@ -219,6 +258,15 @@ function pickerTitlesHTML(sp) {
 
 /* 生成“＋备法 / 已备 / 领域”按钮。三视图共用；改动后回调 onChange 刷新当前视图。 */
 function buildAddBtn(sp, onChange) {
+  /* 临时法术添加模式：任何法术都显示「＋临时」，点开设次数/恢复方式 */
+  if (pickerTempAdd) {
+    const b = document.createElement('button');
+    b.className = 'picker-add-btn';
+    b.textContent = '＋ 临时';
+    b.addEventListener('click', e => { e.stopPropagation(); promptTempSpell(sp); });
+    return b;
+  }
+
   const isDomain = allDomainIds().includes(sp.id);
   const isAdded  = (sp.level === 0)
     ? state.cantripIds.includes(sp.id)
@@ -579,10 +627,10 @@ $('spell-modal').addEventListener('click', e => {
   if (e.target === $('spell-modal')) $('spell-modal').classList.add('hidden');
 });
 
-/* ──── 添加法术按钮 ──── */
-document.querySelectorAll('.btn-spell-add').forEach(btn => {
-  btn.addEventListener('click', () => openPicker(btn.dataset.mode));
-});
+/* 「＋选择」按钮现由 render.js 的 buildSpellClassBlock 动态生成并绑定 openPicker(职业) */
+
+/* 临时法术：「＋ 添加临时法术」打开临时选择器 */
+if ($('btn-add-temp')) $('btn-add-temp').addEventListener('click', openTempPicker);
 
 /* ============================================================
    升环施法环阶选择对话框

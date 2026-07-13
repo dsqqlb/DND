@@ -36,9 +36,8 @@
     { id: 'skills',   label: '熟练技能',            group: '职业页', sel: '#panel-skills' },
     { id: 'xp',       label: '经验值',              group: '职业页', sel: '#panel-xp' },
 
-    /* —— 法术页（页/标签始终保留，只隐藏内容）—— */
-    { id: 'cantrips', label: '戏法',                group: '法术页', sel: '[data-module="cantrips"]' },
-    { id: 'prepared', label: '已备法术',            group: '法术页', sel: '[data-module="prepared"]' },
+    /* —— 法术页（法表按职业过滤见下方 buildToggles + state.js 的 spellClasses）—— */
+    { id: 'tempspells', label: '临时法术', group: '法术页', sel: '#temp-spells-block' },
 
     /* —— 背包页（页/标签始终保留，只隐藏内容）—— */
     { id: 'equip',    label: '装备 / 笔记',         group: '背包页', sel: '[data-module="equip"]' },
@@ -54,12 +53,56 @@
   const COLLAPSE = [
     { sel: '#panel-buff',      modules: ['lucky', 'statuses', 'corestats', 'deathsaves', 'exhaustion', 'castcore'] },
     { sel: '.death-saves-row', modules: ['deathsaves', 'exhaustion'] },   // 并排行：两半都关就收起
-    { sel: '#panel-spell',     modules: ['cantrips', 'prepared'] },
     { sel: '#panel-equip',     modules: ['equip', 'weight', 'currency'] },
   ];
 
   const prefs = () => load('modules', {});
   const isOn = (p, id) => p[id] !== false;   /* 缺省 = 显示 */
+
+  /* 法术面板：一个法表职业都没勾 → 整块收起（法术标签仍在）*/
+  function applySpellPanelVisibility() {
+    const panel = document.getElementById('panel-spell');
+    if (panel) panel.style.display = (typeof spellClasses !== 'undefined' && spellClasses.length) ? '' : 'none';
+  }
+
+  /* 勾/取消某个法表职业：更新 spellClasses（state.js 的全局）→ 存盘 → 重渲染法术页/选择器 */
+  function setSpellClass(cls, on) {
+    if (typeof spellClasses === 'undefined') return;
+    const i = spellClasses.indexOf(cls);
+    if (on && i < 0) spellClasses.push(cls);
+    else if (!on && i >= 0) spellClasses.splice(i, 1);
+    save('spellClasses', spellClasses);
+    if (typeof renderSpellPanel === 'function') renderSpellPanel();
+    applySpellPanelVisibility();
+    const sm = document.getElementById('spell-modal');
+    if (sm && !sm.classList.contains('hidden') && typeof renderPicker === 'function') renderPicker();
+  }
+
+  /* 「法表（按职业）」一列：从 SPELL_DB 汇总的职业自动生成，勾选即过滤 */
+  function appendSpellClassCol(wrap) {
+    const classes = (typeof ALL_SPELL_CLASSES !== 'undefined') ? ALL_SPELL_CLASSES : [];
+    if (!classes.length) return;
+    const col = document.createElement('div');
+    col.className = 'module-col';
+    const hdr = document.createElement('div');
+    hdr.className = 'module-group-hdr';
+    hdr.textContent = '法表（按职业）';
+    col.appendChild(hdr);
+    classes.forEach(cls => {
+      const lab = document.createElement('label');
+      lab.className = 'module-check';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = (typeof spellClasses !== 'undefined') && spellClasses.includes(cls);
+      cb.addEventListener('change', () => setSpellClass(cls, cb.checked));
+      lab.appendChild(cb);
+      const sp = document.createElement('span');
+      sp.textContent = cls + '法术';
+      lab.appendChild(sp);
+      col.appendChild(lab);
+    });
+    wrap.appendChild(col);
+  }
 
   /* ──── 应用显隐 ──── */
   function apply() {
@@ -84,6 +127,9 @@
       const el = document.querySelector(c.sel);
       if (el) el.style.display = c.modules.some(on) ? '' : 'none';
     });
+
+    /* 法术面板：一个法表职业都没勾时整块收起（法术标签仍在）*/
+    applySpellPanelVisibility();
 
     /* 3) 整页塌栏：某一栏全空 → 剩下的铺满整宽，不再一边倒 */
     const combat = document.getElementById('page-combat');
@@ -152,7 +198,11 @@
       });
 
       wrap.appendChild(col);
+      if (g.name === '职业页') appendSpellClassCol(wrap);   /* 法表列排在职业页之后 */
     });
+
+    /* 兜底：若没有职业页分组，仍追加法表列 */
+    if (!cols.some(c => c.name === '职业页')) appendSpellClassCol(wrap);
   }
 
   /* ──── 大弹窗开关 ──── */

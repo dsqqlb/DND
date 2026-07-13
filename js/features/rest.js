@@ -109,6 +109,8 @@ function doLongRest() {
     hdRecovered = spent - newSpent;
     state.hitDice = new Array(hdMax).fill(false).map((_, i) => i < newSpent);
   }
+  /* 临时法术：长休恢复全部（含短休类）*/
+  (state.tempSpells || []).forEach(t => { t.used = 0; });
   save('maxHp',        state.maxHp);
   save('hp',           state.hp);
   save('tempHp',       state.tempHp);
@@ -120,6 +122,7 @@ function doLongRest() {
   save('buffDurations', state.buffDurations);
   save('exhaustion',   state.exhaustion);
   save('hitDice',      state.hitDice);
+  save('tempSpells',   state.tempSpells);
   $('temp-hp-slider').value = 0;
   $('temp-hp-slider-val').textContent = 0;
   $('temp-hp-slider-wrap').classList.add('hidden');
@@ -129,6 +132,7 @@ function doLongRest() {
   renderExhaustion();
   renderChannel();
   renderHitDice();
+  renderTempSpells();
   renderConcentration();
   renderSpellPanel();
   renderBuffs();
@@ -159,10 +163,14 @@ $('btn-long-rest').addEventListener('click', () => {
 function doShortRest() {
   state.channel       = new Array(CHAR.channelDivinity).fill(false);  /* 引导神力回满 */
   state.concentration = null;                                          /* 断开专注 */
+  /* 临时法术：短休只恢复"短休"类 */
+  (state.tempSpells || []).forEach(t => { if (t.recharge === 'short') t.used = 0; });
   save('channel', state.channel);
   save('concentration', state.concentration);
+  save('tempSpells', state.tempSpells);
   renderChannel();
   renderConcentration();
+  renderTempSpells();
   renderSpellPanel();   /* 刷新法术面板里的专注按钮高亮 */
   if (typeof logEvent === 'function') logEvent('rest', '☾', '进行了短休 · 恢复引导神力，断开专注');
 }

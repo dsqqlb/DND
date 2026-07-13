@@ -7,9 +7,9 @@
    保存后刷新页面即生效——等级/属性/AC/法术位等都能在 app 里改，
    iPad 上也不用碰代码。覆盖层走 dnd_ 前缀，自动进「全数据备份」。
 
-   说明：「生命值上限」（长休恢复到的值）可在此编辑（另存 dnd_maxHp）；
-   而「当前 HP / 经验值」是随时变动的实时状态，仍直接点卡面数字修改
-   （dnd_hp / dnd_xp），不放进本编辑器，避免同一数值两处来源。
+   说明：「生命值上限（长休恢复到此值）」在此编辑，存 charConfig 覆盖层（= CHAR.maxHp），
+   是长休恢复目标；它与战斗页点数字改的"当前上限"(dnd_maxHp) 解耦——改这里不影响
+   战斗页当前值，长休时才恢复到此值。「当前 HP / 经验值」仍直接点卡面数字改（dnd_hp / dnd_xp）。
 ============================================================ */
 (function () {
 
@@ -61,8 +61,9 @@
     {
       title: '战斗',
       items: [
-        /* live: true —— 生命值上限是实时状态（存 dnd_maxHp），不进 charConfig 覆盖层 */
-        { key: 'maxHp',      label: '生命值上限（长休恢复到此值）', type: 'int', min: 1, max: 999, live: true },
+        /* 长休恢复目标 = CHAR.maxHp（存 charConfig 覆盖层）。与战斗页点数字改的
+           "当前上限"(dnd_maxHp) 解耦：改这里不动战斗页当前值，长休时才恢复到此值。*/
+        { key: 'maxHp',      label: '生命值上限（长休恢复到此值）', type: 'int', min: 1, max: 999 },
         { key: 'ac',         label: '防御等级 AC', type: 'int', min: 0, max: 40 },
         { key: 'speed',      label: '移动速度（尺）', type: 'int', min: 0, max: 120 },
         { key: 'tempHpMax',  label: '临时HP滑条上限', type: 'int', min: 0, max: 100 },
@@ -127,7 +128,7 @@
         row.appendChild(lbl);
 
         let input;
-        const cur = f.live ? state[f.key] : getCharVal(f.key);
+        const cur = getCharVal(f.key);
 
         if (f.type === 'select') {
           input = document.createElement('select');
@@ -200,7 +201,6 @@
   /* ──── 读取表单 → 覆盖层对象 ──── */
   function collectOverlay() {
     const overlay = {};
-    const live = {};              /* 实时状态字段（如 maxHp），单独写 dnd_ 键，不进覆盖层 */
     let error = null;
 
     GROUPS.forEach(g => g.items.forEach(f => {
@@ -210,7 +210,7 @@
 
       if (f.type === 'int') {
         v = parseInt(el.value, 10);
-        if (isNaN(v)) v = f.live ? state[f.key] : getCharVal(f.key);
+        if (isNaN(v)) v = getCharVal(f.key);
         v = clamp(v, f.min, f.max);
       } else if (f.type === 'slots') {
         const arr = el.value.split(/[,，\s]+/).map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n >= 0);
@@ -226,13 +226,10 @@
         if (!v) v = getCharVal(f.key);   /* 文本留空则回退默认，避免空名字 */
       }
 
-      /* live 字段（生命值上限）同时进覆盖层（更新 CHAR.maxHp，供长休恢复目标）
-         和 live 映射（另写 dnd_maxHp 立即生效）*/
-      if (f.live) live[f.key] = v;
       setOverlay(overlay, f.key, v);
     }));
 
-    return { overlay, live, error };
+    return { overlay, error };
   }
 
   /* ──── 打开 / 关闭 ──── */
@@ -254,17 +251,12 @@
 
   /* ──── 保存 ──── */
   $('charcfg-save').addEventListener('click', () => {
-    const { overlay, live, error } = collectOverlay();
+    const { overlay, error } = collectOverlay();
     if (error) {
       showDialog({ icon: '⚠', title: '填写有误', message: error, confirmText: '知道了' });
       return;
     }
     save('charConfig', overlay);
-    /* 生命值上限属于实时状态：写 dnd_maxHp；若当前 HP 超过新上限则一并夹回 */
-    if (live.maxHp != null) {
-      save('maxHp', live.maxHp);
-      if (state.hp > live.maxHp) save('hp', live.maxHp);
-    }
     /* 重载让 state 初始化 / reconcile / DERIVED / 全部渲染重新按新配置生效 */
     location.reload();
   });

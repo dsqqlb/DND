@@ -630,6 +630,122 @@ body {
 
 .btn-spell-add:hover { border-color: var(--border-bright); color: var(--silver); }
 
+/* ── 法术页：按职业分区（每个法表一块）── */
+.spell-class-block { margin-bottom: 18px; }
+.spell-class-block:last-child { margin-bottom: 0; }
+.spell-class-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-bright);
+}
+.spell-class-name {
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--accent-glow);
+}
+.spell-class-count {
+  font-family: var(--font-title);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--silver-dim);
+  margin-left: auto;
+}
+.spell-class-head .btn-spell-add { flex-shrink: 0; }
+.spell-class-empty {
+  font-size: 12px;
+  color: var(--silver-dim);
+  padding: 6px 2px 2px;
+}
+.spell-lv-group { margin-bottom: 6px; }
+
+/* ── 临时法术模块 ── */
+.temp-hint {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--silver-dim);
+  margin-bottom: 10px;
+}
+.temp-add-btn { margin-top: 10px; }
+.temp-empty {
+  font-size: 12px;
+  color: var(--silver-dim);
+  padding: 4px 2px;
+}
+
+/* 临时法术行内的小控件（并入普通法术行的指示区）*/
+.srow-temp-recharge {
+  flex-shrink: 0;
+  font-family: var(--font-title);
+  font-size: 9px;
+  color: var(--bg-deep);
+  background: var(--silver-dim);
+  border-radius: 2px;
+  padding: 0 4px;
+  line-height: 15px;
+}
+.srow-temp-uses {
+  flex-shrink: 0;
+  font-family: var(--font-title);
+  font-size: 11px;
+  color: #f0d78c;
+  background: rgba(232,184,75,0.10);
+  border: 1px solid #8a6a1a;
+  border-radius: 2px;
+  padding: 0 6px;
+  line-height: 17px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.srow-temp-uses.depleted {
+  color: var(--silver-dim);
+  border-color: var(--border-dim);
+  background: none;
+}
+.srow-temp-remove {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.srow-temp-remove:hover { color: #e07070; border-color: #e07070; }
+
+/* 添加临时法术弹窗里的输入行 */
+.temp-dialog-name {
+  font-size: 15px;
+  color: var(--accent-glow);
+  margin-bottom: 12px;
+}
+.temp-dialog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--silver);
+}
+.temp-dialog-row input,
+.temp-dialog-row select {
+  width: 120px;
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  color: var(--silver);
+  font-size: 13px;
+}
+
 /* ============================================================
    法术行 (srow) — 已备法术列表中的每一行
 ============================================================ */

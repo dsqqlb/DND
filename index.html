@@ -273,20 +273,16 @@
 
     <div id="panel-spell" class="panel">
       <div class="panel-title">施法 · 法术库<button id="btn-collapse-all" title="收起全部详情">✕ 全收起</button><button id="btn-fx-toggle" title="施法全屏特效 开/关">✨ 特效</button></div>
+      <!-- 按法表职业分区（戏法+环阶合并），每区一个「＋选择」，由 renderSpellPanel() 动态生成 -->
+      <div id="spell-classes"></div>
+    </div>
 
-      <div class="spell-sec-header" data-module="cantrips">
-        <span class="cinzel spell-sec-lbl">戏法</span>
-        <span id="cantrip-count" class="spell-counter">0 / 5</span>
-        <button class="btn-spell-add" data-mode="cantrip">＋ 选择</button>
-      </div>
-      <div id="cantrips-list" data-module="cantrips"></div>
-
-      <div class="spell-sec-header" data-module="prepared">
-        <span class="cinzel spell-sec-lbl">已备法术</span>
-        <span id="prepared-count" class="spell-counter">0 / 8</span>
-        <button class="btn-spell-add" data-mode="prepared">＋ 选择</button>
-      </div>
-      <div id="prepared-list" data-module="prepared"></div>
+    <!-- 临时法术：不消耗法术位、有独立次数、按休整恢复（来自魔法物品/状态）-->
+    <div id="temp-spells-block" class="panel" data-module="tempspells">
+      <div class="panel-title">临时法术</div>
+      <div class="temp-hint">魔法物品 / 状态给予的固定次数法术，不消耗法术位，按休整恢复。</div>
+      <div id="temp-spells-list"></div>
+      <button id="btn-add-temp" class="btn-spell-add temp-add-btn">＋ 添加临时法术</button>
     </div>
 
   </div><!-- /#page-spells -->

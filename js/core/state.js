@@ -65,6 +65,7 @@ let state = {
   exhaustion:    load('exhaustion', new Array(6).fill(false)),   // 力竭 6 级（5e 规则）
   channel:       load('channel', new Array(CHAR.channelDivinity).fill(false)),
   hitDice:       load('hitDice', new Array(CHAR.hitDiceMax || 0).fill(false)),  // 生命骰：true=已用；长休按上限一半恢复
+  tempSpells:    load('tempSpells', []),   // 临时法术：[{key,id,uses,used,recharge:'long'|'short'}]，不消耗法术位，按休整恢复
   buffs:         load('buffs', {}),
   buffDurations: load('buffDurations', {}),   // 状态剩余轮数：{ buffId: rounds }；战斗中每回合 −1，到 0 自动结束
   buffPicks:     load('buffPicks', DEFAULT_BUFF_PICKS.slice()),  // 面板上显示哪些状态标签
@@ -125,6 +126,24 @@ function getSpell(id) { return SPELL_DB.find(s => s.id === id); }
 
 function allDomainIds() {
   return Object.values(CHAR.domainSpells).flat();
+}
+
+/* ============================================================
+   法表职业过滤
+   ------------------------------------------------------------
+   从 SPELL_DB 的 classes 字段自动汇总出所有职业名；生效职业存
+   dnd_spellClasses（默认只有牧师）。法术页列表与「＋选择」选择器
+   都只显示 classes 命中生效职业的法术——一个都不勾则全部不显示。
+   切换在「模块显示」弹窗的「法表（按职业）」一列里。
+============================================================ */
+const ALL_SPELL_CLASSES = (typeof SPELL_DB !== 'undefined')
+  ? [...new Set(SPELL_DB.flatMap(s => Array.isArray(s.classes) ? s.classes : []))]
+  : [];
+
+let spellClasses = load('spellClasses', ['牧师']);   // 生效的法表职业
+
+function spellInActiveClasses(sp) {
+  return sp && Array.isArray(sp.classes) && sp.classes.some(c => spellClasses.includes(c));
 }
 
 function isPrepared(id) {

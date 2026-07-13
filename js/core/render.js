@@ -97,8 +97,199 @@ function renderSlots() { renderSpellPanel(); }
    渲染：法术面板（统一入口）
 ============================================================ */
 function renderSpellPanel() {
-  renderCantripList();
-  renderPreparedList();
+  const container = $('spell-classes');
+  if (!container) return;
+
+  /* 清理已不在 DB 中的遗留 ID */
+  const cleanedC = state.cantripIds.filter(id => getSpell(id));
+  if (cleanedC.length !== state.cantripIds.length) { state.cantripIds = cleanedC; save('cantripIds', state.cantripIds); }
+  const cleanedP = state.preparedIds.filter(id => getSpell(id));
+  if (cleanedP.length !== state.preparedIds.length) { state.preparedIds = cleanedP; save('preparedIds', state.preparedIds); }
+
+  container.innerHTML = '';
+
+  /* 每个生效法表职业一个分区（按 ALL_SPELL_CLASSES 顺序稳定排列）*/
+  const active = (typeof spellClasses !== 'undefined') ? spellClasses : [];
+  const ordered = (typeof ALL_SPELL_CLASSES !== 'undefined')
+    ? ALL_SPELL_CLASSES.filter(c => active.includes(c))
+    : active.slice();
+  ordered.forEach(cls => container.appendChild(buildSpellClassBlock(cls)));
+}
+
+/* 单个职业的法表分区：标题 + ＋选择 + 按环阶分组（戏法在前）*/
+function buildSpellClassBlock(cls) {
+  const inClass = sp => Array.isArray(sp.classes) && sp.classes.includes(cls);
+  const block = document.createElement('div');
+  block.className = 'spell-class-block';
+
+  /* 收集该职业的戏法 / 各环法术 */
+  const cantrips = state.cantripIds.map(getSpell).filter(sp => sp && sp.level === 0 && inClass(sp));
+  const maxLv = CHAR.spellSlots.length - 1;
+  const leveled = [];   // { lv, items:[{sp,isDomain}] }
+  let preparedCount = 0;
+  for (let lv = 1; lv <= maxLv; lv++) {
+    const domain = (CHAR.domainSpells[lv] || []).map(getSpell).filter(sp => sp && inClass(sp));
+    const chosen = state.preparedIds.map(getSpell).filter(sp => sp && sp.level === lv && inClass(sp));
+    if (!domain.length && !chosen.length) continue;
+    preparedCount += domain.length + chosen.length;
+    leveled.push({
+      lv,
+      items: [
+        ...domain.map(sp => ({ sp, isDomain: true })),
+        ...chosen.map(sp => ({ sp, isDomain: false })),
+      ],
+    });
+  }
+
+  /* 头部：职业名 · 法表 + 计数 + ＋选择 */
+  const head = document.createElement('div');
+  head.className = 'spell-class-head';
+  head.innerHTML =
+    `<span class="cinzel spell-class-name">${cls} · 法表</span>` +
+    `<span class="spell-class-count">戏法 ${cantrips.length} ｜ 备法 ${preparedCount}</span>`;
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-spell-add';
+  addBtn.textContent = '＋ 选择';
+  addBtn.addEventListener('click', () => openPicker(cls));
+  head.appendChild(addBtn);
+  block.appendChild(head);
+
+  /* 戏法组（level 0，无法术位）*/
+  if (cantrips.length) {
+    block.appendChild(buildSpellLvGroup('戏法', 0, cantrips.map(sp => ({ sp, isDomain: false, isCantrip: true }))));
+  }
+  /* 各环组（带法术位宝石）*/
+  leveled.forEach(g => {
+    block.appendChild(buildSpellLvGroup(g.lv + '环', g.lv, g.items.map(x => ({ sp: x.sp, isDomain: x.isDomain, isCantrip: false }))));
+  });
+
+  if (!cantrips.length && !leveled.length) {
+    const empty = document.createElement('div');
+    empty.className = 'spell-class-empty';
+    empty.textContent = '尚无该职业的已学法术，点「＋ 选择」添加。';
+    block.appendChild(empty);
+  }
+  return block;
+}
+
+/* 环阶分组：标题（≥1环带法术位宝石）+ 双栏法术行 */
+function buildSpellLvGroup(label, lv, items) {
+  const group = document.createElement('div');
+  group.className = 'spell-lv-group';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'srow-lv-group-hdr';
+  const lbl = document.createElement('span');
+  lbl.textContent = label;
+  hdr.appendChild(lbl);
+
+  if (lv >= 1) {
+    const slotCount = CHAR.spellSlots[lv] || 0;
+    if (slotCount > 0) {
+      const gems = document.createElement('div');
+      gems.className = 'slot-gems';
+      for (let i = 0; i < slotCount; i++) {
+        const gem = document.createElement('div');
+        gem.className = 'slot-gem' + (state.slots[lv][i] ? ' used' : '');
+        gem.title = lv + '环法术位 ' + (i + 1);
+        gem.addEventListener('click', () => {
+          state.slots[lv][i] = !state.slots[lv][i];
+          save('slots', state.slots);
+          renderSpellPanel();
+        });
+        gems.appendChild(gem);
+      }
+      hdr.appendChild(gems);
+    }
+  }
+  group.appendChild(hdr);
+
+  const colL = document.createElement('div'); colL.className = 'srow-col';
+  const colR = document.createElement('div'); colR.className = 'srow-col';
+  const wrap = document.createElement('div'); wrap.className = 'srow-2col';
+  wrap.appendChild(colL); wrap.appendChild(colR);
+  group.appendChild(wrap);
+  items.forEach(({ sp, isDomain, isCantrip }, i) => {
+    (i % 2 === 0 ? colL : colR).appendChild(buildSpellRow(sp, isDomain, isCantrip));
+  });
+  return group;
+}
+
+/* ============================================================
+   渲染：临时法术（独立次数、不消耗法术位、按休整恢复）
+============================================================ */
+function renderTempSpells() {
+  const list = $('temp-spells-list');
+  if (!list) return;
+  /* 清理法术库里已不存在的条目 */
+  const cleaned = (state.tempSpells || []).filter(t => getSpell(t.id));
+  if (cleaned.length !== (state.tempSpells || []).length) {
+    state.tempSpells = cleaned;
+    save('tempSpells', state.tempSpells);
+  }
+
+  list.innerHTML = '';
+  if (!state.tempSpells.length) {
+    const empty = document.createElement('div');
+    empty.className = 'temp-empty';
+    empty.textContent = '暂无临时法术。点「＋ 添加临时法术」，选个法术并设置次数与恢复方式。';
+    list.appendChild(empty);
+    return;
+  }
+
+  /* 与普通已备法术相同的双栏行布局；每行用 buildSpellRow（带 tempKey）*/
+  const colL = document.createElement('div'); colL.className = 'srow-col';
+  const colR = document.createElement('div'); colR.className = 'srow-col';
+  const wrap = document.createElement('div'); wrap.className = 'srow-2col';
+  wrap.appendChild(colL); wrap.appendChild(colR);
+  list.appendChild(wrap);
+
+  let n = 0;
+  state.tempSpells.forEach(t => {
+    const sp = getSpell(t.id);
+    if (!sp) return;
+    const row = buildSpellRow(sp, false, sp.level === 0, t.key);
+    (n % 2 === 0 ? colL : colR).appendChild(row);
+    n++;
+  });
+}
+
+function addTempSpell(id, uses, recharge) {
+  state.tempSpells = state.tempSpells || [];
+  state.tempSpells.push({
+    key: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    id,
+    uses: Math.max(1, uses),
+    used: 0,
+    recharge: (recharge === 'short') ? 'short' : 'long',
+  });
+  save('tempSpells', state.tempSpells);
+  renderTempSpells();
+  if (typeof logEvent === 'function') {
+    const sp = getSpell(id);
+    logEvent('cast', '✦', `添加临时法术 ${sp ? sp.name : id}（${uses} 次 / ${recharge === 'short' ? '短休' : '长休'}恢复）`);
+  }
+}
+
+function removeTempSpell(key) {
+  state.tempSpells = (state.tempSpells || []).filter(t => t.key !== key);
+  save('tempSpells', state.tempSpells);
+  renderTempSpells();
+}
+
+function setTempUsed(key, newUsed) {
+  const t = (state.tempSpells || []).find(x => x.key === key);
+  if (!t) return;
+  const before = t.used;
+  t.used = Math.max(0, Math.min(t.uses, newUsed));
+  if (t.used === before) return;
+  save('tempSpells', state.tempSpells);
+  renderTempSpells();
+  if (typeof logEvent === 'function') {
+    const sp = getSpell(t.id);
+    const nm = sp ? sp.name : t.id;
+    logEvent('cast', '✦', (t.used > before ? '施放临时法术 ' : '恢复临时法术 ') + nm + `（剩 ${t.uses - t.used}/${t.uses}）`);
+  }
 }
 
 /* ──── 查找可用法术位：从指定环阶起向上找第一个未使用的（支持自动升环）──── */
@@ -217,9 +408,35 @@ function castCantrip(sp) {
   if (typeof playCastFx === 'function') playCastFx(sp, true);    /* 戏法用缩小版特效 */
 }
 
+/* ──── 临时法术是否还有剩余次数 ──── */
+function tempHasUses(key) {
+  const t = (state.tempSpells || []).find(x => x.key === key);
+  return !!t && t.used < t.uses;
+}
+
+/* ──── 施放临时法术：消耗自身 1 次（不动法术位），处理专注/日志/特效 ──── */
+function castTempSpell(key) {
+  const t = (state.tempSpells || []).find(x => x.key === key);
+  if (!t || t.used >= t.uses) return;
+  t.used++;
+  save('tempSpells', state.tempSpells);
+  const sp = getSpell(t.id);
+  if (sp && sp.conc) {
+    state.concentration = sp.id;
+    save('concentration', state.concentration);
+    renderConcentration();
+  }
+  if (typeof logEvent === 'function') {
+    logEvent('cast', '✦', `施放 ${sp ? sp.name : t.id}（临时 · 剩 ${t.uses - t.used}/${t.uses}）${sp && sp.conc ? ' · 专注' : ''}`);
+  }
+  if (typeof playCastFx === 'function' && sp) playCastFx(sp, sp.level === 0);
+  renderTempSpells();
+  renderSpellPanel();   /* 刷新其它位置的专注高亮 */
+}
+
 /* ──── 整行长按施法交互：按住约 0.70s 施法；轻触则展开详情
         戏法（sp.level === 0）不耗法术位，永远可按住施放 ──── */
-function attachRowCast(row, sp) {
+function attachRowCast(row, sp, tempKey) {
   const HOLD_MS = 700;   /* 需与 CSS .srow-casting 的填充过渡时长一致 */
   let holdTimer = null;
   let pressed = false;
@@ -230,8 +447,10 @@ function attachRowCast(row, sp) {
     e.preventDefault();                        /* 阻止浏览器长按默认行为（文字选择/系统菜单）*/
     pressed = true;
     didCast = false;
-    /* 戏法永远可按住施放；1 环及以上需有可用法术位（或可仪式施法）才启动填充动画与施法计时 */
-    const castable = (sp.level === 0) || (findCastableSlot(sp.level) != null) || hasRitual(sp);
+    /* 临时法术：还有剩余次数即可施放；否则同普通规则（戏法恒可，1环+需可用法术位或仪式）*/
+    const castable = tempKey
+      ? tempHasUses(tempKey)
+      : ((sp.level === 0) || (findCastableSlot(sp.level) != null) || hasRitual(sp));
     if (castable) {
       row.classList.add('srow-casting');
       holdTimer = setTimeout(() => {
@@ -239,7 +458,8 @@ function attachRowCast(row, sp) {
         didCast = true;
         pressed = false;
         row.classList.remove('srow-casting');
-        if (sp.level === 0) castCantrip(sp);
+        if (tempKey) castTempSpell(tempKey);     /* 临时法术：消耗 1 次 */
+        else if (sp.level === 0) castCantrip(sp);
         else promptCast(sp);      /* 带升环效应先询问环阶，否则直接施放 */
       }, HOLD_MS);
     }
@@ -268,9 +488,9 @@ function attachRowCast(row, sp) {
 }
 
 /* ──── 构建单行法术卡片 ──── */
-function buildSpellRow(sp, isDomain, isCantrip) {
+function buildSpellRow(sp, isDomain, isCantrip, tempKey) {
   const row = document.createElement('div');
-  row.className = 'srow' + (isDomain ? ' srow-domain' : '');
+  row.className = 'srow' + (isDomain ? ' srow-domain' : '') + (tempKey ? ' srow-temp' : '');
 
   /* 长按施法的金色填充层（戏法与 1 环以上法术都可按住施放）*/
   const fill = document.createElement('span');
@@ -333,6 +553,33 @@ function buildSpellRow(sp, isDomain, isCantrip) {
     indicators.appendChild(ci);
   }
   
+  /* 临时法术：恢复方式标记 + 剩余次数（点击恢复1次）+ 移除，并入名字右侧的指示区。
+     长按整行 = 施放并消耗1次（见 attachRowCast），这几个按钮点击不触发施法。*/
+  if (tempKey) {
+    const t = (state.tempSpells || []).find(x => x.key === tempKey);
+    const remaining = t ? (t.uses - t.used) : 0;
+
+    const rcTag = document.createElement('span');
+    rcTag.className = 'srow-temp-recharge';
+    rcTag.textContent = (t && t.recharge === 'short') ? '短' : '长';
+    rcTag.title = (t && t.recharge === 'short') ? '短休恢复' : '长休恢复';
+    indicators.appendChild(rcTag);
+
+    const usesBtn = document.createElement('button');
+    usesBtn.className = 'srow-temp-uses' + (remaining <= 0 ? ' depleted' : '');
+    usesBtn.textContent = remaining + '/' + (t ? t.uses : 0);
+    usesBtn.title = '临时法术剩余次数 · 点击恢复 1 次';
+    usesBtn.addEventListener('click', e => { e.stopPropagation(); if (t) setTempUsed(tempKey, t.used - 1); });
+    indicators.appendChild(usesBtn);
+
+    const rmBtn = document.createElement('button');
+    rmBtn.className = 'srow-temp-remove';
+    rmBtn.textContent = '✕';
+    rmBtn.title = '移除此临时法术';
+    rmBtn.addEventListener('click', e => { e.stopPropagation(); removeTempSpell(tempKey); });
+    indicators.appendChild(rmBtn);
+  }
+
   if (indicators.children.length) row.appendChild(indicators);
   
   /* 详情展开按钮：贴满行高的竖条，固定在最右侧 */
@@ -350,9 +597,9 @@ function buildSpellRow(sp, isDomain, isCantrip) {
   });
   row.appendChild(detailBtn);
 
-  /* 挂载整行长按施法交互（戏法与 1 环以上法术一致）*/
+  /* 挂载整行长按施法交互（临时法术消耗自身次数，其余同普通法术）*/
   row.style.cursor = 'pointer';
-  attachRowCast(row, sp);
+  attachRowCast(row, sp, tempKey);
 
   return row;
 }
@@ -414,87 +661,11 @@ function buildDetailHTML(sp) {
   `;
 }
 
-/* ──── 戏法列表 ──── */
-function renderCantripList() {
-  const container = $('cantrips-list');
-  container.innerHTML = '';
-  /* 清理已不在 DB 中的遗留 ID */
-  const cleaned = state.cantripIds.filter(id => getSpell(id));
-  if (cleaned.length !== state.cantripIds.length) {
-    state.cantripIds = cleaned;
-    save('cantripIds', state.cantripIds);
-  }
-  const colL = document.createElement('div'); colL.className = 'srow-col';
-  const colR = document.createElement('div'); colR.className = 'srow-col';
-  const wrap = document.createElement('div'); wrap.className = 'srow-2col';
-  wrap.appendChild(colL); wrap.appendChild(colR); container.appendChild(wrap);
-  state.cantripIds.forEach((id, i) => {
-    const sp = getSpell(id);
-    if (sp) (i % 2 === 0 ? colL : colR).appendChild(buildSpellRow(sp, false, true));
-  });
-  $('cantrip-count').textContent = `${state.cantripIds.length} / ${CHAR.maxCantrips}`;
-}
+/* ──── 兼容别名：旧代码里调用的 renderCantripList / renderPreparedList
+   统一走 renderSpellPanel（按职业分区渲染，戏法+环阶合并）──── */
+function renderCantripList() { renderSpellPanel(); }
 
-/* ──── 已备法术列表（自选 + 领域常驻，按环阶分组） ──── */
-function renderPreparedList() {
-  const container = $('prepared-list');
-  container.innerHTML = '';
-  /* 清理已不在 DB 中的遗留 ID */
-  const cleaned = state.preparedIds.filter(id => getSpell(id));
-  if (cleaned.length !== state.preparedIds.length) {
-    state.preparedIds = cleaned;
-    save('preparedIds', state.preparedIds);
-  }
-  /* 按环阶分组，环数由 CHAR.spellSlots 决定（1 环到最高环）*/
-  const maxLv = CHAR.spellSlots.length - 1;
-  Array.from({ length: maxLv }, (_, i) => i + 1).forEach(lv => {
-    const domainAtLevel = (CHAR.domainSpells[lv] || []).map(getSpell).filter(Boolean);
-    const chosenAtLevel = state.preparedIds.map(getSpell).filter(sp => sp && sp.level === lv);
-    if (!domainAtLevel.length && !chosenAtLevel.length) return;
-
-    const hdr = document.createElement('div');
-    hdr.className = 'srow-lv-group-hdr';
-
-    const lvLabel = document.createElement('span');
-    lvLabel.textContent = lv + '环';
-    hdr.appendChild(lvLabel);
-
-    /* 法术位计数块 */
-    const slotCount = CHAR.spellSlots[lv] || 0;
-    if (slotCount > 0) {
-      const gems = document.createElement('div');
-      gems.className = 'slot-gems';
-      for (let i = 0; i < slotCount; i++) {
-        const gem = document.createElement('div');
-        gem.className = 'slot-gem' + (state.slots[lv][i] ? ' used' : '');
-        gem.title = lv + '环法术位 ' + (i + 1);
-        gem.addEventListener('click', () => {
-          state.slots[lv][i] = !state.slots[lv][i];
-          save('slots', state.slots);
-          renderPreparedList();
-        });
-        gems.appendChild(gem);
-      }
-      hdr.appendChild(gems);
-    }
-
-    container.appendChild(hdr);
-
-    /* 左右两栏显示 */
-    const colL = document.createElement('div'); colL.className = 'srow-col';
-    const colR = document.createElement('div'); colR.className = 'srow-col';
-    const wrap = document.createElement('div'); wrap.className = 'srow-2col';
-    wrap.appendChild(colL); wrap.appendChild(colR); container.appendChild(wrap);
-    const allSpells = [
-      ...domainAtLevel.map(sp => ({ sp, isDomain: true })),
-      ...chosenAtLevel.map(sp => ({ sp, isDomain: false })),
-    ];
-    allSpells.forEach(({ sp, isDomain }, i) => {
-      (i % 2 === 0 ? colL : colR).appendChild(buildSpellRow(sp, isDomain, false));
-    });
-  });
-  $('prepared-count').textContent = `${state.preparedIds.length} / ${CHAR.maxPrepared}`;
-}
+function renderPreparedList() { renderSpellPanel(); }
 
 /* ──── 领域法术列表（已合并到 renderPreparedList） ──── */
 function renderDomainList() {}  /* 保留空实现以兼容其他可能调用 */
