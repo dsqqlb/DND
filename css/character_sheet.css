@@ -3020,6 +3020,14 @@ body {
   grid-row: 2;
 }
 
+.feat-prereq {
+  font-size: 12px;
+  color: var(--accent-glow);
+  opacity: 0.85;
+  margin: -4px 0 10px;
+  letter-spacing: 0.5px;
+}
+
 .feat-list {
   list-style: none;
   display: flex;
@@ -4405,6 +4413,12 @@ body {
 }
 .charcfg-input:focus { outline: none; border-color: var(--border-bright); }
 select.charcfg-input { cursor: pointer; }
+.charcfg-hint {
+  font-size: 12px;
+  color: var(--silver-dim);
+  padding: 4px 2px;
+  line-height: 1.6;
+}
 
 /* 整块字段（如专长勾选）：标签一行、内容整行铺开 */
 .charcfg-row.charcfg-row-block {
@@ -4433,6 +4447,105 @@ select.charcfg-input { cursor: pointer; }
   height: 18px;
   flex-shrink: 0;
   cursor: pointer;
+}
+
+/* ── 专长：两列紧凑网格。整条不可点，仅 ▾ 与 添加/已拥有 按钮可点 ── */
+.cfg-feat-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  align-items: start;
+}
+.cfg-feat-row {
+  border: 1px solid var(--border-dim);
+  background: var(--bg-card);
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 0;
+}
+.cfg-feat-row.expanded { grid-column: 1 / -1; }   /* 展开时占满整行 */
+.cfg-feat-row.owned {
+  border-color: #8a6a1a;
+  background: rgba(232,184,75,0.06);
+}
+.cfg-feat-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+}
+.cfg-feat-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--silver);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cfg-feat-row.owned .cfg-feat-name { color: #f0d78c; }
+.cfg-feat-tog {
+  flex-shrink: 0;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.15s, border-color 0.15s;
+}
+.cfg-feat-tog::after { content: '添加'; }
+.cfg-feat-row.owned .cfg-feat-tog {
+  border-color: #8a6a1a;
+  color: #f0d78c;
+}
+.cfg-feat-row.owned .cfg-feat-tog::after { content: '已拥有'; }
+.cfg-feat-detail-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.15s, color 0.15s, border-color 0.15s;
+}
+.cfg-feat-detail-btn.open { transform: rotate(180deg); color: var(--accent-glow); border-color: var(--border-bright); }
+.cfg-feat-detail {
+  padding: 4px 12px 10px;
+  border-top: 1px solid var(--border-dim);
+}
+.cfg-feat-p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--silver-dim);
+  margin-top: 6px;
+}
+.cfg-feat-p b { color: var(--accent-glow); font-weight: normal; }
+
+/* ── 豁免熟练：六个可点按钮块 ── */
+.cfg-save-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.cfg-save-btn {
+  min-height: 42px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  color: var(--silver-dim);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.cfg-save-btn.on {
+  border-color: #8a6a1a;
+  color: #f0d78c;
+  background: rgba(232,184,75,0.1);
 }
 
 #charcfg-foot {

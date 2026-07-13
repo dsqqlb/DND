@@ -199,7 +199,6 @@ const DERIVED = {
     return CHAR.spellSaveDC != null ? CHAR.spellSaveDC : 8 + this.prof + this.spellMod;
   },
   get spellAttack() { return this.prof + this.spellMod; },                   // 法术攻击加成 = 熟练加值 + 施法属性调整值
-  get channelHeal() { return CHAR.channelHealPerLevel * CHAR.level; },       // 生命维持治疗量 = 每级系数 × 等级
   get xpToNext()  {
     return state.xpToNextManual != null ? state.xpToNextManual : xpForLevel(CHAR.level + 1);
   },

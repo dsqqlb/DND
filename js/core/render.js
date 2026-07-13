@@ -1056,8 +1056,15 @@ function renderFeats() {
 
     const title = document.createElement('div');
     title.className = 'panel-title';
-    title.textContent = '专长 · ' + ft.name;
+    title.textContent = '专长 · ' + ft.name + (ft.nameEn ? ' · ' + ft.nameEn : '');
     panel.appendChild(title);
+
+    if (ft.prereq) {
+      const pr = document.createElement('div');
+      pr.className = 'feat-prereq';
+      pr.textContent = '先决条件：' + ft.prereq;
+      panel.appendChild(pr);
+    }
 
     const ul = document.createElement('ul');
     ul.className = 'feat-list';

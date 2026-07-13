@@ -22,7 +22,7 @@
       items: [
         { key: 'name',      label: '角色名', type: 'text' },
         { key: 'race',      label: '种族',   type: 'text' },
-        { key: 'className', label: '职业',   type: 'text' },
+        { key: 'className', label: '职业',   type: 'classselect' },
         { key: 'subclass',  label: '子职',   type: 'text' },
         { key: 'level',     label: '等级',   type: 'int', min: 1, max: 20 },
         { key: 'alignment', label: '阵营',   type: 'text' },
@@ -53,8 +53,6 @@
           options: Object.keys(ABI).map(k => [k, ABI[k]]) },
         { key: 'maxCantrips',         label: '戏法上限',     type: 'int', min: 0, max: 20 },
         { key: 'maxPrepared',         label: '备法上限',     type: 'int', min: 0, max: 40 },
-        { key: 'channelDivinity',     label: '引导神力次数', type: 'int', min: 0, max: 10 },
-        { key: 'channelHealPerLevel', label: '生命维持每级系数', type: 'int', min: 0, max: 20 },
         { key: 'spellSlots',          label: '各环法术位（逗号分隔，从 0 环/戏法起）', type: 'slots' },
       ],
     },
@@ -77,6 +75,20 @@
       ],
     },
   ];
+
+  /* 职业专属配置：编辑器里用「职业」下拉选择显示哪一组，别的职业看不到。
+     每做一个 bespoke 职业模块，就往 CLASS_GROUPS 里加它的专属字段（同样存进
+     charConfig 覆盖层）。字段规格与 GROUPS 里的完全一致（int/select/slots…）。*/
+  const CLASS_LIST = ['野蛮人', '吟游诗人', '牧师', '德鲁伊', '战士', '武僧', '圣武士', '游侠', '游荡者', '术士', '邪术师', '法师', '奇械师'];
+  const CLASS_GROUPS = {
+    '牧师': [
+      { key: 'channelDivinity',     label: '引导神力次数', type: 'int', min: 0, max: 10 }
+    ],
+    /* 例（以后做野蛮人模块时）：
+       '野蛮人': [ { key: 'rageMax', label: '狂暴次数', type: 'int', min: 0, max: 10 } ], */
+  };
+  /* 「职业专属」显示哪一组，由身份里的「职业」下拉驱动（= 角色 className）*/
+  let cfgViewClass = CHAR.className || '牧师';
 
   const fieldId = key => 'cfg_' + key.replace('.', '_');
 
@@ -104,6 +116,135 @@
     return v;
   };
 
+  /* 构建单个字段行（GROUPS 与 职业专属组 共用）*/
+  function buildFieldRow(f) {
+    /* feats/saves 是块状字段：用 div，避免 <label> 把点击转发给内部第一个按钮 */
+    const isBlock = (f.type === 'feats' || f.type === 'saves');
+    const row = document.createElement(isBlock ? 'div' : 'label');
+    row.className = 'charcfg-row';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'charcfg-label';
+    lbl.textContent = f.label;
+    row.appendChild(lbl);
+
+    let input;
+    const cur = getCharVal(f.key);
+
+    if (f.type === 'select') {
+      input = document.createElement('select');
+      f.options.forEach(([val, text]) => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.textContent = text;
+        input.appendChild(opt);
+      });
+      input.value = cur;
+    } else if (f.type === 'classselect') {
+      /* 职业下拉：驱动下方「职业专属」组显示哪一组 */
+      input = document.createElement('select');
+      const list = CLASS_LIST.slice();
+      if (cur && !list.includes(cur)) list.unshift(cur);   /* 保留自定义职业名 */
+      list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        input.appendChild(opt);
+      });
+      input.value = cur || '';
+      input.addEventListener('change', () => {
+        cfgViewClass = input.value;
+        renderClassFields();
+      });
+    } else if (f.type === 'slots') {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.value = Array.isArray(cur) ? cur.join(', ') : '';
+      input.placeholder = '0, 4, 3, 2';
+    } else if (f.type === 'feats') {
+      /* 专长：两列紧凑网格。整条不可点，只有 ▾(看详情) 和 添加/已拥有 按钮可点 */
+      input = document.createElement('div');
+      const have = Array.isArray(cur) ? cur : [];
+      const db = (typeof FEAT_DB !== 'undefined') ? FEAT_DB : [];
+      if (!db.length) input.textContent = '（暂无可选专长，去 js/data/feats.js 添加）';
+      db.forEach(ft => {
+        const frow = document.createElement('div');
+        frow.className = 'cfg-feat-row' + (have.includes(ft.id) ? ' owned' : '');
+        frow.dataset.featId = ft.id;
+
+        const head = document.createElement('div');
+        head.className = 'cfg-feat-head';
+
+        const nm = document.createElement('span');
+        nm.className = 'cfg-feat-name';
+        nm.textContent = ft.name;
+        head.appendChild(nm);
+
+        const dbtn = document.createElement('button');
+        dbtn.type = 'button';
+        dbtn.className = 'cfg-feat-detail-btn';
+        dbtn.textContent = '▾';
+        head.appendChild(dbtn);
+
+        const tog = document.createElement('button');
+        tog.type = 'button';
+        tog.className = 'cfg-feat-tog';   /* 文案(添加/已拥有)由 CSS 控制 */
+        tog.addEventListener('click', () => frow.classList.toggle('owned'));
+        head.appendChild(tog);
+
+        const detail = document.createElement('div');
+        detail.className = 'cfg-feat-detail';
+        detail.style.display = 'none';
+        let detailHtml = '';
+        if (ft.nameEn) detailHtml += `<div class="cfg-feat-p"><b>${ft.nameEn}</b></div>`;
+        if (ft.prereq) detailHtml += `<div class="cfg-feat-p">先决条件：${ft.prereq}</div>`;
+        detailHtml += (ft.entries || []).map(e =>
+          `<div class="cfg-feat-p">${e.trigger ? `<b>${e.trigger}</b> ` : ''}${e.text}</div>`).join('');
+        detail.innerHTML = detailHtml;
+
+        dbtn.addEventListener('click', () => {
+          const show = detail.style.display === 'none';
+          detail.style.display = show ? '' : 'none';
+          dbtn.classList.toggle('open', show);
+          frow.classList.toggle('expanded', show);
+        });
+
+        frow.appendChild(head);
+        frow.appendChild(detail);
+        input.appendChild(frow);
+      });
+    } else if (f.type === 'saves') {
+      /* 豁免熟练：六个可点按钮块，点亮=熟练 */
+      input = document.createElement('div');
+      const have = Array.isArray(cur) ? cur : [];
+      Object.keys(ABI).forEach(k => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cfg-save-btn' + (have.includes(k) ? ' on' : '');
+        b.dataset.ab = k;
+        b.textContent = ABI[k];
+        b.addEventListener('click', () => b.classList.toggle('on'));
+        input.appendChild(b);
+      });
+    } else {
+      input = document.createElement('input');
+      input.type = (f.type === 'int') ? 'number' : 'text';
+      if (f.type === 'int') { if (f.min != null) input.min = f.min; if (f.max != null) input.max = f.max; }
+      input.value = cur != null ? cur : '';
+    }
+
+    input.id = fieldId(f.key);
+    if (f.type === 'feats') {
+      input.className = 'cfg-feat-list';
+      row.classList.add('charcfg-row-block');
+    } else if (f.type === 'saves') {
+      input.className = 'cfg-save-btns';
+      row.classList.add('charcfg-row-block');
+    } else {
+      input.className = 'charcfg-input';
+    }
+    row.appendChild(input);
+    return row;
+  }
+
   /* ──── 构建表单 ──── */
   function buildForm() {
     const body = $('charcfg-body');
@@ -112,90 +253,44 @@
     GROUPS.forEach(g => {
       const sec = document.createElement('div');
       sec.className = 'charcfg-group';
-
       const hdr = document.createElement('div');
       hdr.className = 'charcfg-group-title cinzel';
       hdr.textContent = g.title;
       sec.appendChild(hdr);
-
-      g.items.forEach(f => {
-        const row = document.createElement('label');
-        row.className = 'charcfg-row';
-
-        const lbl = document.createElement('span');
-        lbl.className = 'charcfg-label';
-        lbl.textContent = f.label;
-        row.appendChild(lbl);
-
-        let input;
-        const cur = getCharVal(f.key);
-
-        if (f.type === 'select') {
-          input = document.createElement('select');
-          f.options.forEach(([val, text]) => {
-            const opt = document.createElement('option');
-            opt.value = val; opt.textContent = text;
-            input.appendChild(opt);
-          });
-          input.value = cur;
-        } else if (f.type === 'slots') {
-          input = document.createElement('input');
-          input.type = 'text';
-          input.value = Array.isArray(cur) ? cur.join(', ') : '';
-          input.placeholder = '0, 4, 3, 2';
-        } else if (f.type === 'feats') {
-          input = document.createElement('div');
-          const have = Array.isArray(cur) ? cur : [];
-          const db = (typeof FEAT_DB !== 'undefined') ? FEAT_DB : [];
-          if (!db.length) {
-            input.textContent = '（暂无可选专长，去 js/data/feats.js 添加）';
-          }
-          db.forEach(ft => {
-            const lab = document.createElement('label');
-            lab.className = 'charcfg-check';
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.value = ft.id;
-            cb.checked = have.includes(ft.id);
-            lab.appendChild(cb);
-            const sp = document.createElement('span');
-            sp.textContent = ft.name;
-            lab.appendChild(sp);
-            input.appendChild(lab);
-          });
-        } else if (f.type === 'saves') {
-          input = document.createElement('div');
-          const have = Array.isArray(cur) ? cur : [];
-          Object.keys(ABI).forEach(k => {
-            const lab = document.createElement('label');
-            lab.className = 'charcfg-check';
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.value = k;
-            cb.checked = have.includes(k);
-            lab.appendChild(cb);
-            const sp = document.createElement('span');
-            sp.textContent = ABI[k];
-            lab.appendChild(sp);
-            input.appendChild(lab);
-          });
-        } else {
-          input = document.createElement('input');
-          input.type = (f.type === 'int') ? 'number' : 'text';
-          if (f.type === 'int') { if (f.min != null) input.min = f.min; if (f.max != null) input.max = f.max; }
-          input.value = cur != null ? cur : '';
-        }
-
-        const blockType = (f.type === 'feats' || f.type === 'saves');
-        input.id = fieldId(f.key);
-        input.className = blockType ? 'charcfg-feats' : 'charcfg-input';
-        if (blockType) row.classList.add('charcfg-row-block');
-        row.appendChild(input);
-        sec.appendChild(row);
-      });
-
+      g.items.forEach(f => sec.appendChild(buildFieldRow(f)));
       body.appendChild(sec);
+
+      /* 「职业专属」组紧跟在「身份」之后；职业下拉即身份里的「职业」字段 */
+      if (g.title === '身份') {
+        const csec = document.createElement('div');
+        csec.className = 'charcfg-group';
+        const chdr = document.createElement('div');
+        chdr.className = 'charcfg-group-title cinzel';
+        chdr.textContent = '职业专属';
+        csec.appendChild(chdr);
+        const wrap = document.createElement('div');
+        wrap.id = 'charcfg-class-fields';
+        csec.appendChild(wrap);
+        body.appendChild(csec);
+        renderClassFields();
+      }
     });
+  }
+
+  /* 渲染当前所选职业的专属字段（换职业只重建这一块）*/
+  function renderClassFields() {
+    const wrap = $('charcfg-class-fields');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const fields = CLASS_GROUPS[cfgViewClass] || [];
+    if (!fields.length) {
+      const hint = document.createElement('div');
+      hint.className = 'charcfg-hint';
+      hint.textContent = '该职业暂无专属配置（做了对应职业模块后会出现在这里）。';
+      wrap.appendChild(hint);
+      return;
+    }
+    fields.forEach(f => wrap.appendChild(buildFieldRow(f)));
   }
 
   /* ──── 读取表单 → 覆盖层对象 ──── */
@@ -203,9 +298,10 @@
     const overlay = {};
     let error = null;
 
-    GROUPS.forEach(g => g.items.forEach(f => {
+    const collect = f => {
       if (error) return;
       const el = $(fieldId(f.key));
+      if (!el) return;   /* 未渲染（非当前所选职业的专属字段）跳过 */
       let v;
 
       if (f.type === 'int') {
@@ -217,17 +313,22 @@
         if (!arr.length) { error = '「各环法术位」至少要填一个数字，例如 0, 4, 3, 2'; return; }
         arr[0] = 0;               /* 0 环（戏法）不占法术位，恒为 0 */
         v = arr;
-      } else if (f.type === 'select') {
+      } else if (f.type === 'select' || f.type === 'classselect') {
         v = el.value;
-      } else if (f.type === 'feats' || f.type === 'saves') {
-        v = Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value);
+      } else if (f.type === 'feats') {
+        v = Array.from(el.querySelectorAll('.cfg-feat-row.owned')).map(r => r.dataset.featId);
+      } else if (f.type === 'saves') {
+        v = Array.from(el.querySelectorAll('.cfg-save-btn.on')).map(b => b.dataset.ab);
       } else {
         v = el.value.trim();
         if (!v) v = getCharVal(f.key);   /* 文本留空则回退默认，避免空名字 */
       }
 
       setOverlay(overlay, f.key, v);
-    }));
+    };
+
+    GROUPS.forEach(g => g.items.forEach(collect));
+    (CLASS_GROUPS[cfgViewClass] || []).forEach(collect);   /* 当前所选职业的专属字段 */
 
     return { overlay, error };
   }
@@ -256,7 +357,9 @@
       showDialog({ icon: '⚠', title: '填写有误', message: error, confirmText: '知道了' });
       return;
     }
-    save('charConfig', overlay);
+    /* 合并到已有覆盖层：只覆盖本次渲染出的字段，保留其它职业的专属配置不被冲掉 */
+    const existing = load('charConfig', {}) || {};
+    save('charConfig', Object.assign({}, existing, overlay));
     /* 重载让 state 初始化 / reconcile / DERIVED / 全部渲染重新按新配置生效 */
     location.reload();
   });
