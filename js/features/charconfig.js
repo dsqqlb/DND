@@ -23,7 +23,7 @@
         { key: 'name',      label: '角色名', type: 'text' },
         { key: 'race',      label: '种族',   type: 'text' },
         { key: 'className', label: '职业',   type: 'classselect' },
-        { key: 'subclass',  label: '子职',   type: 'text' },
+        { key: 'subclass',  label: '子职',   type: 'subclassselect' },
         { key: 'level',     label: '等级',   type: 'int', min: 1, max: 20 },
         { key: 'alignment', label: '阵营',   type: 'text' },
         { key: 'languages', label: '语言',   type: 'text' },
@@ -80,6 +80,47 @@
      每做一个 bespoke 职业模块，就往 CLASS_GROUPS 里加它的专属字段（同样存进
      charConfig 覆盖层）。字段规格与 GROUPS 里的完全一致（int/select/slots…）。*/
   const CLASS_LIST = ['野蛮人', '吟游诗人', '牧师', '德鲁伊', '战士', '武僧', '圣武士', '游侠', '游荡者', '术士', '邪术师', '法师', '奇械师'];
+  /* 「子职」是统称，各职业各有叫法（5e）：这栏标签随所选职业变。缺省回落「子职」*/
+  const SUBCLASS_LABEL = {
+    '野蛮人': '始源之路', '吟游诗人': '诗人学院', '牧师': '神圣领域', '德鲁伊': '德鲁伊结社',
+    '战士': '武术原型',   '武僧': '修行传统',   '圣武士': '神圣誓约', '游侠': '游侠原型',
+    '游荡者': '游荡者原型', '术士': '术源',      '邪术师': '邪术宗主', '法师': '秘法传统',
+    '奇械师': '奇械专精',
+  };
+  const subclassLabel = cls => SUBCLASS_LABEL[cls] || '子职';
+
+  /* 各职业的子职下拉选项（5e 标准中文名）。「子职」栏据当前职业显示对应这一组。
+     ★ 增删子职：改下面对应职业的数组即可（纯展示/存储，不影响机制）。
+       牧师的「领域」还会决定领域法术，见 js/classes/cleric.js 的 domains。
+     若角色存档里的子职不在列表中（自定义名），下拉会自动把它插到最前，不会丢。*/
+  const CLASS_SUBCLASSES = {
+    '牧师':   ['知识领域', '生命领域', '光明领域', '自然领域', '风暴领域', '诡术领域', '战争领域',
+               '奥秘领域', '锻造领域', '坟墓领域', '秩序领域', '和平领域', '暮光领域', '死亡领域'],
+    '野蛮人': ['狂战士之路', '图腾战士之路', '祖灵守护者之路', '狂野魔法之路', '热血斗士之路', '风暴使者之路'],
+    '吟游诗人': ['博学之院', '勇气之院', '剑术之院', '谄媚之院', '传颂之院', '创造之院', '雄辩之院'],
+    '德鲁伊': ['大地结社', '月亮结社', '梦境结社', '牧群结社', '星辰结社', '荒野结社', '毒素结社'],
+    '战士':   ['战斗大师', '冠军', '秘法骑士', '军团指挥官', '武艺大师', '神秘射手', '心理战士', '符文骑士'],
+    '武僧':   ['四象之道', '醉拳之道', '剑术之道', '影踪之道', '阳炎之道', '元素之道', '慈悲之道', '御风之道', '亡者之道'],
+    '圣武士': ['奉献之誓', '荣耀之誓', '复仇之誓', '天国之誓', '征服之誓', '救赎之誓', '守望之誓', '背誓者'],
+    '游侠':   ['猎手', '野兽宗师', '荒野行者', '怪物杀手', '迷雾行者', '鹰隼骑士', '织羽者'],
+    '游荡者': ['刺客', '秘术诡术师', '盗贼', '刀客', '阴谋家', '侦察员', '灵巧手', '幻术师'],
+    '术士':   ['龙脉血统', '狂野魔法', '神系魔法', '暴风术法', '影裔魔法', '时序法术', '变异体'],
+    '邪术师': ['至福之主', '妖精宗主', '邪魔宗主', '古神宗主', '天界宗主', '命运编织者', '觊天者', '共生者'],
+    '法师':   ['塑法学派', '死灵学派', '惑控学派', '咒法学派', '预言学派', '幻术学派', '塑能学派', '防护学派', '战争魔法', '血法术', '传送法师'],
+    '奇械师': ['炼金术士', '神器师', '战斗铁匠', '军械师'],
+  };
+  /* 用当前职业的子职列表填充下拉；keepVal 命中列表则保留，否则回落首项（换职业时用）*/
+  function fillSubclassSelect(sel, cls, keepVal) {
+    const list = (CLASS_SUBCLASSES[cls] || []).slice();
+    if (keepVal && !list.includes(keepVal)) list.unshift(keepVal);   /* 保留自定义子职 */
+    sel.innerHTML = '';
+    list.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      sel.appendChild(opt);
+    });
+    sel.value = (keepVal && list.includes(keepVal)) ? keepVal : (list[0] || '');
+  }
   const CLASS_GROUPS = {
     '牧师': [
       { key: 'channelDivinity',     label: '引导神力次数', type: 'int', min: 0, max: 10 }
@@ -125,7 +166,12 @@
 
     const lbl = document.createElement('span');
     lbl.className = 'charcfg-label';
-    lbl.textContent = f.label;
+    if (f.key === 'subclass') {
+      lbl.id = 'cfg-subclass-label';      /* 名称随职业变，见 classselect 的 change */
+      lbl.textContent = subclassLabel(cfgViewClass);
+    } else {
+      lbl.textContent = f.label;
+    }
     row.appendChild(lbl);
 
     let input;
@@ -153,7 +199,15 @@
       input.addEventListener('change', () => {
         cfgViewClass = input.value;
         renderClassFields();
+        const scLbl = document.getElementById('cfg-subclass-label');
+        if (scLbl) scLbl.textContent = subclassLabel(cfgViewClass);   /* 子职栏名随职业更新 */
+        const scSel = document.getElementById(fieldId('subclass'));
+        if (scSel) fillSubclassSelect(scSel, cfgViewClass, null);      /* 子职选项换成新职业的，默认首项 */
       });
+    } else if (f.type === 'subclassselect') {
+      /* 子职下拉：选项 = 当前所选职业的子职列表（换职业时在 classselect 的 change 里重填）*/
+      input = document.createElement('select');
+      fillSubclassSelect(input, cfgViewClass, cur);
     } else if (f.type === 'slots') {
       input = document.createElement('input');
       input.type = 'text';
@@ -313,7 +367,7 @@
         if (!arr.length) { error = '「各环法术位」至少要填一个数字，例如 0, 4, 3, 2'; return; }
         arr[0] = 0;               /* 0 环（戏法）不占法术位，恒为 0 */
         v = arr;
-      } else if (f.type === 'select' || f.type === 'classselect') {
+      } else if (f.type === 'select' || f.type === 'classselect' || f.type === 'subclassselect') {
         v = el.value;
       } else if (f.type === 'feats') {
         v = Array.from(el.querySelectorAll('.cfg-feat-row.owned')).map(r => r.dataset.featId);
@@ -342,7 +396,11 @@
     if (settings) settings.classList.add('hidden');   /* 从设置弹窗进入时先收起它 */
     modal.classList.remove('hidden');
   }
-  function closeEditor() { modal.classList.add('hidden'); }
+  function closeEditor() {
+    modal.classList.add('hidden');
+    const settings = $('settings-modal');
+    if (settings) settings.classList.remove('hidden');   /* 关闭后退回设置弹窗 */
+  }
 
   const openBtn = $('btn-open-charcfg');
   if (openBtn) openBtn.addEventListener('click', openEditor);

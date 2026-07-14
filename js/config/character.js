@@ -78,16 +78,14 @@ const CHAR = {
      解锁新环后，记得去 js/data/spells.js 补上该环的法术条目。 */
   spellSlots: [0, 4, 3, 2],
 
-  maxCantrips: 4,           // 已知戏法上限（牧师：1级3个 / 4级4个 / 10级5个）
+  maxCantrips: 4,           // 已知戏法上限
   maxPrepared: 8,           // 可携带自选法术上限（牧师公式：感知调整值 + 牧师等级 = 3 + 5）
 
   /* 领域法术 — 常驻备法，玩家无法移除。key = 环阶，value = 法术 id 列表。
-     升到更高环解锁新领域法术时，在此加对应环阶的 key 即可（id 需存在于 spells.js）。 */
-  domainSpells: {
-    1: ['cure_wounds', 'bless'],                  // 1环：治疗真言、祝福术
-    2: ['lesser_restoration', 'spiritual_weapon'],// 2环：次级复原术、灵体武器
-    3: ['beacon_of_hope', 'revivify'],            // 3环：希望信标、活化术
-  },
+     ★ 现在不在这里写死：由职业模块按「所选领域」自动填充（见 js/classes/cleric.js 的
+       domains[领域].spells，据 CHAR.subclass 覆盖此值）。这里留空表作默认/兜底。
+       非牧师职业没有领域法术时也保持空表。要改领域法术，去 js/classes/cleric.js。*/
+  domainSpells: {},
 
   /* ── 角色信息 ───────────────────────────────────────────── */
   alignment: '守序中立',    // 阵营

@@ -653,6 +653,8 @@ body {
   color: var(--silver-dim);
   margin-left: auto;
 }
+.spell-class-count .cnt-domain { color: var(--accent-glow); }   /* 领域法术：常驻、不占上限 */
+.spell-class-count .cnt-part.over { color: #d9534f; }           /* 超出上限：标红 */
 .spell-class-head .btn-spell-add { flex-shrink: 0; }
 .spell-class-empty {
   font-size: 12px;

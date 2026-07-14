@@ -125,13 +125,18 @@ function buildSpellClassBlock(cls) {
   /* 收集该职业的戏法 / 各环法术 */
   const cantrips = state.cantripIds.map(getSpell).filter(sp => sp && sp.level === 0 && inClass(sp));
   const maxLv = CHAR.spellSlots.length - 1;
+  /* 领域法术只归属角色本职业的分区，且【不按 classes 过滤】——领域可授予牧师法表之外
+     的法术（如火球术），它们照样常驻显示/施放。见 js/classes/cleric.js。*/
+  const isOwnClass = (cls === CHAR.className);
   const leveled = [];   // { lv, items:[{sp,isDomain}] }
-  let preparedCount = 0;
+  let chosenCount = 0;  // 玩家自选备法数 —— 只有它计入 maxPrepared
+  let domainCount = 0;  // 领域法术数 —— 常驻备法，不计入上限（5e）
   for (let lv = 1; lv <= maxLv; lv++) {
-    const domain = (CHAR.domainSpells[lv] || []).map(getSpell).filter(sp => sp && inClass(sp));
+    const domain = isOwnClass ? (CHAR.domainSpells[lv] || []).map(getSpell).filter(Boolean) : [];
     const chosen = state.preparedIds.map(getSpell).filter(sp => sp && sp.level === lv && inClass(sp));
     if (!domain.length && !chosen.length) continue;
-    preparedCount += domain.length + chosen.length;
+    chosenCount += chosen.length;
+    domainCount += domain.length;
     leveled.push({
       lv,
       items: [
@@ -144,9 +149,23 @@ function buildSpellClassBlock(cls) {
   /* 头部：职业名 · 法表 + 计数 + ＋选择 */
   const head = document.createElement('div');
   head.className = 'spell-class-head';
+  /* 计数：戏法计入 maxCantrips，备法（自选）计入 maxPrepared；领域法术单独标、不计上限。
+     max 只在角色本职业分区显示（maxCantrips/maxPrepared 是本职业的上限）。超限标红。*/
+  let countHtml;
+  if (isOwnClass) {
+    const cOver = cantrips.length > CHAR.maxCantrips;
+    const pOver = chosenCount   > CHAR.maxPrepared;
+    countHtml =
+      `<span class="cnt-part${cOver ? ' over' : ''}">戏法 ${cantrips.length}/${CHAR.maxCantrips}</span>` +
+      `<span class="cnt-sep"> ｜ </span>` +
+      `<span class="cnt-part${pOver ? ' over' : ''}">备法 ${chosenCount}/${CHAR.maxPrepared}</span>` +
+      (domainCount ? `<span class="cnt-domain"> ｜ 领域 ${domainCount}</span>` : '');
+  } else {
+    countHtml = `<span class="cnt-part">戏法 ${cantrips.length}</span><span class="cnt-sep"> ｜ </span><span class="cnt-part">备法 ${chosenCount}</span>`;
+  }
   head.innerHTML =
     `<span class="cinzel spell-class-name">${cls} · 法表</span>` +
-    `<span class="spell-class-count">戏法 ${cantrips.length} ｜ 备法 ${preparedCount}</span>`;
+    `<span class="spell-class-count">${countHtml}</span>`;
   const addBtn = document.createElement('button');
   addBtn.className = 'btn-spell-add';
   addBtn.textContent = '＋ 选择';
@@ -718,6 +737,7 @@ function renderDeathSaves() {
 ============================================================ */
 function renderChannel() {
   const container = $('channel-pips');
+  if (!container) return;   /* 非牧师职业：面板未生成，直接跳过 */
   container.innerHTML = '';
   for (let i = 0; i < CHAR.channelDivinity; i++) {
     const pip = document.createElement('div');

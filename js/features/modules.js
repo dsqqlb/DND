@@ -10,6 +10,8 @@
      2) 往下面 MODULES 里登记一条 { id, label, group, sel }；
         整页模块用 { id, label, group, page:'page-xxx' }。
      登记后它会自动出现在设置的勾选列表里，无需改本文件其它逻辑。
+     ★ 职业专属模块：登记时加 cls:'职业名'（如 cls:'牧师'）。它只在角色配置里
+        选中该职业时才显示 / 才出现在勾选列表；换职业自动隐藏。
    ------------------------------------------------------------
    注：核心块（HP、六维、日志页本身）不做成可关，避免误关后找不回入口
        （设置齿轮就在日志页）。
@@ -30,7 +32,7 @@
     { id: 'identity', label: '角色头衔',            group: '职业页', sel: '#class-char-header' },
     { id: 'abilities',label: '六维属性',            group: '职业页', sel: '#header-stats' },
     { id: 'saves',    label: '豁免检定',            group: '职业页', sel: '#saves-section' },
-    { id: 'channel',  label: '职业资源 · 引导神力（牧师）', group: '职业页', sel: '#panel-class' },
+    { id: 'channel',  label: '职业资源 · 引导神力', group: '职业页', sel: '#panel-class', cls: '牧师' },
     { id: 'feats',    label: '专长',                group: '职业页', sel: '#feats-container' },
     { id: 'charinfo', label: '角色信息',            group: '职业页', sel: '#panel-charinfo' },
     { id: 'skills',   label: '熟练技能',            group: '职业页', sel: '#panel-skills' },
@@ -58,6 +60,14 @@
 
   const prefs = () => load('modules', {});
   const isOn = (p, id) => p[id] !== false;   /* 缺省 = 显示 */
+
+  /* 职业专属模块（带 cls）只在当前角色职业匹配时才存在——由角色配置里的
+     「职业」下拉决定（= CHAR.className）。不匹配时：页面强制隐藏，且不出现在
+     「模块显示」勾选列表里。做别的职业专属模块时，登记时带上 cls 即可。*/
+  const curClass = () => (typeof CHAR !== 'undefined' && CHAR.className) || '';
+  const classOK = m => !m || !m.cls || m.cls === curClass();
+  const modById = {};
+  MODULES.forEach(m => { modById[m.id] = m; });
 
   /* 法术面板：一个法表职业都没勾 → 整块收起（法术标签仍在）*/
   function applySpellPanelVisibility() {
@@ -107,7 +117,8 @@
   /* ──── 应用显隐 ──── */
   function apply() {
     const p = prefs();
-    const on = id => isOn(p, id);
+    /* 有效显隐 = 用户勾选 且 职业匹配（职业专属模块不匹配当前职业则强制隐藏）*/
+    const on = id => isOn(p, id) && classOK(modById[id]);
 
     /* 1) 单个模块显隐 */
     MODULES.forEach(m => {
@@ -161,9 +172,10 @@
     wrap.innerHTML = '';
     const p = prefs();
 
-    /* 按 group 收拢成列，保持首次出现顺序 */
+    /* 按 group 收拢成列，保持首次出现顺序；职业专属模块只在职业匹配时列出 */
     const cols = [];
     MODULES.forEach(m => {
+      if (!classOK(m)) return;   /* 非当前职业的专属模块不出现在勾选列表里 */
       let g = cols.find(c => c.name === m.group);
       if (!g) { g = { name: m.group, items: [] }; cols.push(g); }
       g.items.push(m);
@@ -215,8 +227,14 @@
       if (s) s.classList.add('hidden');     /* 从设置弹窗进入时先收起它 */
       modal.classList.remove('hidden');
     });
-    $('modules-close').addEventListener('click', () => modal.classList.add('hidden'));
-    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+    /* 关闭后退回设置弹窗（本弹窗只从设置进入）*/
+    const closeModules = () => {
+      modal.classList.add('hidden');
+      const s = $('settings-modal');
+      if (s) s.classList.remove('hidden');
+    };
+    $('modules-close').addEventListener('click', closeModules);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModules(); });
   }
 
   buildToggles();
