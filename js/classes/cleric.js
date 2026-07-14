@@ -2,7 +2,8 @@
    牧师 · 职业专属模块（bespoke，数据 + 逻辑同文件）
    ------------------------------------------------------------
    面板不写死在 index.html：这里按职业动态生成。只有角色配置里
-   「职业 = 牧师」时，才生成 #panel-class 并追加到左列 #class-left 末位。
+   「职业 = 牧师」时，才生成 #panel-class 并追加到「职业页」的职业资源挂载点
+   #class-resource-mount。换成别的职业则完全不生成这块。
    结构：
      · channel.base   —— 所有牧师通用的引导神力能力（摧毁不死生物）
      · domains[领域]   —— 各神圣领域的专属内容；显示哪个由 CHAR.subclass（配置里
@@ -122,9 +123,10 @@ const CLERIC = {
      自动常驻备法、不占上限；领域没数据时为空表。*/
   CHAR.domainSpells = (domain && domain.spells) ? domain.spells : {};
 
-  const mount = document.getElementById('class-left');
+  const mount = document.getElementById('class-resource-mount');
   if (!mount) return;
 
+  /* 追加到「职业页」的职业资源挂载点 */
   const dc = (typeof DERIVED !== 'undefined' && DERIVED.spellSaveDC != null) ? DERIVED.spellSaveDC : '';
   const fillDc = s => String(s).replace('{DC}', `<span id="cd-turn-dc">${dc}</span>`);
 

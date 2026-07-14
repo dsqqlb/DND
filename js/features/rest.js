@@ -179,7 +179,7 @@ $('btn-short-rest').addEventListener('click', () => {
   showDialog({
     icon: '☾',
     title: '短休',
-    message: '恢复引导神力并断开专注，不影响生命值。<br>确定进行短休吗？',
+    message: '确定进行短休吗？',
     confirmText: '短休',
     cancelText: '取消',
     onConfirm: doShortRest,

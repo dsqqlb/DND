@@ -28,15 +28,17 @@
     { id: 'hitdice',    label: '生命骰',            group: '战斗页', sel: '#hitdice-row' },
     { id: 'initiative', label: '战斗 · 先攻',       group: '战斗页', sel: '#panel-combat' },
 
-    /* —— 职业页 —— */
-    { id: 'identity', label: '角色头衔',            group: '职业页', sel: '#class-char-header' },
-    { id: 'abilities',label: '六维属性',            group: '职业页', sel: '#header-stats' },
-    { id: 'saves',    label: '豁免检定',            group: '职业页', sel: '#saves-section' },
+    /* —— 角色页（通用角色卡，与职业/种族无关）—— */
+    { id: 'identity', label: '角色头衔',            group: '角色页', sel: '#class-char-header' },
+    { id: 'abilities',label: '六维属性',            group: '角色页', sel: '#header-stats' },
+    { id: 'saves',    label: '豁免检定',            group: '角色页', sel: '#saves-section' },
+    { id: 'feats',    label: '专长',                group: '角色页', sel: '#feats-container' },
+    { id: 'charinfo', label: '角色信息',            group: '角色页', sel: '#panel-charinfo' },
+    { id: 'skills',   label: '熟练技能',            group: '角色页', sel: '#panel-skills' },
+    { id: 'xp',       label: '经验值',              group: '角色页', sel: '#panel-xp' },
+
+    /* —— 职业页（职业专属资源；带 cls 者只在对应职业显示）—— */
     { id: 'channel',  label: '职业资源 · 引导神力', group: '职业页', sel: '#panel-class', cls: '牧师' },
-    { id: 'feats',    label: '专长',                group: '职业页', sel: '#feats-container' },
-    { id: 'charinfo', label: '角色信息',            group: '职业页', sel: '#panel-charinfo' },
-    { id: 'skills',   label: '熟练技能',            group: '职业页', sel: '#panel-skills' },
-    { id: 'xp',       label: '经验值',              group: '职业页', sel: '#panel-xp' },
 
     /* —— 法术页（法表按职业过滤见下方 buildToggles + state.js 的 spellClasses）—— */
     { id: 'tempspells', label: '临时法术', group: '法术页', sel: '#temp-spells-block' },
@@ -146,9 +148,10 @@
     const combat = document.getElementById('page-combat');
     if (combat) combat.classList.toggle('combat-solo', !on('initiative'));
 
+    /* 角色页两栏：任一栏全空 → 剩下的铺满整宽（引导神力已移到独立职业页，不在此计）*/
     const classTop = document.getElementById('class-top');
     if (classTop) {
-      const leftOn  = ['identity', 'abilities', 'saves', 'channel'].some(on);
+      const leftOn  = ['identity', 'abilities', 'saves'].some(on);
       const rightOn = ['feats', 'charinfo', 'skills'].some(on);
       classTop.classList.toggle('solo', !leftOn || !rightOn);
     }

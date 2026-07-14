@@ -1997,11 +1997,18 @@ body {
   text-align: center;
 }
 
-/* 第二页：职业 —— flex列布局：上（左右分区） + 下（经验值条全宽） */
+/* 第二页：角色 —— flex列布局：上（左右分区） + 下（经验值条全宽） */
+#page-character.active {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* 第三页：职业（职业专属资源）—— 竖排面板 */
 #page-class.active {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow-y: auto;
 }
 
 /* 上部：左右两个区域，flex:1 撑满剩余空间，把XP推到底 */
@@ -2053,7 +2060,7 @@ body {
 }
 
 /* XP条固定高度，不伸缩 */
-#page-class #panel-xp {
+#page-character #panel-xp {
   flex-shrink: 0;
 }
 

@@ -155,13 +155,13 @@
 
   </div><!-- /#page-combat -->
 
-  <!-- ══ 第二页：职业 ══ -->
-  <div class="page" id="page-class">
+  <!-- ══ 第二页：角色 ══ -->
+  <div class="page" id="page-character">
 
     <!-- 上部：左右两个区域 -->
     <div id="class-top">
 
-      <!-- 左：角色名 → 六维 → 职业 · 专属资源 -->
+      <!-- 左：角色名 → 六维 → 豁免 -->
       <div id="class-left">
 
         <div id="class-char-header" data-module="identity">
@@ -177,8 +177,6 @@
           <span class="saves-title cinzel">豁免检定</span>
           <div id="saving-throws" class="saves-grid"></div>
         </div>
-
-        <!-- 职业专属资源面板（#panel-class）由 js/classes/cleric.js 按职业/领域动态生成并追加到 #class-left 末位（选牧师才注入）-->
 
       </div><!-- /#class-left -->
 
@@ -225,6 +223,12 @@
       </div>
     </div>
 
+  </div><!-- /#page-character -->
+
+  <!-- ══ 第三页：职业（职业专属资源）══ -->
+  <div class="page" id="page-class">
+    <!-- 职业专属资源面板（#panel-class 引导神力等）由 js/classes/<职业>.js 按职业动态生成并追加到 #class-resource-mount（选对应职业才注入）-->
+    <div id="class-resource-mount"></div>
   </div><!-- /#page-class -->
 
   <!-- ══ 第三页：法术 ══ -->
@@ -360,6 +364,7 @@
 <!-- 底部翻页标签栏 -->
 <nav id="tab-bar">
   <button class="tab-btn active" data-page="page-combat">⚔ 战斗</button>
+  <button class="tab-btn" data-page="page-character">♞ 角色</button>
   <button class="tab-btn" data-page="page-class">☩ 职业</button>
   <button class="tab-btn" data-page="page-spells">✦ 法术</button>  <button class="tab-btn" data-page="page-bag">⊛ 背包</button>  <button class="tab-btn" data-page="page-log">✒ 日志</button></nav>
 
