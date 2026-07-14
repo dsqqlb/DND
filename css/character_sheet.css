@@ -192,8 +192,8 @@ body {
 
 #char-name {
   font-family: var(--font-title);
-  font-size: 22px;
-  letter-spacing: 4px;
+  font-size: 17px;
+  letter-spacing: 3px;
   color: var(--silver);
 }
 
@@ -1407,25 +1407,25 @@ body {
 /* ============================================================
    属性豁免（职业页，六项；熟练项高亮 + 自动加熟练加值）
 ============================================================ */
-#saves-section { margin: 8px 0 4px; }
+#saves-section { margin: 4px 0 2px; }
 .saves-title {
   display: block;
   font-family: var(--font-title);
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 2px;
   color: var(--silver-dim);
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 .saves-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 3px;
 }
 .save-box {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
+  gap: 4px;
+  padding: 3px 6px;
   border: 1px solid var(--border-dim);
   background: var(--bg-panel);
 }
@@ -1445,12 +1445,12 @@ body {
   box-shadow: 0 0 5px var(--accent-glow);
 }
 .save-lbl {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--silver-dim);
 }
 .save-mod {
   margin-left: auto;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--silver);
 }
 .save-box.save-prof .save-mod { color: var(--accent-glow); }
@@ -1973,11 +1973,9 @@ body {
 #header-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  padding: 8px 12px;
+  gap: 3px;
+  padding: 5px 10px;
   border: 1px solid var(--border-dim);
-  outline: 1px solid var(--border-dim);
-  outline-offset: 3px;
   background: var(--bg-panel);
 }
 
@@ -1986,11 +1984,14 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 4px 0;
+  padding: 2px 0;
 }
+/* 职业页六维数字缩小（不影响战斗页施法核心属性的 .cast-stat-num）*/
+#header-stats .cast-stat-num { font-size: 19px; }
+#header-stats .cast-stat-lbl { letter-spacing: 1px; }
 
 .ability-mod {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--silver-dim);
   letter-spacing: 1px;
   text-align: center;
@@ -2032,10 +2033,8 @@ body {
 
 /* 职业页角色名头部 */
 #class-char-header {
-  padding: 10px 14px;
+  padding: 6px 12px;
   border: 1px solid var(--border-dim);
-  outline: 1px solid var(--border-dim);
-  outline-offset: 3px;
   background: var(--bg-panel);
 }
 
