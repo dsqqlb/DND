@@ -41,19 +41,38 @@
     sel.addEventListener('change', () => applyTheme(sel.value));
   }
 
+  /* ──── 全局字号档位（用 zoom 只等比缩放【内容区 #pages-container】：
+       px 布局随之放大不溢出；底部 dock 栏 #tab-bar 在其外，不受影响、位置不变）──── */
+  function currentFontScale() { return load('fontScale', 1); }
+  function applyFontScale(z) {
+    const box = document.getElementById('pages-container');
+    if (box) box.style.zoom = z;
+    save('fontScale', z);
+  }
+  const fsSel = $('fontscale-select');
+  if (fsSel) {
+    fsSel.value = String(currentFontScale());
+    fsSel.addEventListener('change', () => applyFontScale(parseFloat(fsSel.value) || 1));
+  }
+
   /* ──── 设置弹窗开关（日志页右上角齿轮）──── */
   const modal = $('settings-modal');
   const gear  = $('btn-settings');
   if (gear && modal) {
     gear.addEventListener('click', () => {
-      if (sel) sel.value = currentTheme();   /* 打开时同步当前选中 */
+      if (sel) sel.value = currentTheme();                   /* 打开时同步当前选中 */
+      if (fsSel) fsSel.value = String(currentFontScale());   /* 同步字号选中 */
       modal.classList.remove('hidden');
     });
     $('settings-close').addEventListener('click', () => modal.classList.add('hidden'));
     modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
   }
 
-  /* 初始化：确保 <html> 上有 data-theme（head 内联脚本可能已设置）*/
+  /* 初始化：主题挂 <html>；字号只挂内容区（内联脚本可能已设置，这里兜底）*/
   document.documentElement.dataset.theme = currentTheme();
+  (function () {
+    const box = document.getElementById('pages-container');
+    if (box) box.style.zoom = currentFontScale();
+  })();
 
 })();

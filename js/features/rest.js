@@ -150,7 +150,7 @@ $('btn-long-rest').addEventListener('click', () => {
   showDialog({
     icon: '⌛',
     title: '长休',
-    message: '恢复全部生命值与法术位，重置引导神力、死亡豁免、专注与临时增益，力竭 −1 级。<br>确定进行长休吗？',
+    message: '确定进行长休吗？',
     confirmText: '长休',
     cancelText: '取消',
     onConfirm: doLongRest,

@@ -348,6 +348,10 @@
   </div><!-- /#page-log -->
 
 </div><!-- /#pages-container -->
+<script>
+  /* 尽早把字号缩放【只加在内容区】，底部 dock 栏(#tab-bar)不受影响、位置不变 */
+  try { var _fs = JSON.parse(localStorage.getItem('dnd_fontScale')); if (typeof _fs === 'number' && _fs > 0) document.getElementById('pages-container').style.zoom = _fs; } catch (e) {}
+</script>
 
 <!-- 撤销上一步：浮动按钮 + 短暂提示 -->
 <button id="btn-undo" class="hidden" title="撤销上一步">↶ 撤销</button>
@@ -457,6 +461,17 @@
       <div class="settings-section-title cinzel">模块显示</div>
       <div class="settings-hint">按页分类勾选要显示的模块，不勾就隐藏；不同职业按需开关。</div>
       <button id="btn-open-modules" class="settings-btn settings-btn-wide">▦ 模块显示设置</button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title cinzel">字号</div>
+      <div class="settings-hint">整体界面等比缩放，字和方框一起放大，读起来更清楚（不影响任何数据）。</div>
+      <select id="fontscale-select" class="settings-select">
+        <option value="0.9">小</option>
+        <option value="1">标准</option>
+        <option value="1.15">大</option>
+        <option value="1.3">特大</option>
+      </select>
     </div>
 
     <div class="settings-section">
