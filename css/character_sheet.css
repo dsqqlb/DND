@@ -455,6 +455,24 @@ body {
   gap: 12px;
 }
 
+/* ── 濒死态（HP=0，body.is-dying 由 renderHp 挂上）：
+   即使死亡豁免被模块收起也强制显示，并高亮闪烁以引起注意 ── */
+body.is-dying #panel-buff      { display: block !important; }
+body.is-dying .death-saves-row { display: flex !important; }
+body.is-dying .death-saves[data-module="deathsaves"] { display: flex !important; }
+body.is-dying .death-saves[data-module="deathsaves"] {
+  border: 1px solid #d9534f;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: -2px 0;
+  animation: dying-pulse 1.1s ease-in-out infinite;
+}
+body.is-dying .death-saves-lbl { color: #e88; }
+@keyframes dying-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,83,79,0.0); background: rgba(217,83,79,0.05); }
+  50%      { box-shadow: 0 0 10px 1px rgba(217,83,79,0.55); background: rgba(217,83,79,0.16); }
+}
+
 .death-saves-lbl {
   font-family: var(--font-title);
   font-size: 9px;
@@ -2035,52 +2053,11 @@ body {
   overflow-y: auto;
 }
 
-/* 上部：左右两个区域，flex:1 撑满剩余空间，把XP推到底 */
-#class-top {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 6px;
-}
-/* 左右任一栏的模块全隐藏时，塌成单栏铺满（模块系统加 .solo）*/
-#class-top.solo { grid-template-columns: 1fr; }
-
-/* 右列：专长、角色信息、熟练技能 纵向排列 */
-#class-right {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-}
-
-/* 左列：角色名 → 六维 → 职业面板 纵向排列 */
-#class-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-}
-
-/* 职业页角色名头部 */
+/* 角色页角色名头部 */
 #class-char-header {
   padding: 6px 12px;
   border: 1px solid var(--border-dim);
   background: var(--bg-panel);
-}
-
-/* 左列末位面板（职业·专属资源）拉伸填满，与右列对齐 */
-#class-left #panel-class {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-/* 右列末位面板拉伸填满，与左列对齐 */
-#class-right #panel-skills {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 /* XP条固定高度，不伸缩 */
@@ -3258,11 +3235,6 @@ body {
     grid-template-columns: 1fr 1.3fr;
   }
 
-  /* 职业页：两列缩小 */
-  #class-top {
-    grid-template-columns: 1.2fr 1fr;
-  }
-
   .panel { padding: 12px; }
   #header { padding: 8px 12px; }
   #header-stats { padding: 6px 10px; }
@@ -3295,11 +3267,6 @@ body {
   #page-combat #header         { grid-column: 1; grid-row: 1; }
   #page-combat #panel-buff     { grid-column: 1; grid-row: 2 / -1; }
   #page-combat #panel-survival { grid-column: 1; grid-row: 3; }
-
-  /* ── 职业页：单列 ── */
-  #class-top {
-    grid-template-columns: 1fr;
-  }
 
   /* ── 背包页：单列 ── */
   .bag-columns { flex-direction: column; }

@@ -149,7 +149,7 @@
     const combat = document.getElementById('page-combat');
     if (combat) combat.classList.toggle('combat-solo', !on('initiative'));
 
-    /* 角色页改为 CSS 多列自动流（见 #character-modules / layout.js），
+    /* 角色页改为 CSS 两列自动流（见 css 的 #character-modules / #character-flow），
        隐藏模块会自动重新均衡填充，无需再手动塌栏。*/
   }
 

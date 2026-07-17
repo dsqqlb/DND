@@ -86,6 +86,8 @@ function renderHp() {
   $('hp-bar-temp').style.width = tempPct + '%';
   $('temp-hp-val').textContent = state.tempHp;
   $('temp-hp-badge').classList.toggle('has-temp', state.tempHp > 0);
+  /* 濒死态：HP=0 时给 body 挂 .is-dying → CSS 强制显示并高亮死亡豁免 */
+  document.body.classList.toggle('is-dying', state.hp === 0);
 }
 
 /* ============================================================
@@ -353,13 +355,16 @@ function hasRitual(sp) {
   return sp.level > 0 && Array.isArray(sp.classes) && sp.classes.includes('仪式');
 }
 
+/* 设置专注（自动替换旧专注，符合 5e，静默）*/
+function setConcentration(sp) {
+  state.concentration = sp.id;
+  save('concentration', state.concentration);
+  if (typeof renderConcentration === 'function') renderConcentration();
+}
+
 /* ──── 仪式施法：不消耗法术位，照常处理专注 + 日志 + 特效 ──── */
 function castRitual(sp) {
-  if (sp.conc) {
-    state.concentration = sp.id;
-    save('concentration', state.concentration);
-    renderConcentration();
-  }
+  if (sp.conc) setConcentration(sp);
   if (typeof logEvent === 'function') {
     logEvent('cast', '📖', `仪式施放 ${sp.name}（${sp.level} 环，不耗法术位）${sp.conc ? ' · 专注' : ''}`);
   }
@@ -397,12 +402,8 @@ function castSpell(sp, castLevel) {
   state.slots[slot.lv][slot.i] = true;
   save('slots', state.slots);
 
-  /* 需要专注的法术：记录专注（自动替换旧专注，符合 5e 规则）*/
-  if (sp.conc) {
-    state.concentration = sp.id;
-    save('concentration', state.concentration);
-    renderConcentration();
-  }
+  /* 需要专注的法术：记录专注（自动替换旧专注，符合 5e 规则；切换时提醒）*/
+  if (sp.conc) setConcentration(sp);
 
   /* 写入冒险日志（升环时标注实际环阶）*/
   if (typeof logEvent === 'function') {
@@ -417,12 +418,7 @@ function castSpell(sp, castLevel) {
 
 /* ──── 施放戏法：不消耗法术位，直接记录（专注类戏法同样处理专注）──── */
 function castCantrip(sp) {
-  if (sp.conc) {
-    state.concentration = sp.id;
-    save('concentration', state.concentration);
-    renderConcentration();
-    renderSpellPanel();   /* 刷新专注按钮高亮状态 */
-  }
+  if (sp.conc) { setConcentration(sp); renderSpellPanel(); }   /* 刷新专注按钮高亮状态 */
   if (typeof logEvent === 'function') {
     logEvent('cast', '🪄', `施放 ${sp.name}（戏法）${sp.conc ? ' · 专注' : ''}`);
   }
@@ -443,11 +439,7 @@ function castTempSpell(key) {
   t.used++;
   save('tempSpells', state.tempSpells);
   const sp = getSpell(t.id);
-  if (sp && sp.conc) {
-    state.concentration = sp.id;
-    save('concentration', state.concentration);
-    renderConcentration();
-  }
+  if (sp && sp.conc) setConcentration(sp);
   if (typeof logEvent === 'function') {
     logEvent('cast', '✦', `施放 ${sp ? sp.name : t.id}（临时 · 剩 ${t.uses - t.used}/${t.uses}）${sp && sp.conc ? ' · 专注' : ''}`);
   }

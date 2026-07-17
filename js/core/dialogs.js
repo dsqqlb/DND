@@ -694,6 +694,39 @@ function showUpcastDialog(sp, levels, isRitual) {
 }
 
 /* ============================================================
+   HP 变化联动：濒死 / 脱离濒死时自动重置死亡豁免（并结束专注，因昏迷）。
+   在每个改变 state.hp 的入口调用 afterHpChange(变化前HP, 变化后HP, 本次伤害)。
+============================================================ */
+function afterHpChange(beforeHp, afterHp, damageTaken) {
+  /* —— 倒地濒死：重置死亡豁免、结束专注（昏迷不能维持专注）—— */
+  if (beforeHp > 0 && afterHp === 0) {
+    state.deathSave = { success: [false, false, false], fail: [false, false, false] };
+    save('deathSave', state.deathSave);
+    if (typeof renderDeathSaves === 'function') renderDeathSaves();
+    if (state.concentration) {
+      state.concentration = null;
+      save('concentration', null);
+      if (typeof renderConcentration === 'function') renderConcentration();
+      if (typeof renderSpellPanel === 'function') renderSpellPanel();
+    }
+    if (typeof logEvent === 'function') logEvent('hp', '💀', '生命值归 0 · 陷入濒死，开始死亡豁免');
+    return;   /* 归 0 已昏迷，不再提示专注检定 */
+  }
+  /* —— 脱离濒死：清空死亡豁免 —— */
+  if (beforeHp === 0 && afterHp > 0) {
+    state.deathSave = { success: [false, false, false], fail: [false, false, false] };
+    save('deathSave', state.deathSave);
+    if (typeof renderDeathSaves === 'function') renderDeathSaves();
+    if (typeof logEvent === 'function') logEvent('hp', '✨', '恢复生命 · 脱离濒死、重获意识');
+    return;
+  }
+  /* —— 濒死中再受伤：提醒记死亡豁免失败 —— */
+  if (beforeHp === 0 && afterHp === 0 && damageTaken > 0) {
+    if (typeof logEvent === 'function') logEvent('hp', '💀', '濒死中受到伤害 · 记 1 次死亡豁免失败（若为重击记 2 次）');
+  }
+}
+
+/* ============================================================
    交互：血量编辑
 ============================================================ */
 function startHpEdit() {
@@ -714,6 +747,7 @@ function commitHpEdit() {
   $('hp-input').style.display = 'none';
   renderHp();
   logHpDelta(before, state.hp);
+  afterHpChange(before, state.hp, before > state.hp ? before - state.hp : 0);
 }
 
 function startMaxHpEdit() {
@@ -745,6 +779,7 @@ $('hp-max-input').addEventListener('blur', commitMaxHpEdit);
 $('hp-max-input').addEventListener('keydown', e => { if (e.key === 'Enter') commitMaxHpEdit(); });
 
 function applyDamage(dmg) {
+  const before = state.hp;
   const absorbed = Math.min(state.tempHp, dmg);
   state.tempHp -= absorbed;
   state.hp = Math.max(0, state.hp - (dmg - absorbed));
@@ -757,6 +792,7 @@ function applyDamage(dmg) {
     const tmp = absorbed > 0 ? `（临时HP吸收 ${absorbed}）` : '';
     logEvent('hp', '💔', `受到 ${dmg} 点伤害${tmp} · 剩 ${state.hp}/${state.maxHp}`);
   }
+  afterHpChange(before, state.hp, dmg);   /* 专注 DC 按总伤害算（含被临时HP吸收部分）*/
 }
 
 function applyHeal(amt) {
@@ -768,6 +804,7 @@ function applyHeal(amt) {
   if (healed > 0 && typeof logEvent === 'function') {
     logEvent('hp', '❤', `恢复 ${healed} 点生命 · ${state.hp}/${state.maxHp}`);
   }
+  afterHpChange(before, state.hp, 0);   /* 治疗无伤害 */
 }
 
 $('hp-minus').addEventListener('click',  () => applyDamage(1));
