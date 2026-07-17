@@ -117,14 +117,27 @@
     }, DURATION);
   };
 
-  /* ————对外接口：播放对应的法术音频（按 spellId 直接拼路径）————
-     约定：音频文件名与 spellId 一字不差，放在 audios/ 下，扩展名 .mp3。
-     例：id 'guidance' → audios/guidance.mp3。无需维护映射表；没有对应
-     文件时 play() 会被拒绝（404），已用 .catch() 静默处理。*/
+  /* ————对外接口：播放对应的法术音频————
+     约定：默认音频文件名 = spellId，放在 audios/ 下，扩展名 .mp3。
+     例：id 'guidance' → audios/guidance.mp3。绝大多数法术不用登记。
+
+     ★ 别名表 AUDIO_ALIAS（可选）：当【多个不同法术共用同一份音频】时，
+       把它们都映射到同一个音频名即可，不必为每个法术各放一份文件。
+       值只写音频名（不含 audios/ 前缀和 .mp3 后缀）。表里没有的法术
+       一律用自己的 id 作音频名。没有对应文件时 play() 静默失败。*/
+  const AUDIO_ALIAS = {
+    // 例：几种治疗法术共用一个音频文件 audios/healing.mp3
+    // 'cure_wounds':      'healing',
+    // 'healing_word':     'healing',
+    // 'mass_cure_wounds': 'healing',
+    'healing_word' : 'cure_wounds',
+  };
+
   window.playSpellAudio = function (sp) {
     if (!sp || !sp.id) return;
+    const key = AUDIO_ALIAS[sp.id] || sp.id;   /* 有别名用别名，否则用 spellId */
     try {
-      const audio = new Audio('audios/' + sp.id + '.mp3');
+      const audio = new Audio('audios/' + key + '.mp3');
       audio.play().catch(() => {});  /* 无文件/浏览器拦截自动播放 → 静默失败 */
     } catch (_) {}
   };
