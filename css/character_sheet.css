@@ -1997,12 +1997,36 @@ body {
   text-align: center;
 }
 
-/* 第二页：角色 —— flex列布局：上（左右分区） + 下（经验值条全宽） */
+/* 第二页：角色 —— 上部模块区可滚动 + 底部经验值条固定 */
 #page-character.active {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: 0;
 }
+
+/* 角色页模块区：外层只负责【纵向滚动】（固定高度 + overflow-y）；
+   内层 #character-flow 做「两栏紧凑」多列且高度自适应——内容多时撑高，
+   触发外层纵向滚动（而不是多列往右溢出导致横向滚动）。*/
+#character-modules {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;   /* 给滚动条留一点空隙，避免贴着面板边框 */
+}
+#character-flow {
+  column-count: 2;
+  column-gap: 14px;
+}
+#character-flow > * {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;   /* Safari/iPad：避免面板被跨列拆断 */
+  margin: 0 0 8px;
+}
+/* 紧凑：收紧面板内边距与标题留白 */
+#character-flow .panel { padding: 10px; }
+#character-flow .panel-title { margin-bottom: 8px; padding-bottom: 4px; }
 /* 第三页：职业（职业专属资源）—— 竖排面板 */
 #page-class.active {
   display: flex;

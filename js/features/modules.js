@@ -32,6 +32,7 @@
     { id: 'identity', label: '角色头衔',            group: '角色页', sel: '#class-char-header' },
     { id: 'abilities',label: '六维属性',            group: '角色页', sel: '#header-stats' },
     { id: 'saves',    label: '豁免检定',            group: '角色页', sel: '#saves-section' },
+    { id: 'racialtraits', label: '种族特性',        group: '角色页', sel: '#races-container' },
     { id: 'feats',    label: '专长',                group: '角色页', sel: '#feats-container' },
     { id: 'charinfo', label: '角色信息',            group: '角色页', sel: '#panel-charinfo' },
     { id: 'skills',   label: '熟练技能',            group: '角色页', sel: '#panel-skills' },
@@ -148,13 +149,8 @@
     const combat = document.getElementById('page-combat');
     if (combat) combat.classList.toggle('combat-solo', !on('initiative'));
 
-    /* 角色页两栏：任一栏全空 → 剩下的铺满整宽（引导神力已移到独立职业页，不在此计）*/
-    const classTop = document.getElementById('class-top');
-    if (classTop) {
-      const leftOn  = ['identity', 'abilities', 'saves'].some(on);
-      const rightOn = ['feats', 'charinfo', 'skills'].some(on);
-      classTop.classList.toggle('solo', !leftOn || !rightOn);
-    }
+    /* 角色页改为 CSS 多列自动流（见 #character-modules / layout.js），
+       隐藏模块会自动重新均衡填充，无需再手动塌栏。*/
   }
 
   /* 关掉的正好是当前页时，回落到战斗页 */

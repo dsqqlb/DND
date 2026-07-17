@@ -14,6 +14,7 @@ renderBuffs();
 renderLuckyDice();
 renderXp();
 renderSkills();
+renderRaces();
 renderFeats();
 
 /* 幸运骠子交互 */

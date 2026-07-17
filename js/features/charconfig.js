@@ -21,7 +21,7 @@
       title: '身份',
       items: [
         { key: 'name',      label: '角色名', type: 'text' },
-        { key: 'race',      label: '种族',   type: 'text' },
+        { key: 'race',      label: '种族',   type: 'raceselect' },
         { key: 'className', label: '职业',   type: 'classselect' },
         { key: 'subclass',  label: '子职',   type: 'subclassselect' },
         { key: 'level',     label: '等级',   type: 'int', min: 1, max: 20 },
@@ -93,6 +93,13 @@
      ★ 增删子职：改下面对应职业的数组即可（纯展示/存储，不影响机制）。
        牧师的「领域」还会决定领域法术，见 js/classes/cleric.js 的 domains。
      若角色存档里的子职不在列表中（自定义名），下拉会自动把它插到最前，不会丢。*/
+  /* 种族下拉选项（常见 PHB 种族含亚种）。种族特性数据在 js/data/races.js 的 RACE_DB。
+     存档里若有列表外的自定义种族名，下拉会自动把它插到最前，不会丢。*/
+  const RACE_LIST = [
+    '丘陵矮人', '山地矮人', '高等精灵', '木精灵', '卓尔', '莱特弗精灵',
+    '强壮半身人', '轻足半身人', '人类', '龙裔', '林地侏儒', '岩石侏儒',
+    '半精灵', '半兽人', '提夫林',
+  ];
   const CLASS_SUBCLASSES = {
     '牧师':   ['知识领域', '生命领域', '光明领域', '自然领域', '风暴领域', '诡术领域', '战争领域',
                '奥秘领域', '锻造领域', '坟墓领域', '秩序领域', '和平领域', '暮光领域', '死亡领域'],
@@ -208,6 +215,17 @@
       /* 子职下拉：选项 = 当前所选职业的子职列表（换职业时在 classselect 的 change 里重填）*/
       input = document.createElement('select');
       fillSubclassSelect(input, cfgViewClass, cur);
+    } else if (f.type === 'raceselect') {
+      /* 种族下拉：选项来自 RACE_LIST，保留自定义种族名 */
+      input = document.createElement('select');
+      const list = RACE_LIST.slice();
+      if (cur && !list.includes(cur)) list.unshift(cur);
+      list.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r; opt.textContent = r;
+        input.appendChild(opt);
+      });
+      input.value = cur || '';
     } else if (f.type === 'slots') {
       input = document.createElement('input');
       input.type = 'text';
@@ -367,7 +385,7 @@
         if (!arr.length) { error = '「各环法术位」至少要填一个数字，例如 0, 4, 3, 2'; return; }
         arr[0] = 0;               /* 0 环（戏法）不占法术位，恒为 0 */
         v = arr;
-      } else if (f.type === 'select' || f.type === 'classselect' || f.type === 'subclassselect') {
+      } else if (f.type === 'select' || f.type === 'classselect' || f.type === 'subclassselect' || f.type === 'raceselect') {
         v = el.value;
       } else if (f.type === 'feats') {
         v = Array.from(el.querySelectorAll('.cfg-feat-row.owned')).map(r => r.dataset.featId);

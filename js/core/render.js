@@ -1058,6 +1058,46 @@ function toggleSkill(id) {
 }
 
 /* ============================================================
+   渲染：种族特性面板（依据 CHAR.race + RACE_DB 动态生成，一块）
+   数据驱动，属性/速度/HP 等仅作展示说明，不叠加到数值上。
+============================================================ */
+function renderRaces() {
+  const container = $('races-container');
+  if (!container) return;
+  container.innerHTML = '';
+  const db = (typeof RACE_DB !== 'undefined') ? RACE_DB : {};
+  const race = db[CHAR.race];
+
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+
+  const title = document.createElement('div');
+  title.className = 'panel-title';
+  title.textContent = '种族 · ' + (CHAR.race || '') + (race && race.nameEn ? ' · ' + race.nameEn : '');
+  panel.appendChild(title);
+
+  if (!race) {
+    const hint = document.createElement('div');
+    hint.className = 'feat-prereq';
+    hint.textContent = '当前种族「' + (CHAR.race || '未设置') + '」暂无特性数据（在 js/data/races.js 的 RACE_DB 里补充）。';
+    panel.appendChild(hint);
+    container.appendChild(panel);
+    return;
+  }
+
+  const ul = document.createElement('ul');
+  ul.className = 'feat-list';
+  (race.traits || []).forEach(t => {
+    const li = document.createElement('li');
+    /* 复用专长条目样式；文本含 <b>，数据来自本地 RACE_DB，可信 */
+    li.innerHTML = `<span class="feat-trigger cinzel">${t.name}</span>` + (t.desc || '');
+    ul.appendChild(li);
+  });
+  panel.appendChild(ul);
+  container.appendChild(panel);
+}
+
+/* ============================================================
    渲染：专长面板（依据 CHAR.feats + FEAT_DB 动态生成，每个专长一块）
 ============================================================ */
 function renderFeats() {
