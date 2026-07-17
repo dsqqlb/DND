@@ -364,6 +364,7 @@ function castRitual(sp) {
     logEvent('cast', '📖', `仪式施放 ${sp.name}（${sp.level} 环，不耗法术位）${sp.conc ? ' · 专注' : ''}`);
   }
   if (typeof playCastFx === 'function') playCastFx(sp, false);
+  if (typeof playSpellAudio === 'function') playSpellAudio(sp);
   renderSpellPanel();
 }
 
@@ -410,6 +411,7 @@ function castSpell(sp, castLevel) {
   }
 
   if (typeof playCastFx === 'function') playCastFx(sp, false);   /* 全屏施法特效（按学派，可关闭）*/
+  if (typeof playSpellAudio === 'function') playSpellAudio(sp);   /* 法术音效（按 spellId 找 audios/<id>.mp3）*/
   renderSpellPanel();   /* 刷新法术位宝石与整行状态 */
 }
 
@@ -425,6 +427,7 @@ function castCantrip(sp) {
     logEvent('cast', '🪄', `施放 ${sp.name}（戏法）${sp.conc ? ' · 专注' : ''}`);
   }
   if (typeof playCastFx === 'function') playCastFx(sp, true);    /* 戏法用缩小版特效 */
+  if (typeof playSpellAudio === 'function') playSpellAudio(sp);   /* 法术音效（按 spellId 找 audios/<id>.mp3）*/
 }
 
 /* ──── 临时法术是否还有剩余次数 ──── */
@@ -449,6 +452,7 @@ function castTempSpell(key) {
     logEvent('cast', '✦', `施放 ${sp ? sp.name : t.id}（临时 · 剩 ${t.uses - t.used}/${t.uses}）${sp && sp.conc ? ' · 专注' : ''}`);
   }
   if (typeof playCastFx === 'function' && sp) playCastFx(sp, sp.level === 0);
+  if (typeof playSpellAudio === 'function' && sp) playSpellAudio(sp);   /* 法术音效（按 spellId 找 audios/<id>.mp3）*/
   renderTempSpells();
   renderSpellPanel();   /* 刷新其它位置的专注高亮 */
 }

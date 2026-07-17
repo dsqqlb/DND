@@ -117,6 +117,18 @@
     }, DURATION);
   };
 
+  /* ————对外接口：播放对应的法术音频（按 spellId 直接拼路径）————
+     约定：音频文件名与 spellId 一字不差，放在 audios/ 下，扩展名 .mp3。
+     例：id 'guidance' → audios/guidance.mp3。无需维护映射表；没有对应
+     文件时 play() 会被拒绝（404），已用 .catch() 静默处理。*/
+  window.playSpellAudio = function (sp) {
+    if (!sp || !sp.id) return;
+    try {
+      const audio = new Audio('audios/' + sp.id + '.mp3');
+      audio.play().catch(() => {});  /* 无文件/浏览器拦截自动播放 → 静默失败 */
+    } catch (_) {}
+  };
+
   if (BTN) BTN.addEventListener('click', () => setEnabled(!enabled()));
   updateBtn();
 
