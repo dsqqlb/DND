@@ -102,11 +102,35 @@ const CLERIC = {
         3: ['daylight', 'fireball'],
       },
     },
+    '战争领域': {
+      abilities: [
+        {
+          name: '战争祭司',
+          desc: '战斗中，当你执行「攻击」动作时，可以用一个<b>附赠动作</b>额外进行一次武器攻击。使用次数 = <b>感知调整值</b>（至少 1 次），短休或长休后恢复全部次数。',
+        },
+        {
+          name: '引导神力：战之律令',
+          desc: '当你进行一次攻击检定时，你可以消耗引导神力为该次攻击检定获得 <b>+10</b> 加值。你可以在掷骰之后、但在得知命中与否之前使用。',
+        },
+        {
+          name: '神圣打击',
+          desc: '第8级起，你每回合一次在以武器命中一个生物时，可使该次攻击额外造成 <b>1d8</b> 点你所选类型（力场/你神祇相关）的伤害（14级起为 2d8）。',
+        },
+      ],
+      /* 领域法术（key = 法术环阶）。5e 战争领域：1级 神恩/虔诚护盾、3级 魔化武器/灵体武器、
+         5级 十字军披风/灵体卫士、7级 行动自如/石肤术、9级 焰击术/定身怪物。id 均已存在于 spells.js。*/
+      spells: {
+        1: ['divine_favor', 'shield_of_faith'],
+        2: ['magic_weapon', 'spiritual_weapon'],
+        3: ['crusaders_mantle', 'spirit_guardians'],
+        4: ['freedom_of_movement', 'stoneskin'],
+        5: ['flame_strike', 'hold_monster'],
+      },
+    },
     /* 模板（复制改名即可）：
-       '战争领域': {
-         abilities: [ { name: '战争祭司', desc: '…' } ],
-         spells: { 1: ['divine_favor', 'shield_of_faith'], 2: ['magic_weapon', 'spiritual_weapon'],
-                   3: ['crusaders_mantle', 'spirit_guardians'] },
+       'XX领域': {
+         abilities: [ { name: '能力名', desc: '说明，可含 <b>加粗</b>；消耗引导神力的能力可写"消耗引导神力…"，DC 用 {DC} 占位' } ],
+         spells: { 1: ['spellid_a', 'spellid_b'], 2: [...], 3: [...] },  // key=法术环阶，id 须存在于 spells.js
        }, */
   },
 };
